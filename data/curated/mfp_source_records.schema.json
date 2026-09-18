@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/mfp_source_records.schema.json",
+  "title": "MFP Source Record",
+  "description": "Preliminary canonical source record model for mfp-bibliography.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record_id",
+    "source_id",
+    "source_record_id",
+    "scientific_label",
+    "evidence_tier",
+    "benchmark_role",
+    "source_version",
+    "retrieved_at",
+    "raw_file_path",
+    "raw_row_or_url",
+    "transformation_id",
+    "record_status"
+  ],
+  "properties": {
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Deterministic repository record identifier."
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical source identifier from source catalog."
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-local record identifier; may be 'unknown' if unresolved."
+    },
+    "uniprot_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "UniProt accession string. Strict accession pattern validation is deferred."
+    },
+    "protein_name": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Protein name text from source or curated normalization."
+    },
+    "organism_raw": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Organism text as present in source artifact."
+    },
+    "scientific_label": {
+      "type": "string",
+      "enum": ["MF", "NMF", "EMF_candidate", "unknown"],
+      "description": "Repository-level scientific label term."
+    },
+    "evidence_tier": {
+      "type": "string",
+      "enum": [
+        "experimental_curated",
+        "literature_curated",
+        "computational_prediction",
+        "source_claim_only",
+        "unresolved"
+      ],
+      "description": "Repository-level evidence characterization term."
+    },
+    "benchmark_role": {
+      "type": "string",
+      "enum": ["unassigned", "target", "control", "excluded", "unknown"],
+      "description": "Benchmark assignment policy term."
+    },
+    "source_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source version marker or explicit placeholder such as 'unknown'."
+    },
+    "retrieved_at": {
+      "description": "Retrieval timestamp as ISO 8601 date-time string, or explicit placeholder 'unknown'.",
+      "oneOf": [
+        {
+          "const": "unknown"
+        },
+        {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+        }
+      ]
+    },
+    "raw_file_path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to raw source artifact in repository."
+    },
+    "raw_row_or_url": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw row locator or source URL reference."
+    },
+    "transformation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of transformation logic that produced the record."
+    },
+    "record_status": {
+      "type": "string",
+      "enum": ["valid", "incomplete", "ambiguous", "excluded", "duplicate_candidate"],
+      "description": "Curation/validation status of the record."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Optional curator notes."
+    }
+  }
+}

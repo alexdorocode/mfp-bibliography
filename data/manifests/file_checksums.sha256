@@ -1,0 +1,3 @@
+# SHA-256 checksums for raw/derived artifacts will be recorded here.
+# Format per line: <sha256><space><relative_path>
+# Do not fabricate checksums; populate only from actual local artifacts.

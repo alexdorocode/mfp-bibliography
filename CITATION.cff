@@ -1,0 +1,7 @@
+cff-version: 1.2.0
+message: "Cite package version 0.1.0 for code/docs snapshots and use repository release label v0.1.0-source-freeze for source-freeze milestone context."
+title: "mfp-bibliography"
+type: dataset
+version: "0.1.0"
+abstract: "Source-evidence and bibliography scaffold for multifunctional protein datasets."
+license: "NOASSERTION"
