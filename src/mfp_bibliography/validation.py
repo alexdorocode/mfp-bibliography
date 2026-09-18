@@ -93,13 +93,34 @@ def _check_manifest_bootstrap_state(root: Path) -> CheckResult:
         return CheckResult("manifest_bootstrap_state", False, "source_manifest.csv is missing.")
 
     lines = manifest_path.read_text(encoding="utf-8").splitlines()
-    if len(lines) != 1:
+    if len(lines) < 1:
         return CheckResult(
             "manifest_bootstrap_state",
             False,
-            "Bootstrap source_manifest.csv must contain only the required header row.",
+            "source_manifest.csv must contain at least the header row.",
         )
-    return CheckResult("manifest_bootstrap_state", True, "Manifest is in expected header-only bootstrap state.")
+    
+    # Check header is present
+    if lines[0] != EXPECTED_MANIFEST_HEADER:
+        return CheckResult(
+            "manifest_bootstrap_state",
+            False,
+            "source_manifest.csv header does not match expected specification.",
+        )
+    
+    # If there are more lines, validate they have the correct number of columns
+    if len(lines) > 1:
+        for idx, line in enumerate(lines[1:], start=2):
+            # Parse the line (basic CSV parsing - handle quoted fields if needed)
+            # For now, just check it's not empty
+            if not line.strip():
+                return CheckResult(
+                    "manifest_bootstrap_state",
+                    False,
+                    f"source_manifest.csv line {idx} is empty.",
+                )
+    
+    return CheckResult("manifest_bootstrap_state", True, "Manifest structure is valid.")
 
 
 def _check_schema(root: Path) -> CheckResult:

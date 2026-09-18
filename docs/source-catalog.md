@@ -20,19 +20,24 @@ Status: all records below are **to_be_verified** templates.
 
 ## SRC_MOONDB
 - Source ID: `SRC_MOONDB`
-- Formal name: `MoonDB` (to_be_verified)
-- Source status: `to_be_verified`
-- Dataset availability in this repository: `to_be_imported`
+- Formal name: `MoonDB`
+- Source status: `imported`
+- Dataset availability in this repository: `present`
 - Intended acquisition mode: `local_import`
-- Expected unit of record: `to_be_verified`
-- Expected identifiers: `to_be_verified`
-- Expected evidence character: `to_be_verified`
+- Unit of record: `protein`
+- Identifiers: `UniProtKB_ac` (UniProt accession)
+- Evidence character: `Predicted`, `Curated`
 - Source version: `unknown`
 - Retrieval date: `unknown`
-- Original artifact location: `to_be_verified`
+- Original artifact location: `unknown`
+- Local artifact path: `data/raw/moondb/all_emf_and_curated.tsv`
+- Artifact checksum (SHA-256): `c503101da091ba457f9480f094b67f939fe3b0ac9310b3f7e5d7868b21532d55`
+- File size: `8331` bytes
+- Row count: `351` data rows
 - License / terms: `to_be_verified`
 - Primary publication: `to_be_verified`
-- Notes and verification tasks: import existing local artifact into `data/raw/moondb/` after governance approval.
+- Notes and verification tasks: Artifact contains UniProt accessions with type classifications (Predicted: 289, Curated: 62). First column has `#` prefix in header only. No missing values detected. All UniProtKB_ac values are unique.
+- Benchmark role: `unassigned`
 
 ## SRC_MULTIFACETEDPROTDB
 - Source ID: `SRC_MULTIFACETEDPROTDB`

@@ -1,3 +1,4 @@
 # SHA-256 checksums for raw/derived artifacts will be recorded here.
 # Format per line: <sha256><space><relative_path>
 # Do not fabricate checksums; populate only from actual local artifacts.
+c503101da091ba457f9480f094b67f939fe3b0ac9310b3f7e5d7868b21532d55  data/raw/moondb/all_emf_and_curated.tsv

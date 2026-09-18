@@ -26,17 +26,17 @@ def test_repository_validator_fails_for_invalid_manifest_header(tmp_path) -> Non
     assert names["manifest_header"]["ok"] is False
 
 
-def test_repository_validator_fails_when_manifest_has_data_rows_in_bootstrap(tmp_path) -> None:
+def test_repository_validator_succeeds_with_data_rows(tmp_path) -> None:
     copied = tmp_path / "repo"
     shutil.copytree(REPO_ROOT, copied)
     manifest = copied / "data" / "manifests" / "source_manifest.csv"
     with manifest.open("a", encoding="utf-8") as handle:
-        handle.write("SRC_MOONDB,MoonDB,to_be_verified,unknown,unknown,local_import,,,,,,,\\n")
+        handle.write("SRC_MOONDB,MoonDB,imported,unknown,unknown,local_import,data/raw/moondb/all_emf_and_curated.tsv,unknown,c503101da091ba457f9480f094b67f939fe3b0ac9310b3f7e5d7868b21532d55,8331,351,to_be_verified,test\n")
 
     result = validate_repository(copied)
-    assert result["ok"] is False
+    assert result["ok"] is True
     names = {check["name"]: check for check in result["checks"]}
-    assert names["manifest_bootstrap_state"]["ok"] is False
+    assert names["manifest_bootstrap_state"]["ok"] is True
 
 
 def test_repository_validator_fails_when_expected_raw_source_dir_missing(tmp_path) -> None:
