@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.org/mfp-bibliography/mfp_source_records.schema.json",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/mfp_source_records.schema.json",
   "title": "MFP Source Record",
   "description": "Preliminary canonical source record model for mfp-bibliography.",
   "type": "object",
@@ -77,9 +77,16 @@
       "description": "Source version marker or explicit placeholder such as 'unknown'."
     },
     "retrieved_at": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Retrieval timestamp string or explicit placeholder such as 'unknown'."
+      "description": "Retrieval timestamp as ISO 8601 date-time string, or explicit placeholder 'unknown'.",
+      "oneOf": [
+        {
+          "const": "unknown"
+        },
+        {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+        }
+      ]
     },
     "raw_file_path": {
       "type": "string",

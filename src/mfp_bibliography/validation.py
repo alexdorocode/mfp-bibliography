@@ -10,6 +10,21 @@ from mfp_bibliography.schemas import build_validator
 
 EXPECTED_PATHS = [
     "README.md",
+    "LICENSE",
+    "CITATION.cff",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "docs/project-charter.md",
+    "docs/source-catalog.md",
+    "docs/source-policy.md",
+    "docs/data-governance.md",
+    "docs/canonical-schema.md",
+    "docs/release-policy.md",
+    "docs/decisions/ADR-001-repository-scope.md",
+    "docs/decisions/ADR-002-raw-data-immutability.md",
+    "docs/decisions/ADR-003-provenance-and-transformations.md",
+    "docs/decisions/ADR-004-evidence-label-benchmark-separation.md",
     "pyproject.toml",
     "data/raw/README.md",
     "data/manifests/source_manifest.csv",
@@ -18,6 +33,14 @@ EXPECTED_PATHS = [
     "src/mfp_bibliography/schemas.py",
     "tests/test_schema.py",
     ".github/workflows/ci.yml",
+]
+
+EXPECTED_RAW_SOURCE_DIRS = [
+    "moonprot",
+    "moondb",
+    "multifacetedprotdb",
+    "plantmp",
+    "multitaskprotdb-ii",
 ]
 
 EXPECTED_MANIFEST_HEADER = (
@@ -43,10 +66,40 @@ def _check_paths(root: Path) -> CheckResult:
 
 def _check_manifest_header(root: Path) -> CheckResult:
     manifest_path = root / "data" / "manifests" / "source_manifest.csv"
-    header = manifest_path.read_text(encoding="utf-8").splitlines()[0] if manifest_path.exists() else ""
-    if header != EXPECTED_MANIFEST_HEADER:
+    if not manifest_path.exists():
+        return CheckResult("manifest_header", False, "source_manifest.csv is missing.")
+
+    lines = manifest_path.read_text(encoding="utf-8").splitlines()
+    if not lines or lines[0] != EXPECTED_MANIFEST_HEADER:
         return CheckResult("manifest_header", False, "source_manifest.csv header does not match required specification.")
     return CheckResult("manifest_header", True, "Manifest header matches expected value.")
+
+
+def _check_raw_source_directories(root: Path) -> CheckResult:
+    raw_root = root / "data" / "raw"
+    missing = [name for name in EXPECTED_RAW_SOURCE_DIRS if not (raw_root / name).is_dir()]
+    if missing:
+        return CheckResult(
+            "raw_source_directories",
+            False,
+            f"Missing required data/raw source directories: {', '.join(missing)}",
+        )
+    return CheckResult("raw_source_directories", True, "All expected data/raw source directories exist.")
+
+
+def _check_manifest_bootstrap_state(root: Path) -> CheckResult:
+    manifest_path = root / "data" / "manifests" / "source_manifest.csv"
+    if not manifest_path.exists():
+        return CheckResult("manifest_bootstrap_state", False, "source_manifest.csv is missing.")
+
+    lines = manifest_path.read_text(encoding="utf-8").splitlines()
+    if len(lines) != 1:
+        return CheckResult(
+            "manifest_bootstrap_state",
+            False,
+            "Bootstrap source_manifest.csv must contain only the required header row.",
+        )
+    return CheckResult("manifest_bootstrap_state", True, "Manifest is in expected header-only bootstrap state.")
 
 
 def _check_schema(root: Path) -> CheckResult:
@@ -61,7 +114,13 @@ def _check_schema(root: Path) -> CheckResult:
 def validate_repository(root: str | Path) -> dict[str, Any]:
     """Validate scaffold structure, manifest header, and schema validity."""
     root_path = Path(root).resolve()
-    checks = [_check_paths(root_path), _check_manifest_header(root_path), _check_schema(root_path)]
+    checks = [
+        _check_paths(root_path),
+        _check_raw_source_directories(root_path),
+        _check_manifest_header(root_path),
+        _check_manifest_bootstrap_state(root_path),
+        _check_schema(root_path),
+    ]
     return {
         "ok": all(check.ok for check in checks),
         "checks": [asdict(check) for check in checks],

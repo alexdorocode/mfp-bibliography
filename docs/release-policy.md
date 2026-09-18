@@ -2,11 +2,12 @@
 
 ## Versioning
 
-Semantic versioning is used for repository releases.
+- Python package versioning follows PEP 440 (current package version: `0.1.0`).
+- Repository milestones/releases may include descriptive labels (current target: `v0.1.0-source-freeze`).
 
 ## Meaning of `v0.1.0-source-freeze`
 
-`v0.1.0-source-freeze` establishes the first immutable source-foundation baseline, including governance, schema, manifests/checksum scaffolding, and validation tooling.
+`v0.1.0-source-freeze` is a repository release label/milestone (not the Python package version). It establishes the first immutable source-foundation baseline, including governance, schema, manifests/checksum scaffolding, and validation tooling.
 
 ## Immutability of published releases
 

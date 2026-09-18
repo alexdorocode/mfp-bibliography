@@ -1,3 +1,5 @@
 All rights reserved.
 
-This repository is in pre-release bootstrap state. A definitive open-source license decision is pending maintainer review.
+This repository is in pre-release bootstrap state. Repository-owned code and documentation are not yet relicensed for open redistribution; a definitive license decision is pending maintainer review.
+
+Third-party source datasets and bibliographic artifacts referenced by this project are governed by their own source-specific licensing and redistribution terms. Those terms remain to_be_verified per source, and this repository does not claim blanket redistribution rights for third-party data.

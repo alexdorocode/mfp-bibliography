@@ -10,6 +10,12 @@ Build an auditable, reproducible, and versioned source-evidence foundation for m
 - Define canonical schema and controlled vocabularies.
 - Prepare source catalog templates and manifest/checksum structure.
 - Provide offline validation tooling.
+- Maintain benchmark-role neutrality (`benchmark_role=unassigned`) until a separately approved benchmark protocol exists.
+
+## Version naming convention
+
+- Python package version uses PEP 440 semantics (`0.1.0`).
+- Repository release milestone for this phase is `v0.1.0-source-freeze`.
 
 ## Explicit non-goals
 

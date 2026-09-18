@@ -25,3 +25,5 @@ Every release must allow reviewers to trace curated records to source files/loca
 ## Third-party terms and attribution
 
 License/terms and attribution are recorded per source in the source catalog and manifest notes as `to_be_verified` until confirmed.
+Repository-owned code/documentation licensing is tracked at repository level and remains pre-release (`NOASSERTION` in citation metadata plus LICENSE notice) until a final maintainer decision.
+No third-party dataset redistribution permission is assumed or claimed unless explicitly verified and recorded per source.

@@ -30,6 +30,19 @@ def test_schema_accepts_valid_minimal_record() -> None:
     validate_record(_valid_record())
 
 
+def test_schema_accepts_iso8601_retrieved_at() -> None:
+    record = _valid_record()
+    record["retrieved_at"] = "2026-09-18T12:00:00Z"
+    validate_record(record)
+
+
+def test_schema_rejects_invalid_retrieved_at() -> None:
+    record = _valid_record()
+    record["retrieved_at"] = "2026-09-18"
+    with pytest.raises(RecordValidationError):
+        validate_record(record)
+
+
 def test_schema_rejects_invalid_controlled_vocabulary() -> None:
     record = _valid_record()
     record["scientific_label"] = "INVALID"
