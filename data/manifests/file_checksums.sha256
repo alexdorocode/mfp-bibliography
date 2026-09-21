@@ -2,3 +2,4 @@
 # Format per line: <sha256><space><relative_path>
 # Do not fabricate checksums; populate only from actual local artifacts.
 c503101da091ba457f9480f094b67f939fe3b0ac9310b3f7e5d7868b21532d55  data/raw/moondb/all_emf_and_curated.tsv
+23a68fe6e5d6e8fa25af67786cdd64836e3b28d83316174e1b9f70e638ffabb4  data/raw/multifacetedprotdb/MultifacetedProtDB_data.txt

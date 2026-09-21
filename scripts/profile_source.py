@@ -200,39 +200,50 @@ def profile_file(file_path: Path, source_id: str = "unknown") -> SourceProfile:
     else:
         header = []
     
+    # Detect flat-list format: single logical line with many delimiter-separated values, no header
+    # This handles files like: value1,value2,...,valueN (no newlines)
+    file_content = file_path.read_text(encoding=encoding)
+    is_flat_list = (
+        total_lines == 0 or (total_lines == 1 and not has_trailing_newline)
+    ) and len(header) > 3 and actual_delimiter in file_content
+    
     # Parse with CSV reader - skip header row
     try:
-        reader = csv.DictReader(
-            all_lines,
-            delimiter=actual_delimiter,
-        )
-        rows = list(reader)
-        data_rows = len(rows)
+        # Initialize variables used in both paths
+        all_values = []
+        duplicate_count = 0
+        blank_count = 0
         
-        # Profile each column
-        columns = []
-        for idx, col_name in enumerate(header):
-            values = [row[col_name] for row in rows]
+        if is_flat_list:
+            # Treat as flat list of values (single-line CSV with no header)
+            all_values = header
+            data_rows = 1
+            rows = []
+            
+            # Profile as a single column containing all values
+            columns = []
             
             # Check for nulls
-            null_count = sum(1 for v in values if not v or v.strip() == "")
+            null_count = sum(1 for v in all_values if not v or v.strip() == "")
             nullable = null_count > 0
+            blank_count = null_count
             
             # Check uniqueness
-            unique = len(set(values)) == len(values)
+            unique = len(set(all_values)) == len(all_values)
+            duplicate_count = len(all_values) - len(set(all_values))
             
             # Cardinality
-            cardinality = len(set(values))
+            cardinality = len(set(all_values))
             
             # Value counts (limit to top 10)
             value_counts = {}
-            for v in values:
+            for v in all_values:
                 value_counts[v] = value_counts.get(v, 0) + 1
             
             # Sample values (first 5 unique)
             seen = set()
             sample_values = []
-            for v in values:
+            for v in all_values:
                 if v not in seen:
                     seen.add(v)
                     sample_values.append(v)
@@ -240,11 +251,11 @@ def profile_file(file_path: Path, source_id: str = "unknown") -> SourceProfile:
                         break
             
             # Determine data type
-            if all(v.isdigit() for v in values if v):
+            if all(v.isdigit() for v in all_values if v):
                 data_type = "integer"
             elif all(
                 v.replace(".", "").replace("-", "").replace("+", "").isdigit()
-                for v in values
+                for v in all_values
                 if v
             ):
                 data_type = "numeric"
@@ -253,8 +264,8 @@ def profile_file(file_path: Path, source_id: str = "unknown") -> SourceProfile:
             
             columns.append(
                 ColumnProfile(
-                    name=col_name,
-                    position=idx + 1,
+                    name="value",
+                    position=1,
                     data_type=data_type,
                     nullable=nullable,
                     unique=unique,
@@ -263,6 +274,69 @@ def profile_file(file_path: Path, source_id: str = "unknown") -> SourceProfile:
                     sample_values=sample_values,
                 )
             )
+        else:
+            # Traditional CSV/TSV with multiple rows and header
+            reader = csv.DictReader(
+                all_lines,
+                delimiter=actual_delimiter,
+            )
+            rows = list(reader)
+            data_rows = len(rows)
+            
+            # Profile each column
+            columns = []
+            for idx, col_name in enumerate(header):
+                values = [row[col_name] for row in rows]
+            
+                # Check for nulls
+                null_count = sum(1 for v in values if not v or v.strip() == "")
+                nullable = null_count > 0
+                
+                # Check uniqueness
+                unique = len(set(values)) == len(values)
+                
+                # Cardinality
+                cardinality = len(set(values))
+            
+                # Value counts (limit to top 10)
+                value_counts = {}
+                for v in values:
+                    value_counts[v] = value_counts.get(v, 0) + 1
+                
+                # Sample values (first 5 unique)
+                seen = set()
+                sample_values = []
+                for v in values:
+                    if v not in seen:
+                        seen.add(v)
+                        sample_values.append(v)
+                        if len(sample_values) >= 5:
+                            break
+                
+                # Determine data type
+                if all(v.isdigit() for v in values if v):
+                    data_type = "integer"
+                elif all(
+                    v.replace(".", "").replace("-", "").replace("+", "").isdigit()
+                    for v in values
+                    if v
+                ):
+                    data_type = "numeric"
+                else:
+                    data_type = "string"
+                
+                columns.append(
+                    ColumnProfile(
+                        name=col_name,
+                        position=idx + 1,
+                        data_type=data_type,
+                        nullable=nullable,
+                        unique=unique,
+                        cardinality=cardinality,
+                        value_counts=value_counts,
+                        sample_values=sample_values,
+                    )
+                )
         
         # Identify identifier candidates
         # Columns that are unique, non-nullable, and have reasonable cardinality
@@ -279,12 +353,23 @@ def profile_file(file_path: Path, source_id: str = "unknown") -> SourceProfile:
         # Detect parsing anomalies
         parsing_anomalies = []
         
+        if is_flat_list:
+            # For flat-list format, add specific anomaly notes
+            parsing_anomalies.append(
+                f"Flat-list format: {len(all_values)} delimiter-separated values in single line, no header row"
+            )
+            if duplicate_count > 0:
+                parsing_anomalies.append(f"Duplicate values detected: {duplicate_count}")
+            if blank_count > 0:
+                parsing_anomalies.append(f"Blank/empty values detected: {blank_count}")
+        
         # Check for header anomalies (special characters in header)
-        for col_name in header:
-            if col_name.startswith("#"):
-                parsing_anomalies.append(
-                    f"Header '{col_name}' has '#' prefix which does not appear in data"
-                )
+        if not is_flat_list:
+            for col_name in header:
+                if col_name.startswith("#"):
+                    parsing_anomalies.append(
+                        f"Header '{col_name}' has '#' prefix which does not appear in data"
+                    )
         
         if not has_trailing_newline:
             parsing_anomalies.append("File does not end with newline character")
