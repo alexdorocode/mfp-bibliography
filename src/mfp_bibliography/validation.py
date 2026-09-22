@@ -6,7 +6,10 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from mfp_bibliography.moondb_claims import load_moondb_provenance
+from mfp_bibliography.plantmp_claims import load_plantmp_provenance
 from mfp_bibliography.schemas import build_validator
+from mfp_bibliography.source_claims import read_claims_csv, validate_claim
 
 EXPECTED_PATHS = [
     "README.md",
@@ -20,6 +23,7 @@ EXPECTED_PATHS = [
     "docs/source-policy.md",
     "docs/source-claim-policy.md",
     "configs/source_claim_policy_v0.1.yaml",
+    "docs/source-claims-contract.md",
     "docs/data-governance.md",
     "docs/canonical-schema.md",
     "docs/release-policy.md",
@@ -31,8 +35,17 @@ EXPECTED_PATHS = [
     "data/raw/README.md",
     "data/manifests/source_manifest.csv",
     "data/curated/mfp_source_records.schema.json",
+    "data/curated/source_claims.schema.json",
+    "data/interim/source_claims_moondb.csv",
+    "data/interim/source_claims_moondb_validation_report.json",
+    "data/interim/source_claims_plantmp.csv",
+    "data/interim/source_claims_plantmp_validation_report.json",
     "scripts/validate_repository.py",
+    "scripts/build_source_claims_moondb.py",
+    "scripts/build_source_claims_plantmp.py",
     "src/mfp_bibliography/schemas.py",
+    "src/mfp_bibliography/moondb_claims.py",
+    "src/mfp_bibliography/plantmp_claims.py",
     "tests/test_schema.py",
     ".github/workflows/ci.yml",
 ]
@@ -148,6 +161,75 @@ def _check_schema(root: Path) -> CheckResult:
     return CheckResult("json_schema", True, "JSON Schema is valid Draft 2020-12.")
 
 
+def _check_source_claims_schema(root: Path) -> CheckResult:
+    schema_path = root / "data" / "curated" / "source_claims.schema.json"
+    try:
+        build_validator(schema_path)
+    except Exception as exc:  # pragma: no cover
+        return CheckResult("source_claims_json_schema", False, f"Schema validation failed: {exc}")
+    return CheckResult(
+        "source_claims_json_schema", True, "Source claims JSON Schema is valid Draft 2020-12."
+    )
+
+
+def _reconcile_claims_artifact(
+    root: Path,
+    check_name: str,
+    claims_filename: str,
+    provenance_loader,
+) -> CheckResult:
+    claims_path = root / "data" / "interim" / claims_filename
+    if not claims_path.exists():
+        return CheckResult(
+            check_name, False, f"data/interim/{claims_filename} is missing."
+        )
+    try:
+        provenance = provenance_loader(root)
+        claims = read_claims_csv(claims_path)
+    except Exception as exc:  # pragma: no cover
+        return CheckResult(check_name, False, f"Claims artifact check failed: {exc}")
+
+    problems: list[str] = []
+    invalid_rows: list[str] = []
+    for index, claim in enumerate(claims, start=2):
+        try:
+            validate_claim(claim)
+        except Exception:
+            invalid_rows.append(str(index))
+    if invalid_rows:
+        problems.append(f"schema-invalid CSV rows: {', '.join(invalid_rows[:5])}")
+    if len(claims) != provenance.raw_row_count:
+        problems.append(
+            f"claim count {len(claims)} does not match manifest row_count_raw "
+            f"{provenance.raw_row_count}"
+        )
+    claim_ids = [claim["claim_id"] for claim in claims]
+    if len(set(claim_ids)) != len(claim_ids):
+        problems.append("duplicate claim_id values present")
+    if any(claim["control_eligible"] for claim in claims):
+        problems.append("control_eligible=true found")
+
+    if problems:
+        return CheckResult(check_name, False, "; ".join(problems))
+    return CheckResult(
+        check_name,
+        True,
+        f"Source claims artifact reconciles: {len(claims)} claims, all valid.",
+    )
+
+
+def _check_moondb_claims_artifact(root: Path) -> CheckResult:
+    return _reconcile_claims_artifact(
+        root, "moondb_claims_artifact", "source_claims_moondb.csv", load_moondb_provenance
+    )
+
+
+def _check_plantmp_claims_artifact(root: Path) -> CheckResult:
+    return _reconcile_claims_artifact(
+        root, "plantmp_claims_artifact", "source_claims_plantmp.csv", load_plantmp_provenance
+    )
+
+
 def validate_repository(root: str | Path) -> dict[str, Any]:
     """Validate scaffold structure, manifest header, and schema validity."""
     root_path = Path(root).resolve()
@@ -158,6 +240,9 @@ def validate_repository(root: str | Path) -> dict[str, Any]:
         _check_manifest_header(root_path),
         _check_manifest_bootstrap_state(root_path),
         _check_schema(root_path),
+        _check_source_claims_schema(root_path),
+        _check_moondb_claims_artifact(root_path),
+        _check_plantmp_claims_artifact(root_path),
     ]
     return {
         "ok": all(check.ok for check in checks),

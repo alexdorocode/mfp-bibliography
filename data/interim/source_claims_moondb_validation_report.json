@@ -1,0 +1,29 @@
+{
+  "contract_id": "MFPB_0_9_MOONDB_SOURCE_CLAIMS",
+  "source_id": "SRC_MOONDB",
+  "raw_artifact_path": "data/raw/moondb/all_emf_and_curated.tsv",
+  "raw_sha256": "c503101da091ba457f9480f094b67f939fe3b0ac9310b3f7e5d7868b21532d55",
+  "manifest_row_count_raw": 351,
+  "claim_count": 351,
+  "counts_by_raw_type": {
+    "Curated": 62,
+    "Predicted": 289
+  },
+  "counts_by_operational_status": {
+    "curated": 62,
+    "predicted": 289
+  },
+  "primary_target_eligible_count": 62,
+  "schema_invalid_indices": [],
+  "checks": {
+    "raw_sha256_matches_manifest": true,
+    "claim_count_matches_manifest_row_count": true,
+    "all_claims_pass_schema": true,
+    "claim_ids_unique": true,
+    "claim_ids_deterministic": true,
+    "provenance_complete": true,
+    "no_control_eligible": true,
+    "primary_target_eligible_only_curated": true
+  },
+  "reconciliation_ok": true
+}
