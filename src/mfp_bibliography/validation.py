@@ -6,9 +6,10 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from mfp_bibliography.moondb_claims import load_moondb_provenance, read_claims_csv
+from mfp_bibliography.moondb_claims import load_moondb_provenance
+from mfp_bibliography.plantmp_claims import load_plantmp_provenance
 from mfp_bibliography.schemas import build_validator
-from mfp_bibliography.source_claims import validate_claim
+from mfp_bibliography.source_claims import read_claims_csv, validate_claim
 
 EXPECTED_PATHS = [
     "README.md",
@@ -37,10 +38,14 @@ EXPECTED_PATHS = [
     "data/curated/source_claims.schema.json",
     "data/interim/source_claims_moondb.csv",
     "data/interim/source_claims_moondb_validation_report.json",
+    "data/interim/source_claims_plantmp.csv",
+    "data/interim/source_claims_plantmp_validation_report.json",
     "scripts/validate_repository.py",
     "scripts/build_source_claims_moondb.py",
+    "scripts/build_source_claims_plantmp.py",
     "src/mfp_bibliography/schemas.py",
     "src/mfp_bibliography/moondb_claims.py",
+    "src/mfp_bibliography/plantmp_claims.py",
     "tests/test_schema.py",
     ".github/workflows/ci.yml",
 ]
@@ -167,21 +172,22 @@ def _check_source_claims_schema(root: Path) -> CheckResult:
     )
 
 
-def _check_moondb_claims_artifact(root: Path) -> CheckResult:
-    claims_path = root / "data" / "interim" / "source_claims_moondb.csv"
+def _reconcile_claims_artifact(
+    root: Path,
+    check_name: str,
+    claims_filename: str,
+    provenance_loader,
+) -> CheckResult:
+    claims_path = root / "data" / "interim" / claims_filename
     if not claims_path.exists():
         return CheckResult(
-            "moondb_claims_artifact",
-            False,
-            "data/interim/source_claims_moondb.csv is missing.",
+            check_name, False, f"data/interim/{claims_filename} is missing."
         )
     try:
-        provenance = load_moondb_provenance(root)
+        provenance = provenance_loader(root)
         claims = read_claims_csv(claims_path)
     except Exception as exc:  # pragma: no cover
-        return CheckResult(
-            "moondb_claims_artifact", False, f"MoonDB claims artifact check failed: {exc}"
-        )
+        return CheckResult(check_name, False, f"Claims artifact check failed: {exc}")
 
     problems: list[str] = []
     invalid_rows: list[str] = []
@@ -204,11 +210,23 @@ def _check_moondb_claims_artifact(root: Path) -> CheckResult:
         problems.append("control_eligible=true found")
 
     if problems:
-        return CheckResult("moondb_claims_artifact", False, "; ".join(problems))
+        return CheckResult(check_name, False, "; ".join(problems))
     return CheckResult(
-        "moondb_claims_artifact",
+        check_name,
         True,
-        f"MoonDB claims artifact reconciles: {len(claims)} claims, all valid.",
+        f"Source claims artifact reconciles: {len(claims)} claims, all valid.",
+    )
+
+
+def _check_moondb_claims_artifact(root: Path) -> CheckResult:
+    return _reconcile_claims_artifact(
+        root, "moondb_claims_artifact", "source_claims_moondb.csv", load_moondb_provenance
+    )
+
+
+def _check_plantmp_claims_artifact(root: Path) -> CheckResult:
+    return _reconcile_claims_artifact(
+        root, "plantmp_claims_artifact", "source_claims_plantmp.csv", load_plantmp_provenance
     )
 
 
@@ -224,6 +242,7 @@ def validate_repository(root: str | Path) -> dict[str, Any]:
         _check_schema(root_path),
         _check_source_claims_schema(root_path),
         _check_moondb_claims_artifact(root_path),
+        _check_plantmp_claims_artifact(root_path),
     ]
     return {
         "ok": all(check.ok for check in checks),

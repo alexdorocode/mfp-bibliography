@@ -16,34 +16,19 @@ from typing import Any, Iterator
 
 from mfp_bibliography.provenance import sha256_file
 from mfp_bibliography.schemas import RecordValidationError
-from mfp_bibliography.source_claims import make_claim_id, validate_claim
+from mfp_bibliography.source_claims import (
+    load_claim_policy,
+    make_claim_id,
+    read_claims_csv,
+    validate_claim,
+    write_claims_csv,
+)
 
 CONTRACT_ID = "MFPB_0_9_MOONDB_SOURCE_CLAIMS"
 MOONDB_SOURCE_ID = "SRC_MOONDB"
 MOONDB_TRANSFORMATION_ID = "moondb_source_claims_v0"
 UNIPROT_FIELD = "UniProtKB_ac"
 RAW_CLAIM_FIELD = "type"
-SCHEMA_REQUIRED_FIELDS = [
-    "claim_id",
-    "source_id",
-    "source_record_id",
-    "uniprot_id",
-    "protein_name_raw",
-    "organism_raw",
-    "raw_claim_field",
-    "raw_claim_value",
-    "operational_status",
-    "primary_target_eligible",
-    "control_eligible",
-    "raw_file_path",
-    "raw_row_or_url",
-    "source_version",
-    "retrieved_at",
-    "transformation_id",
-    "record_status",
-    "notes",
-]
-_BOOL_FIELDS = ("primary_target_eligible", "control_eligible")
 
 
 @dataclass(frozen=True)
@@ -75,9 +60,7 @@ def load_moondb_provenance(root: str | Path) -> MoonDBProvenance:
 
 def load_policy(policy_path: str | Path) -> dict[str, Any]:
     """Load the declarative source claim policy YAML."""
-    import yaml
-
-    return yaml.safe_load(Path(policy_path).read_text(encoding="utf-8"))
+    return load_claim_policy(policy_path)
 
 
 def resolve_operational_status(policy: dict[str, Any], raw_value: str | None) -> str:
@@ -165,41 +148,6 @@ def adapt_moondb_claims(
             build_moondb_claim(line_number, uniprot_id, raw_type, provenance, status)
         )
     return claims
-
-
-def write_claims_csv(claims: list[dict[str, Any]], output_path: str | Path) -> None:
-    """Write claims to CSV using the contract field order."""
-    with Path(output_path).open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=SCHEMA_REQUIRED_FIELDS, lineterminator="\n")
-        writer.writeheader()
-        for claim in claims:
-            writer.writerow({name: _to_csv_value(claim[name]) for name in SCHEMA_REQUIRED_FIELDS})
-
-
-def read_claims_csv(csv_path: str | Path) -> list[dict[str, Any]]:
-    """Read claims from CSV back into contract-shaped records."""
-    claims: list[dict[str, Any]] = []
-    with Path(csv_path).open(encoding="utf-8", newline="") as handle:
-        for row in csv.DictReader(handle):
-            claim: dict[str, Any] = {}
-            for name in SCHEMA_REQUIRED_FIELDS:
-                value = row[name]
-                if name in _BOOL_FIELDS:
-                    claim[name] = value.strip().lower() == "true"
-                elif value == "":
-                    claim[name] = None
-                else:
-                    claim[name] = value
-            claims.append(claim)
-    return claims
-
-
-def _to_csv_value(value: Any) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    return str(value)
 
 
 def build_validation_report(

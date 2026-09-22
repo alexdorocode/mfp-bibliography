@@ -1,0 +1,32 @@
+{
+  "contract_id": "MFPB_0_10_PLANTMP_SOURCE_CLAIMS",
+  "source_id": "SRC_PLANTMP",
+  "raw_artifact_path": "data/raw/plantmp/PlantMP_all.csv",
+  "raw_sha256": "97ae53eccbbd3a9c2a1e9b3247db8bcc0b66de929bf4471b37187de5e3a494a9",
+  "manifest_row_count_raw": 112,
+  "claim_count": 112,
+  "counts_by_raw_type": {
+    "confirmed": 62,
+    "likely": 12,
+    "predicted": 38
+  },
+  "counts_by_operational_status": {
+    "curated": 62,
+    "excluded_likely": 12,
+    "predicted": 38
+  },
+  "primary_target_eligible_count": 62,
+  "schema_invalid_indices": [],
+  "checks": {
+    "raw_sha256_matches_manifest": true,
+    "claim_count_matches_manifest_row_count": true,
+    "all_claims_pass_schema": true,
+    "claim_ids_unique": true,
+    "claim_ids_deterministic": true,
+    "provenance_complete": true,
+    "no_control_eligible": true,
+    "primary_target_eligible_only_curated": true,
+    "status_matches_policy": true
+  },
+  "reconciliation_ok": true
+}
