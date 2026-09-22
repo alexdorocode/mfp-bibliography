@@ -1,0 +1,3 @@
+claim_id,source_id,source_record_id,uniprot_id,protein_name_raw,organism_raw,raw_claim_field,raw_claim_value,operational_status,primary_target_eligible,control_eligible,raw_file_path,raw_row_or_url,source_version,retrieved_at,transformation_id,record_status,notes
+SRC_MOONDB:5d33cea131aedc93,SRC_MOONDB,moondb_row_2,P10005,,,type,Predicted,predicted,false,false,tests/fixtures/overlap/moondb_likely_plus_stronger.csv,row:2,unknown,unknown,overlap_audit_fixture_v0,valid,
+SRC_MOONDB:0e25c19f412f54e6,SRC_MOONDB,moondb_row_3,P10006,,,type,Curated,curated,true,false,tests/fixtures/overlap/moondb_likely_plus_stronger.csv,row:3,unknown,unknown,overlap_audit_fixture_v0,valid,

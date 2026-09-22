@@ -1,0 +1,4 @@
+claim_id,source_id,source_record_id,uniprot_id,protein_name_raw,organism_raw,raw_claim_field,raw_claim_value,operational_status,primary_target_eligible,control_eligible,raw_file_path,raw_row_or_url,source_version,retrieved_at,transformation_id,record_status,notes
+SRC_PLANTMP:3f0a59cc1f9f2c5b,SRC_PLANTMP,plantmp_order_1,P10002,,Arabidopsis thaliana,type,predicted,predicted,false,false,tests/fixtures/overlap/plantmp_disagreement.csv,order:1,unknown,unknown,overlap_audit_fixture_v0,valid,
+SRC_PLANTMP:92e6dfa237967289,SRC_PLANTMP,plantmp_order_2,P10003,,Arabidopsis thaliana,type,confirmed,curated,true,false,tests/fixtures/overlap/plantmp_disagreement.csv,order:2,unknown,unknown,overlap_audit_fixture_v0,valid,
+SRC_PLANTMP:979ef09811aeadb6,SRC_PLANTMP,plantmp_order_3,P10004,,Arabidopsis thaliana,type,confirmed,curated,true,false,tests/fixtures/overlap/plantmp_disagreement.csv,order:3,unknown,unknown,overlap_audit_fixture_v0,valid,
