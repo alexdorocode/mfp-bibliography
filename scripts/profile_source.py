@@ -63,6 +63,9 @@ def detect_encoding(file_path: Path) -> str:
     try:
         with file_path.open("rb") as f:
             chunk = f.read(1024)
+        # Check for UTF-8 BOM
+        if chunk.startswith(b'\xef\xbb\xbf'):
+            return "utf-8-sig"
         # Check for non-ASCII bytes
         chunk.decode("ascii")
         return "ascii"
@@ -70,10 +73,19 @@ def detect_encoding(file_path: Path) -> str:
         return "utf-8"
 
 
-def detect_delimiter(file_path: Path) -> str:
+def detect_delimiter(file_path: Path, encoding: str = "ascii") -> str:
     """Detect delimiter from file content."""
-    with file_path.open("r", encoding="ascii") as f:
-        first_line = f.readline()
+    try:
+        with file_path.open("r", encoding=encoding) as f:
+            first_line = f.readline()
+    except (UnicodeDecodeError, LookupError):
+        # Try UTF-8 or UTF-8-SIG if the detected encoding fails
+        try:
+            with file_path.open("r", encoding="utf-8-sig") as f:
+                first_line = f.readline()
+        except UnicodeDecodeError:
+            with file_path.open("r", encoding="utf-8") as f:
+                first_line = f.readline()
     
     # Count tabs and commas in first line
     tab_count = first_line.count("\t")
@@ -172,8 +184,8 @@ def profile_file(file_path: Path, source_id: str = "unknown") -> SourceProfile:
     # Detect encoding
     encoding = detect_encoding(file_path)
     
-    # Detect delimiter
-    delimiter = detect_delimiter(file_path)
+    # Detect delimiter using the detected encoding
+    delimiter = detect_delimiter(file_path, encoding)
     
     # Detect line ending
     line_ending = detect_line_ending(file_path)
@@ -193,10 +205,15 @@ def profile_file(file_path: Path, source_id: str = "unknown") -> SourceProfile:
     else:
         actual_delimiter = delimiter
     
-    # Parse header
+    # Parse header using CSV reader to handle quoted fields
     if all_lines:
         first_line = all_lines[0]
-        header = first_line.rstrip("\r\n").split(actual_delimiter)
+        # Use csv.reader to properly parse the header line with quotes
+        import io
+        header_reader = csv.reader(io.StringIO(first_line), delimiter=actual_delimiter)
+        header = next(header_reader)
+        # Strip whitespace from header names
+        header = [h.strip() for h in header]
     else:
         header = []
     
