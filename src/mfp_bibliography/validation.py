@@ -18,6 +18,8 @@ EXPECTED_PATHS = [
     "docs/project-charter.md",
     "docs/source-catalog.md",
     "docs/source-policy.md",
+    "docs/source-claim-policy.md",
+    "configs/source_claim_policy_v0.1.yaml",
     "docs/data-governance.md",
     "docs/canonical-schema.md",
     "docs/release-policy.md",
@@ -123,6 +125,20 @@ def _check_manifest_bootstrap_state(root: Path) -> CheckResult:
     return CheckResult("manifest_bootstrap_state", True, "Manifest structure is valid.")
 
 
+def _check_raw_directory_hygiene(root: Path) -> CheckResult:
+    raw_root = root / "data" / "raw"
+    offenders = sorted(
+        path.relative_to(root).as_posix() for path in raw_root.rglob(".~lock.*")
+    )
+    if offenders:
+        return CheckResult(
+            "raw_directory_hygiene",
+            False,
+            f"Lock files are not allowed in data/raw: {', '.join(offenders)}",
+        )
+    return CheckResult("raw_directory_hygiene", True, "No lock files present in data/raw.")
+
+
 def _check_schema(root: Path) -> CheckResult:
     schema_path = root / "data" / "curated" / "mfp_source_records.schema.json"
     try:
@@ -138,6 +154,7 @@ def validate_repository(root: str | Path) -> dict[str, Any]:
     checks = [
         _check_paths(root_path),
         _check_raw_source_directories(root_path),
+        _check_raw_directory_hygiene(root_path),
         _check_manifest_header(root_path),
         _check_manifest_bootstrap_state(root_path),
         _check_schema(root_path),

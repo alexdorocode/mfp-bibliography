@@ -1,0 +1,4 @@
+order,"protein name, gene",uniport_id,canonical_function_bp,canonical_function_mf,moonlighting_function_bp,moonlighting_function_mf,go_canonical_bp,go_canonical_mf,go_moonlighting_bp,go_moonlighting_mf,plant_species,pubmed_id,type
+1,"Protein A, GENE1",P12345,BP function,MF activity,BP moonlight,MF moonlight,GO:0000001,GO:0000002,GO:0000003,GO:0000004,Arabidopsis thaliana,12345678,confirmed
+2,"Protein B, GENE2",Q67890,BP function 2,MF activity 2,BP moonlight 2,MF moonlight 2,GO:0000005,GO:0000006,GO:0000007,GO:0000008,Arabidopsis thaliana,87654321,likely
+3,"Protein C, GENE3",A1B2C3,BP function 3,MF activity 3,BP moonlight 3,MF moonlight 3,GO:0000009,GO:0000010,GO:0000011,GO:0000012,Arabidopsis thaliana,11223344,predicted

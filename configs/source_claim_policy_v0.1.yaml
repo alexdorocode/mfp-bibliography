@@ -1,0 +1,54 @@
+# MFPB_0_7_SOURCE_CLAIM_POLICY_V0
+# Declarative mapping of source-native claim labels to repository operational statuses.
+# This policy is descriptive only: it does not create claim tables, canonical records,
+# adapters, or derived effective statuses.
+
+policy_id: MFPB_0_7_SOURCE_CLAIM_POLICY_V0
+version: "0.1"
+
+status_vocabulary:
+  - curated
+  - predicted
+  - excluded_likely
+  - unresolved
+
+# Status applied when a source, field, or value has no explicit mapping.
+default_status: unresolved
+
+source_mappings:
+  SRC_MOONDB:
+    field: type
+    value_map:
+      Curated: curated
+      Predicted: predicted
+  SRC_PLANTMP:
+    field: type
+    value_map:
+      confirmed: curated
+      likely: excluded_likely
+      predicted: predicted
+
+# Sources with no observed status field; all their claims are unresolved.
+unmapped_sources:
+  - SRC_MULTIFACETEDPROTDB
+
+# Fields that must never be mapped: structural metadata, not claim evidence.
+excluded_fields:
+  SRC_MULTITASKPROTDB_II:
+    - Models
+
+# Derived effective-status precedence per UniProt ID (future use only).
+# Applies only to a future derived effective status; every source claim
+# remains preserved individually.
+precedence:
+  - curated
+  - predicted
+  - excluded_likely
+  - unresolved
+
+rules:
+  - "curated: source-curated or confirmed claim; future MF-positive candidate."
+  - "predicted: source prediction; exploratory only; never NMF/control."
+  - "excluded_likely: likely claim; excluded operationally but retained audibly."
+  - "No claim is NMF by implication; absence of a claim never implies NMF."
+  - "Precedence resolves only the derived effective status; all source claims remain preserved."

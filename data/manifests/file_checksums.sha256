@@ -3,3 +3,10 @@
 # Do not fabricate checksums; populate only from actual local artifacts.
 c503101da091ba457f9480f094b67f939fe3b0ac9310b3f7e5d7868b21532d55  data/raw/moondb/all_emf_and_curated.tsv
 23a68fe6e5d6e8fa25af67786cdd64836e3b28d83316174e1b9f70e638ffabb4  data/raw/multifacetedprotdb/MultifacetedProtDB_data.txt
+97ae53eccbbd3a9c2a1e9b3247db8bcc0b66de929bf4471b37187de5e3a494a9  data/raw/plantmp/PlantMP_all.csv
+84871fd9ae5c5785adc14047d8a318b8b09aeadbfb12d9a7dd5d66a062cf6482  data/raw/multitaskprotdb-ii/proteins.csv
+529e838d95715ba9b8eb1feb4277842a1a1dffbb73a66ea1967ce0f087c04f7d  data/raw/plantmp/PlantMP MySQL-all-147.csv
+d060c2a87180439d3f8876265be339414894988b2785ac01d2c45d84e2f39b6a  data/raw/plantmp/PlantMP MySQL-confirmed .csv
+095e37c54c99a898a2c19f9959e3cb30b48f5c5f4e56efafdf09addf49e0f4d9  data/raw/plantmp/PlantMP MySQL-likely.csv
+544df67fbdefab958d84e3469799939dc7ea5b654a4c30a841e341a6b2e54611  data/raw/plantmp/PlantMP MySQL.xlsx
+4d11330b4298158bb75effb308e7700c889fc69baa7b562ae73b6046f9d99b1f  data/raw/plantmp/PlantMP-predicted.csv

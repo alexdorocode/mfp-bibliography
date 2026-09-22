@@ -173,6 +173,118 @@ class TestProfileSource:
         assert profile["columns"][0]["nullable"] is True
         assert any("Blank/empty values detected" in anomaly for anomaly in profile["parsing_anomalies"])
 
+    def test_profile_multitaskprotdb_ii_fixture(self, tmp_path) -> None:
+        """Test profiling the MultitaskProtDB-II sample fixture."""
+        fixture = REPO_ROOT / "data" / "fixtures" / "multitaskprotdb-ii" / "sample.csv"
+        assert fixture.exists()
+        
+        import subprocess
+        result = subprocess.run(
+            ["python3", "scripts/profile_source.py", "--source-id", "SRC_MULTITASKPROTDB_II", str(fixture)],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        
+        assert result.returncode == 0
+        profile = json.loads(result.stdout)
+        
+        # Basic assertions
+        assert profile["ok"] is True
+        assert profile["source_id"] == "SRC_MULTITASKPROTDB_II"
+        assert profile["filename"] == "sample.csv"
+        assert profile["data_rows"] == 2
+        assert profile["delimiter"] == ","
+        assert profile["encoding"] in ("ascii", "utf-8", "utf-8-sig")
+        
+        # Column assertions
+        assert len(profile["columns"]) == 15
+        
+        # Check column names
+        col_names = [c["name"] for c in profile["columns"]]
+        assert "UniProt" in col_names
+        assert "Protein_Name" in col_names
+        assert "Models" in col_names
+        
+        # Check Models column values
+        models_col = next(c for c in profile["columns"] if c["name"] == "Models")
+        assert models_col["value_counts"]["Phyre"] == 1
+        assert models_col["value_counts"]["ITasser"] == 1
+        assert models_col["cardinality"] == 2
+
+    def test_profile_plantmp_fixture(self, tmp_path) -> None:
+        """Test profiling the PlantMP sample fixture."""
+        fixture = REPO_ROOT / "data" / "fixtures" / "plantmp" / "sample.csv"
+        assert fixture.exists()
+        
+        import subprocess
+        result = subprocess.run(
+            ["python3", "scripts/profile_source.py", "--source-id", "SRC_PLANTMP", str(fixture)],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        
+        assert result.returncode == 0
+        profile = json.loads(result.stdout)
+        
+        # Basic assertions
+        assert profile["ok"] is True
+        assert profile["source_id"] == "SRC_PLANTMP"
+        assert profile["filename"] == "sample.csv"
+        assert profile["data_rows"] == 3
+        assert profile["delimiter"] == ","
+        assert profile["encoding"] in ("ascii", "utf-8")
+        assert profile["line_ending"] == "LF"
+        
+        # Column assertions
+        assert len(profile["columns"]) == 14
+        
+        # Check column names
+        col_names = [c["name"] for c in profile["columns"]]
+        assert "order" in col_names
+        assert "protein name, gene" in col_names
+        assert "uniport_id" in col_names
+        assert "type" in col_names
+        
+        # Check type column values
+        type_col = next(c for c in profile["columns"] if c["name"] == "type")
+        assert type_col["value_counts"]["confirmed"] == 1
+        assert type_col["value_counts"]["likely"] == 1
+        assert type_col["value_counts"]["predicted"] == 1
+        assert type_col["cardinality"] == 3
+
+    def test_profile_utf8_csv_with_quotes(self, tmp_path) -> None:
+        """Test profiling a UTF-8 CSV file with quoted fields containing commas."""
+        csv_file = tmp_path / "quoted_csv.txt"
+        with csv_file.open("w", encoding="utf-8") as f:
+            f.write('order,"protein name, gene",uniport_id,type\n')
+            f.write('1,"Protein A, GENE1",P12345,confirmed\n')
+            f.write('2,"Protein B, GENE2",Q67890,likely\n')
+        
+        import subprocess
+        result = subprocess.run(
+            ["python3", "scripts/profile_source.py", "--source-id", "TEST", str(csv_file)],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        
+        profile = json.loads(result.stdout)
+        assert profile["ok"] is True
+        assert profile["encoding"] in ("ascii", "utf-8")
+        assert profile["delimiter"] == ","
+        assert profile["data_rows"] == 2
+        
+        # Check that quoted field was parsed correctly
+        col_names = [c["name"] for c in profile["columns"]]
+        assert "protein name, gene" in col_names
+        
+        # Check sample values
+        protein_col = next(c for c in profile["columns"] if c["name"] == "protein name, gene")
+        assert "Protein A, GENE1" in protein_col["sample_values"]
+        assert "Protein B, GENE2" in protein_col["sample_values"]
+
 
 class TestSourceManifest:
     """Tests for source manifest updates."""
@@ -217,16 +329,46 @@ class TestSourceManifest:
         # Check MultifacetedProtDB entry exists
         mfp_line = next((line for line in lines if "SRC_MULTIFACETEDPROTDB" in line), None)
         assert mfp_line is not None
+
+    def test_multitaskprotdb_ii_entry_present(self) -> None:
+        """Verify MultitaskProtDB-II entry is in manifest."""
+        manifest = REPO_ROOT / "data" / "manifests" / "source_manifest.csv"
+        content = manifest.read_text(encoding="utf-8")
+        lines = content.splitlines()
+        
+        # Check MultitaskProtDB-II entry exists
+        mtp_line = next((line for line in lines if "SRC_MULTITASKPROTDB_II" in line), None)
+        assert mtp_line is not None
         
         # Parse the line
-        parts = mfp_line.split(",")
-        assert parts[0] == "SRC_MULTIFACETEDPROTDB"
-        assert parts[1] == "MultifacetedProtDB"
+        parts = mtp_line.split(",")
+        assert parts[0] == "SRC_MULTITASKPROTDB_II"
+        assert parts[1] == "MultitaskProtDB-II"
         assert parts[2] == "imported"
-        assert parts[6] == "data/raw/multifacetedprotdb/MultifacetedProtDB_data.txt"
-        assert parts[8] == "23a68fe6e5d6e8fa25af67786cdd64836e3b28d83316174e1b9f70e638ffabb4"
-        assert parts[9] == "7724"
-        assert parts[10] == "1"
+        assert parts[6] == "data/raw/multitaskprotdb-ii/proteins.csv"
+        assert parts[8] == "84871fd9ae5c5785adc14047d8a318b8b09aeadbfb12d9a7dd5d66a062cf6482"
+        assert parts[9] == "1324061"
+        assert parts[10] == "694"
+
+    def test_plantmp_entry_present(self) -> None:
+        """Verify PlantMP entry is in manifest."""
+        manifest = REPO_ROOT / "data" / "manifests" / "source_manifest.csv"
+        content = manifest.read_text(encoding="utf-8")
+        lines = content.splitlines()
+        
+        # Check PlantMP entry exists
+        plantmp_line = next((line for line in lines if "SRC_PLANTMP" in line), None)
+        assert plantmp_line is not None
+        
+        # Parse the line
+        parts = plantmp_line.split(",")
+        assert parts[0] == "SRC_PLANTMP"
+        assert parts[1] == "PlantMP"
+        assert parts[2] == "imported"
+        assert parts[6] == "data/raw/plantmp/PlantMP_all.csv"
+        assert parts[8] == "97ae53eccbbd3a9c2a1e9b3247db8bcc0b66de929bf4471b37187de5e3a494a9"
+        assert parts[9] == "53366"
+        assert parts[10] == "112"
 
 
 class TestFileChecksums:
@@ -251,6 +393,26 @@ class TestFileChecksums:
         expected_checksum = "23a68fe6e5d6e8fa25af67786cdd64836e3b28d83316174e1b9f70e638ffabb4"
         assert expected_checksum in content
         assert "data/raw/multifacetedprotdb/MultifacetedProtDB_data.txt" in content
+
+    def test_plantmp_checksum_present(self) -> None:
+        """Verify PlantMP checksum is in checksums file."""
+        checksums = REPO_ROOT / "data" / "manifests" / "file_checksums.sha256"
+        content = checksums.read_text(encoding="utf-8")
+        
+        # Check for PlantMP checksum
+        expected_checksum = "97ae53eccbbd3a9c2a1e9b3247db8bcc0b66de929bf4471b37187de5e3a494a9"
+        assert expected_checksum in content
+        assert "data/raw/plantmp/PlantMP_all.csv" in content
+
+    def test_multitaskprotdb_ii_checksum_present(self) -> None:
+        """Verify MultitaskProtDB-II checksum is in checksums file."""
+        checksums = REPO_ROOT / "data" / "manifests" / "file_checksums.sha256"
+        content = checksums.read_text(encoding="utf-8")
+        
+        # Check for MultitaskProtDB-II checksum
+        expected_checksum = "84871fd9ae5c5785adc14047d8a318b8b09aeadbfb12d9a7dd5d66a062cf6482"
+        assert expected_checksum in content
+        assert "data/raw/multitaskprotdb-ii/proteins.csv" in content
 
 
 class TestSourceProfileDocument:
@@ -289,6 +451,41 @@ class TestSourceProfileDocument:
         assert "UniProtKB accession" in content
         assert "Single-line" in content
 
+    def test_multitaskprotdb_ii_profile_exists(self) -> None:
+        """Verify MultitaskProtDB-II profile document exists."""
+        profile = REPO_ROOT / "docs" / "source-profiles" / "multitaskprotdb-ii.md"
+        assert profile.exists()
+        
+        content = profile.read_text(encoding="utf-8")
+        
+        # Check for key facts
+        assert "SRC_MULTITASKPROTDB_II" in content
+        assert "proteins.csv" in content
+        assert "1324061" in content
+        assert "84871fd9ae5c5785adc14047d8a318b8b09aeadbfb12d9a7dd5d66a062cf6482" in content
+        assert "694" in content
+        assert "UniProt" in content
+        assert "Phyre" in content
+        assert "ITasser" in content
+
+    def test_plantmp_profile_exists(self) -> None:
+        """Verify PlantMP profile document exists."""
+        profile = REPO_ROOT / "docs" / "source-profiles" / "plantmp.md"
+        assert profile.exists()
+        
+        content = profile.read_text(encoding="utf-8")
+        
+        # Check for key facts
+        assert "SRC_PLANTMP" in content
+        assert "PlantMP_all.csv" in content
+        assert "53366" in content
+        assert "97ae53eccbbd3a9c2a1e9b3247db8bcc0b66de929bf4471b37187de5e3a494a9" in content
+        assert "112" in content
+        assert "confirmed" in content
+        assert "likely" in content
+        assert "predicted" in content
+        assert "Source-native category" in content
+
 
 class TestRawArtifactImmutability:
     """Tests to verify raw artifact remains unchanged."""
@@ -325,6 +522,73 @@ class TestRawArtifactImmutability:
         assert not content.endswith(b"\n")
         # Verify it starts with the first accession
         assert content.startswith(b"P36873,")
+
+    def test_plantmp_artifact_checksum_matches(self) -> None:
+        """Verify the PlantMP artifact checksum still matches."""
+        import hashlib
+        
+        artifact = REPO_ROOT / "data" / "raw" / "plantmp" / "PlantMP_all.csv"
+        
+        sha256 = hashlib.sha256()
+        with artifact.open("rb") as f:
+            while chunk := f.read(8192):
+                sha256.update(chunk)
+        
+        expected = "97ae53eccbbd3a9c2a1e9b3247db8bcc0b66de929bf4471b37187de5e3a494a9"
+        assert sha256.hexdigest() == expected
+
+    def test_plantmp_artifact_size_unchanged(self) -> None:
+        """Verify the PlantMP artifact size is unchanged."""
+        artifact = REPO_ROOT / "data" / "raw" / "plantmp" / "PlantMP_all.csv"
+        
+        assert artifact.stat().st_size == 53366
+
+    def test_plantmp_artifact_content_unchanged(self) -> None:
+        """Verify the PlantMP artifact content is unchanged."""
+        artifact = REPO_ROOT / "data" / "raw" / "plantmp" / "PlantMP_all.csv"
+        
+        with artifact.open("rb") as f:
+            content = f.read()
+        
+        # Verify header and first data row
+        assert b'order,"protein name, gene",uniport_id' in content
+        assert b'confirmed' in content
+        assert b'likely' in content
+        assert b'predicted' in content
+        assert content.endswith(b"\n")
+
+    def test_multitaskprotdb_ii_artifact_checksum_matches(self) -> None:
+        """Verify the MultitaskProtDB-II artifact checksum still matches."""
+        import hashlib
+        
+        artifact = REPO_ROOT / "data" / "raw" / "multitaskprotdb-ii" / "proteins.csv"
+        
+        sha256 = hashlib.sha256()
+        with artifact.open("rb") as f:
+            while chunk := f.read(8192):
+                sha256.update(chunk)
+        
+        expected = "84871fd9ae5c5785adc14047d8a318b8b09aeadbfb12d9a7dd5d66a062cf6482"
+        assert sha256.hexdigest() == expected
+
+    def test_multitaskprotdb_ii_artifact_size_unchanged(self) -> None:
+        """Verify the MultitaskProtDB-II artifact size is unchanged."""
+        artifact = REPO_ROOT / "data" / "raw" / "multitaskprotdb-ii" / "proteins.csv"
+        
+        assert artifact.stat().st_size == 1324061
+
+    def test_multitaskprotdb_ii_artifact_content_unchanged(self) -> None:
+        """Verify the MultitaskProtDB-II artifact content is unchanged."""
+        artifact = REPO_ROOT / "data" / "raw" / "multitaskprotdb-ii" / "proteins.csv"
+        
+        with artifact.open("rb") as f:
+            content = f.read()
+        
+        # Verify header
+        assert b'"UniProt","Protein_Name"' in content
+        assert b'"Models","Reference"' in content
+        assert b'Phyre' in content
+        assert b'ITasser' in content
 
     def test_moondb_artifact_checksum_matches(self) -> None:
         """Verify the MoonDB artifact checksum still matches."""

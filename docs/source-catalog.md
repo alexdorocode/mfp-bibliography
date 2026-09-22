@@ -62,32 +62,42 @@ Status: all records below are **to_be_verified** templates.
 
 ## SRC_PLANTMP
 - Source ID: `SRC_PLANTMP`
-- Formal name: `PlantMP` (to_be_verified)
-- Source status: `to_be_verified`
-- Dataset availability in this repository: `to_be_imported`
+- Formal name: `PlantMP`
+- Source status: `imported`
+- Dataset availability in this repository: `present`
 - Intended acquisition mode: `local_import`
-- Expected unit of record: `to_be_verified`
-- Expected identifiers: `to_be_verified`
-- Expected evidence character: `to_be_verified`
+- Unit of record: `protein`
+- Identifiers: `uniport_id` (UniProt accession)
+- Evidence character: `confirmed`, `likely`, `predicted`
 - Source version: `unknown`
 - Retrieval date: `unknown`
-- Original artifact location: `to_be_verified`
+- Original artifact location: `unknown`
+- Local artifact path: `data/raw/plantmp/PlantMP_all.csv`
+- Artifact checksum (SHA-256): `97ae53eccbbd3a9c2a1e9b3247db8bcc0b66de929bf4471b37187de5e3a494a9`
+- File size: `53366` bytes
+- Row count: `112` data rows
 - License / terms: `to_be_verified`
 - Primary publication: `to_be_verified`
-- Notes and verification tasks: import existing local artifact into `data/raw/plantmp/`.
+- Notes and verification tasks: CSV format with UTF-8 encoding. Contains 15 columns including `type` with values: confirmed (62), likely (12), predicted (38). Column "protein name, gene" contains quoted commas. All rows have data for order, protein name/gene, and uniport_id. File has LF line endings with trailing newline.
+- Benchmark role: `unassigned`
 
 ## SRC_MULTITASKPROTDB_II
 - Source ID: `SRC_MULTITASKPROTDB_II`
-- Formal name: `MultitaskProtDB-II` (to_be_verified)
-- Source status: `to_be_verified`
-- Dataset availability in this repository: `to_be_imported`
+- Formal name: `MultitaskProtDB-II`
+- Source status: `imported`
+- Dataset availability in this repository: `present`
 - Intended acquisition mode: `local_import`
-- Expected unit of record: `to_be_verified`
-- Expected identifiers: `to_be_verified`
-- Expected evidence character: `to_be_verified`
+- Unit of record: `protein`
+- Identifiers: `UniProt` (UniProt accession)
+- Evidence character: `to_be_verified`
 - Source version: `unknown`
 - Retrieval date: `unknown`
-- Original artifact location: `to_be_verified`
+- Original artifact location: `unknown`
+- Local artifact path: `data/raw/multitaskprotdb-ii/proteins.csv`
+- Artifact checksum (SHA-256): `84871fd9ae5c5785adc14047d8a318b8b09aeadbfb12d9a7dd5d66a062cf6482`
+- File size: `1324061` bytes
+- Row count: `694` data rows
 - License / terms: `to_be_verified`
 - Primary publication: `to_be_verified`
-- Notes and verification tasks: import existing local artifact into `data/raw/multitaskprotdb-ii/`.
+- Notes and verification tasks: CSV format with UTF-8-SIG encoding (BOM present). Contains 15 columns. Uses CRLF line endings without trailing newline. No source-native category column identified. Models column has Phyre (690) and ITasser (4) values.
+- Benchmark role: `unassigned`
