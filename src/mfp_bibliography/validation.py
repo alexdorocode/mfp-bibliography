@@ -20,6 +20,7 @@ EXPECTED_PATHS = [
     "docs/source-policy.md",
     "docs/source-claim-policy.md",
     "configs/source_claim_policy_v0.1.yaml",
+    "docs/source-claims-contract.md",
     "docs/data-governance.md",
     "docs/canonical-schema.md",
     "docs/release-policy.md",
@@ -31,6 +32,7 @@ EXPECTED_PATHS = [
     "data/raw/README.md",
     "data/manifests/source_manifest.csv",
     "data/curated/mfp_source_records.schema.json",
+    "data/curated/source_claims.schema.json",
     "scripts/validate_repository.py",
     "src/mfp_bibliography/schemas.py",
     "tests/test_schema.py",
@@ -148,6 +150,17 @@ def _check_schema(root: Path) -> CheckResult:
     return CheckResult("json_schema", True, "JSON Schema is valid Draft 2020-12.")
 
 
+def _check_source_claims_schema(root: Path) -> CheckResult:
+    schema_path = root / "data" / "curated" / "source_claims.schema.json"
+    try:
+        build_validator(schema_path)
+    except Exception as exc:  # pragma: no cover
+        return CheckResult("source_claims_json_schema", False, f"Schema validation failed: {exc}")
+    return CheckResult(
+        "source_claims_json_schema", True, "Source claims JSON Schema is valid Draft 2020-12."
+    )
+
+
 def validate_repository(root: str | Path) -> dict[str, Any]:
     """Validate scaffold structure, manifest header, and schema validity."""
     root_path = Path(root).resolve()
@@ -158,6 +171,7 @@ def validate_repository(root: str | Path) -> dict[str, Any]:
         _check_manifest_header(root_path),
         _check_manifest_bootstrap_state(root_path),
         _check_schema(root_path),
+        _check_source_claims_schema(root_path),
     ]
     return {
         "ok": all(check.ok for check in checks),

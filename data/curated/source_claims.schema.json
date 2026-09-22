@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/source_claims.schema.json",
+  "title": "MFP Source Claim",
+  "description": "Normalized per-source claim model for MFPB_0_8_SOURCE_CLAIMS_CONTRACT_V0. One claim per source-local field observation. Duplicates and source-local rows are preserved; no cross-source merging is performed and no derived effective status is stored.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claim_id",
+    "source_id",
+    "source_record_id",
+    "uniprot_id",
+    "protein_name_raw",
+    "organism_raw",
+    "raw_claim_field",
+    "raw_claim_value",
+    "operational_status",
+    "primary_target_eligible",
+    "control_eligible",
+    "raw_file_path",
+    "raw_row_or_url",
+    "source_version",
+    "retrieved_at",
+    "transformation_id",
+    "record_status",
+    "notes"
+  ],
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Deterministic claim identifier derived from source identity and locator."
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical source identifier from source catalog."
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-local record identifier; may be 'unknown' if unresolved."
+    },
+    "uniprot_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "UniProt accession string as provided by the source. Strict accession pattern validation is deferred."
+    },
+    "protein_name_raw": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Protein name text exactly as present in the source artifact."
+    },
+    "organism_raw": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Organism text exactly as present in the source artifact."
+    },
+    "raw_claim_field": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-native field name carrying the claim. Required even for unresolved claims."
+    },
+    "raw_claim_value": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-native value observed in the claim field. Required even for unresolved claims; use an explicit placeholder such as 'unknown' when the source value is absent."
+    },
+    "operational_status": {
+      "type": "string",
+      "enum": ["curated", "predicted", "excluded_likely", "unresolved"],
+      "description": "Operational status resolved per source claim policy."
+    },
+    "primary_target_eligible": {
+      "type": "boolean",
+      "description": "Primary-target benchmark eligibility. May only be true when operational_status is 'curated'."
+    },
+    "control_eligible": {
+      "type": "boolean",
+      "const": false,
+      "description": "Control benchmark eligibility. Always false in this contract; no claim is NMF/control by implication."
+    },
+    "raw_file_path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to raw source artifact in repository."
+    },
+    "raw_row_or_url": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw row locator or source URL reference."
+    },
+    "source_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source version marker or explicit placeholder such as 'unknown'."
+    },
+    "retrieved_at": {
+      "description": "Retrieval timestamp as ISO 8601 date-time string, or explicit placeholder 'unknown'.",
+      "oneOf": [
+        {
+          "const": "unknown"
+        },
+        {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+        }
+      ]
+    },
+    "transformation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of transformation logic that produced the claim."
+    },
+    "record_status": {
+      "type": "string",
+      "enum": ["valid", "incomplete", "ambiguous", "excluded", "duplicate_candidate"],
+      "description": "Curation/validation status of the claim."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Optional curator notes."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "primary_target_eligible": {
+            "const": true
+          }
+        },
+        "required": ["primary_target_eligible"]
+      },
+      "then": {
+        "properties": {
+          "operational_status": {
+            "const": "curated"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operational_status": {
+            "const": "curated"
+          }
+        },
+        "required": ["operational_status"]
+      },
+      "then": {
+        "properties": {
+          "primary_target_eligible": {
+            "const": true
+          }
+        }
+      }
+    }
+  ]
+}
