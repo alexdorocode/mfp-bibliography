@@ -6,7 +6,9 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from mfp_bibliography.moondb_claims import load_moondb_provenance, read_claims_csv
 from mfp_bibliography.schemas import build_validator
+from mfp_bibliography.source_claims import validate_claim
 
 EXPECTED_PATHS = [
     "README.md",
@@ -33,8 +35,12 @@ EXPECTED_PATHS = [
     "data/manifests/source_manifest.csv",
     "data/curated/mfp_source_records.schema.json",
     "data/curated/source_claims.schema.json",
+    "data/interim/source_claims_moondb.csv",
+    "data/interim/source_claims_moondb_validation_report.json",
     "scripts/validate_repository.py",
+    "scripts/build_source_claims_moondb.py",
     "src/mfp_bibliography/schemas.py",
+    "src/mfp_bibliography/moondb_claims.py",
     "tests/test_schema.py",
     ".github/workflows/ci.yml",
 ]
@@ -161,6 +167,51 @@ def _check_source_claims_schema(root: Path) -> CheckResult:
     )
 
 
+def _check_moondb_claims_artifact(root: Path) -> CheckResult:
+    claims_path = root / "data" / "interim" / "source_claims_moondb.csv"
+    if not claims_path.exists():
+        return CheckResult(
+            "moondb_claims_artifact",
+            False,
+            "data/interim/source_claims_moondb.csv is missing.",
+        )
+    try:
+        provenance = load_moondb_provenance(root)
+        claims = read_claims_csv(claims_path)
+    except Exception as exc:  # pragma: no cover
+        return CheckResult(
+            "moondb_claims_artifact", False, f"MoonDB claims artifact check failed: {exc}"
+        )
+
+    problems: list[str] = []
+    invalid_rows: list[str] = []
+    for index, claim in enumerate(claims, start=2):
+        try:
+            validate_claim(claim)
+        except Exception:
+            invalid_rows.append(str(index))
+    if invalid_rows:
+        problems.append(f"schema-invalid CSV rows: {', '.join(invalid_rows[:5])}")
+    if len(claims) != provenance.raw_row_count:
+        problems.append(
+            f"claim count {len(claims)} does not match manifest row_count_raw "
+            f"{provenance.raw_row_count}"
+        )
+    claim_ids = [claim["claim_id"] for claim in claims]
+    if len(set(claim_ids)) != len(claim_ids):
+        problems.append("duplicate claim_id values present")
+    if any(claim["control_eligible"] for claim in claims):
+        problems.append("control_eligible=true found")
+
+    if problems:
+        return CheckResult("moondb_claims_artifact", False, "; ".join(problems))
+    return CheckResult(
+        "moondb_claims_artifact",
+        True,
+        f"MoonDB claims artifact reconciles: {len(claims)} claims, all valid.",
+    )
+
+
 def validate_repository(root: str | Path) -> dict[str, Any]:
     """Validate scaffold structure, manifest header, and schema validity."""
     root_path = Path(root).resolve()
@@ -172,6 +223,7 @@ def validate_repository(root: str | Path) -> dict[str, Any]:
         _check_manifest_bootstrap_state(root_path),
         _check_schema(root_path),
         _check_source_claims_schema(root_path),
+        _check_moondb_claims_artifact(root_path),
     ]
     return {
         "ok": all(check.ok for check in checks),
