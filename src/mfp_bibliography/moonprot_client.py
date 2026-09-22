@@ -1,0 +1,531 @@
+"""MoonProt smoke-acquisition client with injected transport (MPIDs 1, 2, 3 only).
+
+Implements the contract in docs/acquisition-protocols/moonprot.md and
+docs/acquisition-protocols/moonprot-artifact-index.md:
+
+- only MPIDs 1, 2, 3 may be requested; anything else is rejected before any
+  transport call;
+- sequential execution with a minimum delay between any two requests;
+- a configurable honest User-Agent and a 15-second default timeout;
+- at most one retry per MPID with a minimum 30-second backoff;
+- the robots.txt gate is checked through the same transport before every
+  protein request;
+- raw response bytes are persisted verbatim to
+  ``data/raw/moonprot/mpid_{id}.html`` only after the full persistence gate
+  passes: robots/terms allow, successful HTTP status, no unexpected redirect,
+  acceptable HTML content type, no CAPTCHA/block/JS-challenge marker, and a
+  parser success with the expected MPID;
+- per-file provenance is appended to ``data/raw/moonprot/artifact_index.csv``
+  and ``data/manifests/file_checksums.sha256``; extracted results go to
+  ``data/interim/moonprot_smoke_results.csv``;
+- failures are recorded in ``data/interim/moonprot_smoke_error_log.csv`` and
+  execution stops immediately on any protocol stop condition.
+
+The client never constructs a real transport implicitly: a transport must be
+injected. ``UrllibTransport`` exists for the future approved execution only;
+it is never used by tests or by the CLI dry-run mode.
+"""
+
+from __future__ import annotations
+
+import csv
+import hashlib
+import time
+import urllib.error
+import urllib.request
+import urllib.robotparser
+from collections.abc import Callable, Iterable, Mapping
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+from mfp_bibliography.moonprot_parser import (
+    MOONPROT_URL_PATTERN,
+    MoonProtParseError,
+    parse_moonprot_html,
+)
+
+CONTRACT_ID = "MFPB_0_12_MOONPROT_SMOKE_CLIENT"
+ALLOWED_MPIDS = (1, 2, 3)
+MOONPROT_HOST = "http://www.moonlightingproteins.org"
+ROBOTS_URL = f"{MOONPROT_HOST}/robots.txt"
+REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
+BLOCK_MARKERS = (
+    "captcha",
+    "access denied",
+    "permission denied",
+    "blocked",
+    "cloudflare",
+    "ddos protection",
+    "javascript challenge",
+    "verify you are human",
+)
+REQUIRED_HTML_CONTENT_TYPE = "text/html"
+
+INDEX_HEADER = (
+    "mpid",
+    "url",
+    "retrieved_at",
+    "http_status",
+    "content_type",
+    "raw_file_path",
+    "sha256",
+    "file_size_bytes",
+    "parser_status",
+    "missing_fields",
+)
+ERROR_LOG_HEADER = (
+    "mpid",
+    "url",
+    "error_type",
+    "detail",
+    "http_status",
+    "attempted_at",
+)
+SMOKE_RESULT_HEADER = ("mpid", "uniprot_id", "protein_name")
+
+DEFAULT_TIMEOUT_SECONDS = 15.0
+DEFAULT_DELAY_SECONDS = 10.0
+DEFAULT_MAX_RETRIES = 1
+DEFAULT_RETRY_BACKOFF_SECONDS = 30.0
+
+
+class TransportError(Exception):
+    """The injected transport failed to deliver a response (timeout, I/O)."""
+
+
+@dataclass(frozen=True)
+class TransportResponse:
+    """One HTTP response as returned by a transport (no redirect following)."""
+
+    status_code: int
+    headers: Mapping[str, str]
+    body: bytes
+    final_url: str | None = None
+
+
+class Transport:
+    """Minimal transport interface; real or fake implementations are injected."""
+
+    def get(
+        self, url: str, *, user_agent: str, timeout_seconds: float
+    ) -> TransportResponse:
+        raise NotImplementedError
+
+
+@dataclass(frozen=True)
+class MoonProtSmokeConfig:
+    """Configuration for one smoke run; paths are resolved under ``root``."""
+
+    user_agent: str
+    root: Path
+    timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS
+    delay_seconds: float = DEFAULT_DELAY_SECONDS
+    max_retries: int = DEFAULT_MAX_RETRIES
+    retry_backoff_seconds: float = DEFAULT_RETRY_BACKOFF_SECONDS
+
+    def __post_init__(self) -> None:
+        if not self.user_agent.strip():
+            raise ValueError("user_agent must be a non-empty, honest identifier")
+        if self.timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be positive")
+        if self.delay_seconds < 0:
+            raise ValueError("delay_seconds must be non-negative")
+        if self.max_retries < 0:
+            raise ValueError("max_retries must be non-negative")
+        if self.retry_backoff_seconds < 0:
+            raise ValueError("retry_backoff_seconds must be non-negative")
+
+    @property
+    def raw_dir(self) -> Path:
+        return self.root / "data" / "raw" / "moonprot"
+
+    def raw_path(self, mpid: int) -> Path:
+        return self.raw_dir / f"mpid_{mpid}.html"
+
+    @property
+    def artifact_index_path(self) -> Path:
+        return self.raw_dir / "artifact_index.csv"
+
+    @property
+    def checksums_path(self) -> Path:
+        return self.root / "data" / "manifests" / "file_checksums.sha256"
+
+    @property
+    def smoke_result_path(self) -> Path:
+        return self.root / "data" / "interim" / "moonprot_smoke_results.csv"
+
+    @property
+    def error_log_path(self) -> Path:
+        return self.root / "data" / "interim" / "moonprot_smoke_error_log.csv"
+
+
+@dataclass(frozen=True)
+class SmokeMpidOutcome:
+    mpid: int
+    status: str  # "acquired", "stopped", "skipped"
+    error_type: str | None = None
+    detail: str | None = None
+    http_status: int | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "mpid": self.mpid,
+            "status": self.status,
+            "error_type": self.error_type,
+            "detail": self.detail,
+            "http_status": self.http_status,
+        }
+
+
+@dataclass(frozen=True)
+class SmokeRunReport:
+    requested: tuple[int, ...]
+    outcomes: tuple[SmokeMpidOutcome, ...] = field(default_factory=tuple)
+    stopped: bool = False
+    stop_reason: str | None = None
+
+    @property
+    def acquired_mpids(self) -> tuple[int, ...]:
+        return tuple(outcome.mpid for outcome in self.outcomes if outcome.status == "acquired")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "requested": list(self.requested),
+            "outcomes": [outcome.to_dict() for outcome in self.outcomes],
+            "stopped": self.stopped,
+            "stop_reason": self.stop_reason,
+            "acquired_mpids": list(self.acquired_mpids),
+        }
+
+
+class _GateStop(Exception):
+    """Internal: a protocol stop condition was reached for one MPID."""
+
+    def __init__(self, error_type: str, detail: str, http_status: int | None = None) -> None:
+        super().__init__(detail)
+        self.error_type = error_type
+        self.detail = detail
+        self.http_status = http_status
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def protein_url(mpid: int) -> str:
+    return MOONPROT_URL_PATTERN.format(id=mpid)
+
+
+class MoonProtSmokeClient:
+    """Sequential, transport-injected smoke client for MPIDs 1, 2, 3."""
+
+    def __init__(
+        self,
+        config: MoonProtSmokeConfig,
+        transport: Transport,
+        *,
+        sleeper: Callable[[float], None] = time.sleep,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
+        self._config = config
+        self._transport = transport
+        self._sleeper = sleeper
+        self._clock = clock
+        self._last_request_at: float | None = None
+
+    # -- public API ---------------------------------------------------------
+
+    def run(self, mpids: Iterable[int | str]) -> SmokeRunReport:
+        """Acquire the given MPIDs sequentially, stopping on any stop condition.
+
+        Non-integer MPID values raise ``ValueError``. Integer MPIDs outside
+        ``{1, 2, 3}`` are rejected before any transport call, recorded in the
+        error log, and stop the run.
+        """
+        requested = tuple(int(mpid) for mpid in mpids)
+        out_of_scope = [mpid for mpid in requested if mpid not in ALLOWED_MPIDS]
+        if out_of_scope:
+            for mpid in out_of_scope:
+                self._log_error(
+                    mpid,
+                    protein_url(mpid),
+                    "mpid_out_of_scope",
+                    f"MPID {mpid} is outside the approved scope {{1, 2, 3}}",
+                    None,
+                )
+            return SmokeRunReport(
+                requested=requested,
+                outcomes=tuple(
+                    SmokeMpidOutcome(
+                        mpid,
+                        "stopped" if mpid == out_of_scope[0] else "skipped",
+                        error_type="mpid_out_of_scope" if mpid == out_of_scope[0] else None,
+                    )
+                    for mpid in requested
+                ),
+                stopped=True,
+                stop_reason="mpid_out_of_scope",
+            )
+
+        outcomes: list[SmokeMpidOutcome] = []
+        stop: _GateStop | None = None
+        for mpid in requested:
+            if stop is not None:
+                outcomes.append(SmokeMpidOutcome(mpid, "skipped"))
+                continue
+            try:
+                self._acquire(mpid)
+            except _GateStop as gate:
+                stop = gate
+                self._gate_to_error_log(mpid, gate)
+                outcomes.append(
+                    SmokeMpidOutcome(mpid, "stopped", gate.error_type, gate.detail, gate.http_status)
+                )
+            else:
+                outcomes.append(SmokeMpidOutcome(mpid, "acquired"))
+        if stop is not None:
+            return SmokeRunReport(
+                requested=requested,
+                outcomes=tuple(outcomes),
+                stopped=True,
+                stop_reason=stop.error_type,
+            )
+        return SmokeRunReport(requested=requested, outcomes=tuple(outcomes))
+
+    # -- acquisition pipeline ----------------------------------------------
+
+    def _acquire(self, mpid: int) -> None:
+        url = protein_url(mpid)
+        raw_path = self._config.raw_path(mpid)
+        if raw_path.exists():
+            raise _GateStop(
+                "raw_file_exists",
+                f"Raw file already exists and is append-only: {raw_path}",
+            )
+
+        if not self._robots_allows(url):
+            raise _GateStop(
+                "robots_disallow",
+                f"robots.txt disallows fetching {url}",
+            )
+
+        response = self._fetch_with_retry(url)
+        self._validate_response(url, response)
+
+        decoded = response.body.decode("utf-8", errors="replace")
+        lowered = decoded.lower()
+        for marker in BLOCK_MARKERS:
+            if marker in lowered:
+                raise _GateStop(
+                    "block_or_challenge",
+                    f"Response body contains a block/challenge marker: {marker!r}",
+                    response.status_code,
+                )
+
+        try:
+            record = parse_moonprot_html(decoded, expected_mpid=mpid)
+        except MoonProtParseError as exc:
+            raise _GateStop(
+                "parser_error",
+                f"Parser rejected the fetched page: {exc}",
+                response.status_code,
+            ) from exc
+
+        self._persist(mpid, url, response, record)
+
+    def _robots_allows(self, url: str) -> bool:
+        response = self._request(ROBOTS_URL)
+        if response.status_code in (404, 410):
+            return True
+        if not 200 <= response.status_code < 300:
+            raise _GateStop(
+                "robots_unavailable",
+                f"robots.txt could not be retrieved (HTTP {response.status_code})",
+                response.status_code,
+            )
+        parser = urllib.robotparser.RobotFileParser()
+        parser.parse(response.body.decode("utf-8", errors="replace").splitlines())
+        return parser.can_fetch(self._config.user_agent, url)
+
+    def _fetch_with_retry(self, url: str) -> TransportResponse:
+        attempts = 0
+        while True:
+            attempts += 1
+            try:
+                response = self._request(url)
+            except TransportError as exc:
+                if attempts <= self._config.max_retries:
+                    self._sleeper(self._config.retry_backoff_seconds)
+                    continue
+                raise _GateStop(
+                    "transport_error",
+                    f"Transport failed after {attempts} attempt(s): {exc}",
+                ) from exc
+            if response.status_code in REDIRECT_STATUSES or (
+                response.final_url is not None and response.final_url != url
+            ):
+                raise _GateStop(
+                    "unexpected_redirect",
+                    f"Unexpected redirect for {url} (HTTP {response.status_code})",
+                    response.status_code,
+                )
+            if 200 <= response.status_code < 300:
+                return response
+            if attempts <= self._config.max_retries:
+                self._sleeper(self._config.retry_backoff_seconds)
+                continue
+            raise _GateStop(
+                "http_error",
+                f"HTTP {response.status_code} persisted after {attempts} attempt(s)",
+                response.status_code,
+            )
+
+    def _validate_response(self, url: str, response: TransportResponse) -> None:
+        content_type = ""
+        for name, value in response.headers.items():
+            if name.lower() == "content-type":
+                content_type = value
+                break
+        if REQUIRED_HTML_CONTENT_TYPE not in content_type.lower():
+            raise _GateStop(
+                "content_type_rejected",
+                f"Unacceptable content type for {url}: {content_type!r}",
+                response.status_code,
+            )
+
+    def _persist(self, mpid: int, url: str, response: TransportResponse, record: Any) -> None:
+        config = self._config
+        raw_path = config.raw_path(mpid)
+        raw_path.parent.mkdir(parents=True, exist_ok=True)
+        raw_path.write_bytes(response.body)
+
+        sha256 = hashlib.sha256(response.body).hexdigest()
+        rel_raw = raw_path.relative_to(config.root).as_posix()
+        content_type = ""
+        for name, value in response.headers.items():
+            if name.lower() == "content-type":
+                content_type = value
+                break
+
+        self._append_csv_row(
+            config.artifact_index_path,
+            INDEX_HEADER,
+            (
+                str(mpid),
+                url,
+                _utc_now_iso(),
+                str(response.status_code),
+                content_type,
+                rel_raw,
+                sha256,
+                str(len(response.body)),
+                "ok",
+                ";".join(record.missing_fields),
+            ),
+        )
+
+        config.checksums_path.parent.mkdir(parents=True, exist_ok=True)
+        with config.checksums_path.open("a", encoding="utf-8") as handle:
+            handle.write(f"{sha256}  {rel_raw}\n")
+
+        self._append_csv_row(
+            config.smoke_result_path,
+            SMOKE_RESULT_HEADER,
+            (str(mpid), record.uniprot_id or "", record.protein_name or ""),
+        )
+
+    # -- error log -----------------------------------------------------------
+
+    def _log_error(
+        self,
+        mpid: int | str,
+        url: str,
+        error_type: str,
+        detail: str,
+        http_status: int | None,
+    ) -> None:
+        path = self._config.error_log_path
+        self._append_csv_row(
+            path,
+            ERROR_LOG_HEADER,
+            (
+                str(mpid),
+                url,
+                error_type,
+                detail,
+                "" if http_status is None else str(http_status),
+                _utc_now_iso(),
+            ),
+        )
+
+    def _gate_to_error_log(self, mpid: int, gate: _GateStop) -> None:
+        self._log_error(mpid, protein_url(mpid), gate.error_type, gate.detail, gate.http_status)
+
+    # -- transport plumbing --------------------------------------------------
+
+    def _request(self, url: str) -> TransportResponse:
+        if self._last_request_at is not None:
+            elapsed = self._clock() - self._last_request_at
+            wait = self._config.delay_seconds - elapsed
+            if wait > 0:
+                self._sleeper(wait)
+        response = self._transport.get(
+            url,
+            user_agent=self._config.user_agent,
+            timeout_seconds=self._config.timeout_seconds,
+        )
+        self._last_request_at = self._clock()
+        return response
+
+    @staticmethod
+    def _append_csv_row(path: Path, header: tuple[str, ...], row: tuple[str, ...]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        needs_header = not path.exists() or path.stat().st_size == 0
+        with path.open("a", encoding="utf-8", newline="") as handle:
+            writer = csv.writer(handle, lineterminator="\n")
+            if needs_header:
+                writer.writerow(header)
+            writer.writerow(row)
+
+
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Return 3xx responses as-is instead of following redirects."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        return None
+
+
+class UrllibTransport(Transport):
+    """Real HTTP transport for the future approved execution only.
+
+    Follows no redirects (3xx responses are returned as-is) and converts
+    transport-level failures into ``TransportError``. It is never invoked by
+    tests or by the CLI dry-run mode.
+    """
+
+    def __init__(self) -> None:
+        self._opener = urllib.request.build_opener(_NoRedirectHandler)
+
+    def get(
+        self, url: str, *, user_agent: str, timeout_seconds: float
+    ) -> TransportResponse:
+        request = urllib.request.Request(url, headers={"User-Agent": user_agent})
+        try:
+            with self._opener.open(request, timeout=timeout_seconds) as response:
+                return TransportResponse(
+                    status_code=response.status,
+                    headers={name: value for name, value in response.headers.items()},
+                    body=response.read(),
+                    final_url=response.geturl(),
+                )
+        except urllib.error.HTTPError as exc:
+            return TransportResponse(
+                status_code=exc.code,
+                headers={name: value for name, value in exc.headers.items()},
+                body=exc.read(),
+                final_url=None,
+            )
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            raise TransportError(str(exc)) from exc
