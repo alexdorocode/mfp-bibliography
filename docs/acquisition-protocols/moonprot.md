@@ -1,6 +1,6 @@
-# MoonProt Acquisition Protocol (Planned)
+# MoonProt Acquisition Protocol
 
-Status: planned contract only. No scraper implementation or execution in this repository state.
+Status: smoke test completed. Bulk acquisition remains blocked pending approval gate.
 
 ## Offline parser status (MFPB_0_11_MOONPROT_OFFLINE_PARSER)
 
@@ -18,12 +18,17 @@ Status: planned contract only. No scraper implementation or execution in this re
 
 ## Acquisition gate (explicit)
 
+The smoke test acquisition for MPIDs 1-3 is complete and validated.
+
+Real acquisition for MPIDs 4-706 remains a **future task only**, gated behind:
+- Maintainer contact and confirmation of responsible access pattern
+- Source terms/license/citation verification
+- Explicit batch plan and approval
+
 The parser and CLI contain **no network, HTTP client, scraper, retry, or
-acquisition code** and never contact MoonProt or any external URL. Real
-acquisition remains a **future task only**, gated behind source-policy review
-plus inspection of `robots.txt`, terms, access restrictions, and rate limits.
-Until that gate is passed, only local fixtures under
-`data/fixtures/moonprot/` may be parsed.
+acquisition code** and never contact MoonProt or any external URL without
+explicit transport injection. Do not claim permission for redistribution or
+bulk scraping.
 
 ## Planned target
 
@@ -124,4 +129,8 @@ The HTML parser must identify fields by labels, not fixed row positions.
 
 ## Approval gate
 
-MoonProt scraping is an approved **future task only** after source-policy review.
+MoonProt bulk scraping (MPIDs 4-706) is an approved **future task only** after
+source-policy review, maintainer contact, and explicit batch plan approval.
+
+The smoke test for MPIDs 1-3 is closed and validated. No further acquisition
+is permitted until the bulk acquisition gate is passed.

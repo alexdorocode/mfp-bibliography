@@ -4,19 +4,20 @@ Status: all records below are **to_be_verified** templates.
 
 ## SRC_MOONPROT
 - Source ID: `SRC_MOONPROT`
-- Formal name: `MoonProt` (to_be_verified)
-- Source status: `to_be_verified`
-- Dataset availability in this repository: `not_present`
-- Intended acquisition mode: `planned_acquisition`
-- Expected unit of record: `to_be_verified`
-- Expected identifiers: `UniProt ID`, `to_be_verified`
-- Expected evidence character: `to_be_verified`
+- Formal name: `MoonProt`
+- Source status: `smoke_tested`
+- Dataset availability in this repository: `smoke_sample_only`
+- Intended acquisition mode: `controlled_web_acquisition`
+- Unit of record: `protein`
+- Identifiers: `MoonProt ID`, `UniProt ID`
+- Documented fields: `MoonProt ID`, `UniProt ID`, `Name(s)`
 - Source version: `unknown`
-- Retrieval date: `unknown`
-- Original artifact location: `http://www.moonlightingproteins.org/protein_detail/?mpid={id}` (planned)
+- Retrieval date: see smoke test report
+- Original artifact location: `http://www.moonlightingproteins.org/protein_detail/?mpid={id}`
+- Known range: `mpid=1..706`
 - License / terms: `to_be_verified`
 - Primary publication: `to_be_verified`
-- Notes and verification tasks: confirm robots/terms, implement controlled scraper, verify field labels.
+- Notes and verification tasks: Smoke test completed for MPIDs 1-3. Bulk acquisition blocked pending maintainer contact and terms/license/citation verification.
 
 ## SRC_MOONDB
 - Source ID: `SRC_MOONDB`
