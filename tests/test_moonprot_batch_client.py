@@ -100,7 +100,7 @@ def read_csv(path: Path) -> tuple[list[str], list[list[str]]]:
 def test_batch_contract_metadata() -> None:
     assert BATCH_CONTRACT_ID == "MFPB_0_16_BATCH_CLIENT"
     assert BATCH_ALLOWED_MPID_RANGE == (1, 706)
-    assert MAX_BATCH_SIZE == 20
+    assert MAX_BATCH_SIZE == 100
 
 
 # -- Configuration validation ---------------------------------------------------
@@ -181,7 +181,7 @@ def test_resolve_reversed_range(tmp_path: Path) -> None:
 
 def test_batch_size_exceeds_maximum(tmp_path: Path) -> None:
     client, _ = make_batch_client(tmp_path, {})
-    mpids = tuple(range(1, 22))  # 21 MPIDs
+    mpids = tuple(range(1, 102))  # 101 MPIDs
     valid, errors = client._validate_batch_params(mpids)
     assert valid == []
     assert len(errors) == 1
@@ -330,9 +330,9 @@ def test_batch_range_validation(tmp_path: Path) -> None:
     assert report.acquired_mpids == (1, 2, 3)
 
 
-def test_batch_max_20_enforcement(tmp_path: Path) -> None:
+def test_batch_max_100_enforcement(tmp_path: Path) -> None:
     client, transport = make_batch_client(tmp_path, {})
-    mpids = [str(i) for i in range(1, 22)]  # 21 MPIDs
+    mpids = [str(i) for i in range(1, 102)]  # 101 MPIDs
     
     report = client.run(mpids)
     

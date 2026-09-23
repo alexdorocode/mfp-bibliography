@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""MoonProt controlled batch-acquisition CLI (explicit IDs/ranges only, max 20).
+"""MoonProt controlled batch-acquisition CLI (explicit IDs/ranges only, max 100).
 
 Implements the contract in docs/reconciliation-baseline-contract.md for batch mode:
 
 - Accepts explicit MPID lists and inclusive ranges only (e.g., 1 2 3 or "1..5");
-- Hard maximum per invocation: 20 MPIDs;
+- Hard maximum per invocation: 100 MPIDs;
 - Rejects IDs outside 1..706;
 - Rejects any request for an ID already present in data/raw/moonprot/;
 - Default batch is forbidden; user must explicitly pass IDs/range;

@@ -27,7 +27,7 @@ it is never used by tests or by the CLI dry-run mode.
 
 Batch client (MFPB_0_16_BATCH_CLIENT):
 - Accepts explicit MPID lists and inclusive ranges only;
-- Hard maximum per invocation: 20 MPIDs;
+- Hard maximum per invocation: 100 MPIDs;
 - Rejects IDs outside 1..706;
 - Rejects any request for an ID already present in data/raw/moonprot/;
 - Default batch is forbidden; user must explicitly pass IDs/range;
@@ -557,7 +557,7 @@ class UrllibTransport(Transport):
 
 BATCH_CONTRACT_ID = "MFPB_0_16_BATCH_CLIENT"
 BATCH_ALLOWED_MPID_RANGE = (1, 706)
-MAX_BATCH_SIZE = 20
+MAX_BATCH_SIZE = 100
 
 
 @dataclass(frozen=True)
@@ -671,7 +671,7 @@ class MoonProtBatchClient:
     """Controlled batch client for explicit MPID lists in range 1..706.
     
     Hard limits:
-    - Maximum 20 MPIDs per invocation
+    - Maximum 100 MPIDs per invocation
     - MPIDs must be in range 1..706
     - Rejects any MPID already present in data/raw/moonprot/
     - Sequential-only, one request at a time
@@ -750,7 +750,7 @@ class MoonProtBatchClient:
         """Acquire the given MPIDs sequentially in batch mode.
         
         Accepts explicit IDs and inclusive ranges (e.g., "1..5").
-        Hard maximum of 20 MPIDs per invocation.
+        Hard maximum of 100 MPIDs per invocation.
         Rejects IDs outside 1..706.
         Rejects any request for an ID already present in data/raw/moonprot/.
         Sequential-only, one request at a time.
