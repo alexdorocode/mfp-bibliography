@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/effective_status.schema.json",
+  "title": "MFP Effective Status Aggregation Record",
+  "description": "Derived per-UniProt aggregation record for MFPB_0_13_EFFECTIVE_STATUS_CONTRACT_V0. Aggregates validated source claims into a single effective status per UniProt ID.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "uniprot_id",
+    "effective_status",
+    "source_ids",
+    "claim_ids",
+    "status_set",
+    "has_curated_claim",
+    "has_predicted_claim",
+    "has_excluded_likely_claim",
+    "has_unresolved_claim",
+    "claim_count",
+    "source_count",
+    "aggregation_policy_id",
+    "transformation_id",
+    "record_status",
+    "notes"
+  ],
+  "properties": {
+    "uniprot_id": {
+      "type": "string",
+      "description": "UniProt accession string (grouping key). Empty for excluded records with blank/missing UniProt IDs."
+    },
+    "effective_status": {
+      "type": "string",
+      "enum": ["curated", "predicted", "excluded_likely", "unresolved"],
+      "description": "Highest-precedence operational status from grouped claims."
+    },
+    "source_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": false,
+      "description": "All contributing source IDs (duplicates preserved)."
+    },
+    "claim_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": false,
+      "description": "All contributing claim IDs (duplicates preserved)."
+    },
+    "status_set": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["curated", "predicted", "excluded_likely", "unresolved"]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "All distinct operational statuses in the group."
+    },
+    "has_curated_claim": {
+      "type": "boolean",
+      "description": "True if any claim in the group has status curated."
+    },
+    "has_predicted_claim": {
+      "type": "boolean",
+      "description": "True if any claim in the group has status predicted."
+    },
+    "has_excluded_likely_claim": {
+      "type": "boolean",
+      "description": "True if any claim in the group has status excluded_likely."
+    },
+    "has_unresolved_claim": {
+      "type": "boolean",
+      "description": "True if any claim in the group has status unresolved."
+    },
+    "claim_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Total number of claims in the group."
+    },
+    "source_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of distinct sources in the group."
+    },
+    "aggregation_policy_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Policy identifier for the aggregation (contract version)."
+    },
+    "transformation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Transformation identifier for the aggregation run."
+    },
+    "record_status": {
+      "type": "string",
+      "enum": ["valid", "excluded"],
+      "description": "Record status: valid for aggregated records, excluded for blank UniProt IDs."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Optional curator notes."
+    }
+  }
+}
