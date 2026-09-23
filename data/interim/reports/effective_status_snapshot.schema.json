@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/interim/reports/effective_status_snapshot.schema.json",
+  "title": "MFP Effective Status Snapshot Manifest",
+  "description": "Snapshot manifest for MFPB_0_15_MOONDB_PLANTMP_DERIVED_SNAPSHOT. Documents a locally-generated derived effective-status artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_id",
+    "generated_at",
+    "schema_version",
+    "aggregation_policy_id",
+    "transformation_id",
+    "input_files",
+    "input_total_claims",
+    "input_claims_by_source",
+    "output_path",
+    "output_sha256",
+    "output_record_count",
+    "effective_status_counts",
+    "exclusions_count",
+    "reproducibility_statement"
+  ],
+  "properties": {
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Deterministic snapshot identifier."
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO 8601 timestamp when the snapshot was generated."
+    },
+    "schema_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Version of the snapshot manifest schema."
+    },
+    "aggregation_policy_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Policy identifier for the aggregation contract."
+    },
+    "transformation_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Transformation/script identifier."
+    },
+    "input_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["moondb", "plantmp"],
+      "properties": {
+        "moondb": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256", "claim_count"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Relative path to the input file."
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "description": "SHA-256 checksum of the input file."
+            },
+            "claim_count": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of claims in the input file."
+            }
+          }
+        },
+        "plantmp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256", "claim_count"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Relative path to the input file."
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$",
+              "description": "SHA-256 checksum of the input file."
+            },
+            "claim_count": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of claims in the input file."
+            }
+          }
+        }
+      },
+      "description": "Input file information."
+    },
+    "input_total_claims": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of input claims across all sources."
+    },
+    "input_claims_by_source": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "description": "Input claim counts by source ID."
+    },
+    "output_path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Relative path to the output CSV file."
+    },
+    "output_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 checksum of the output CSV file."
+    },
+    "output_record_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of records in the output CSV."
+    },
+    "effective_status_counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "required": ["curated", "predicted", "excluded_likely", "unresolved"],
+      "description": "Counts of each effective status in the output."
+    },
+    "exclusions_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of excluded records (blank/missing UniProt IDs)."
+    },
+    "reproducibility_statement": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Statement about the reproducibility of the snapshot."
+    }
+  }
+}

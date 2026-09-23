@@ -2,12 +2,14 @@
 """Generate effective-status artifact from MoonDB and PlantMP source claims.
 
 MFPB_0_14_REAL_EFFECTIVE_STATUS_MOONDB_PLANTMP
+MFPB_0_15_MOONDB_PLANTMP_DERIVED_SNAPSHOT
 
 Reads validated source-claim CSVs, aggregates by UniProt ID using precedence,
 and produces:
 - data/interim/effective_status_moondb_plantmp.csv
 - data/interim/reports/effective_status_moondb_plantmp_report.json
 - data/interim/reports/effective_status_moondb_plantmp_report.md
+- data/interim/reports/effective_status_moondb_plantmp_snapshot.json
 
 No network. No raw data mutation. No source-claim modification.
 """
@@ -19,6 +21,7 @@ import hashlib
 import json
 from collections import Counter
 from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -38,8 +41,10 @@ PLANTMP_CLAIMS_PATH = REPO_ROOT / "data" / "interim" / "source_claims_plantmp.cs
 OUTPUT_CSV_PATH = REPO_ROOT / "data" / "interim" / "effective_status_moondb_plantmp.csv"
 REPORT_JSON_PATH = REPO_ROOT / "data" / "interim" / "reports" / "effective_status_moondb_plantmp_report.json"
 REPORT_MD_PATH = REPO_ROOT / "data" / "interim" / "reports" / "effective_status_moondb_plantmp_report.md"
+SNAPSHOT_JSON_PATH = REPO_ROOT / "data" / "interim" / "reports" / "effective_status_moondb_plantmp_snapshot.json"
 
 TRANSFORMATION_ID = "effective_status_moondb_plantmp_v0"
+SNAPSHOT_SCHEMA_VERSION = "MFPB_0_15_SNAPSHOT_V0"
 
 
 @dataclass
@@ -195,6 +200,71 @@ def write_json_report(report: AggregationReport, path: Path) -> None:
         f.write("\n")
 
 
+def write_snapshot_manifest(
+    moondb_info: InputFileInfo,
+    plantmp_info: InputFileInfo,
+    output_sha256: str,
+    valid_record_count: int,
+    effective_status_counts: Counter,
+    exclusions_count: int,
+    path: Path,
+) -> None:
+    """Write snapshot manifest JSON for MFPB_0_15_MOONDB_PLANTMP_DERIVED_SNAPSHOT."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Compute deterministic snapshot ID from input SHA-256 checksums
+    combined_sha = hashlib.sha256(
+        (moondb_info.sha256 + plantmp_info.sha256).encode("utf-8")
+    ).hexdigest()[:16]
+    snapshot_id = f"moondb_plantmp_effectivestatus_{combined_sha}"
+    
+    manifest = {
+        "snapshot_id": snapshot_id,
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "schema_version": SNAPSHOT_SCHEMA_VERSION,
+        "aggregation_policy_id": CONTRACT_ID,
+        "transformation_id": TRANSFORMATION_ID,
+        "input_files": {
+            "moondb": {
+                "path": str(MOONDB_CLAIMS_PATH.relative_to(REPO_ROOT)),
+                "sha256": moondb_info.sha256,
+                "claim_count": moondb_info.claim_count,
+            },
+            "plantmp": {
+                "path": str(PLANTMP_CLAIMS_PATH.relative_to(REPO_ROOT)),
+                "sha256": plantmp_info.sha256,
+                "claim_count": plantmp_info.claim_count,
+            },
+        },
+        "input_total_claims": moondb_info.claim_count + plantmp_info.claim_count,
+        "input_claims_by_source": {
+            "SRC_MOONDB": moondb_info.claim_count,
+            "SRC_PLANTMP": plantmp_info.claim_count,
+        },
+        "output_path": str(OUTPUT_CSV_PATH.relative_to(REPO_ROOT)),
+        "output_sha256": output_sha256,
+        "output_record_count": valid_record_count,
+        "effective_status_counts": {
+            "curated": effective_status_counts.get("curated", 0),
+            "predicted": effective_status_counts.get("predicted", 0),
+            "excluded_likely": effective_status_counts.get("excluded_likely", 0),
+            "unresolved": effective_status_counts.get("unresolved", 0),
+        },
+        "exclusions_count": exclusions_count,
+        "reproducibility_statement": (
+            "Generation is byte-reproducible: running the generator twice on the "
+            "same inputs produces identical output SHA-256 checksums. "
+            "Only the generated_at timestamp differs between runs."
+        ),
+    }
+    
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+    
+    return snapshot_id
+
+
 def write_md_report(report: AggregationReport, path: Path) -> None:
     """Write human-readable report as Markdown."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -338,6 +408,17 @@ def main() -> int:
     write_json_report(report, REPORT_JSON_PATH)
     write_md_report(report, REPORT_MD_PATH)
     
+    # Write snapshot manifest
+    snapshot_id = write_snapshot_manifest(
+        moondb_info,
+        plantmp_info,
+        output_sha256,
+        report.aggregated_records,
+        report.effective_status_counts,
+        report.excluded_records,
+        SNAPSHOT_JSON_PATH,
+    )
+    
     # Print summary
     print(f"Effective status aggregation complete.")
     print(f"  Input: {report.total_input_claims} claims ({moondb_info.claim_count} MoonDB + {plantmp_info.claim_count} PlantMP)")
@@ -347,6 +428,8 @@ def main() -> int:
     print(f"  Output SHA-256: {output_sha256}")
     print(f"  JSON report: {REPORT_JSON_PATH.relative_to(REPO_ROOT)}")
     print(f"  MD report: {REPORT_MD_PATH.relative_to(REPO_ROOT)}")
+    print(f"  Snapshot manifest: {SNAPSHOT_JSON_PATH.relative_to(REPO_ROOT)}")
+    print(f"  Snapshot ID: {snapshot_id}")
     
     return 0
 

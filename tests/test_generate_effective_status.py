@@ -298,3 +298,145 @@ class TestIntegrationWithRealInputs:
             assert "aggregation_policy_id" in report
             assert report["aggregation_policy_id"] == CONTRACT_ID
             assert report["total_input_claims"] == 463  # 351 + 112
+        
+        # Check snapshot manifest exists and is valid
+        snapshot_path = REPO_ROOT / "data" / "interim" / "reports" / "effective_status_moondb_plantmp_snapshot.json"
+        assert snapshot_path.exists()
+        
+        with open(snapshot_path, encoding="utf-8") as f:
+            snapshot = json.load(f)
+            assert "snapshot_id" in snapshot
+            assert "generated_at" in snapshot
+            assert snapshot["schema_version"] == "MFPB_0_15_SNAPSHOT_V0"
+            assert snapshot["aggregation_policy_id"] == CONTRACT_ID
+            assert snapshot["output_sha256"] == "7522eeeb58ad02578fdab35db6fef43ef82bab12aeee6c3137bc944b63f6d21a"
+            assert snapshot["output_record_count"] == 461
+            assert snapshot["exclusions_count"] == 0
+            assert snapshot["effective_status_counts"]["curated"] == 124
+            assert snapshot["effective_status_counts"]["predicted"] == 326
+            assert snapshot["effective_status_counts"]["excluded_likely"] == 11
+
+
+class TestSnapshotManifest:
+    """Test snapshot manifest generation with synthetic inputs."""
+
+    def test_snapshot_manifest_structure(self, tmp_path: Path) -> None:
+        """Test that snapshot manifest has all required fields."""
+        import json
+        from datetime import datetime, timezone
+        from scripts.generate_effective_status_moondb_plantmp import (
+            write_snapshot_manifest,
+            InputFileInfo,
+            SNAPSHOT_SCHEMA_VERSION,
+        )
+        from collections import Counter
+        
+        # Create mock input file info
+        moondb_info = InputFileInfo(
+            path=Path("data/interim/source_claims_moondb.csv"),
+            sha256="a" * 64,
+            claim_count=5,
+            sources=Counter({"SRC_MOONDB": 5}),
+            statuses=Counter({"curated": 3, "predicted": 2}),
+            uniprot_count=5,
+            blank_uniprot_count=0,
+        )
+        plantmp_info = InputFileInfo(
+            path=Path("data/interim/source_claims_plantmp.csv"),
+            sha256="b" * 64,
+            claim_count=3,
+            sources=Counter({"SRC_PLANTMP": 3}),
+            statuses=Counter({"curated": 1, "predicted": 2}),
+            uniprot_count=3,
+            blank_uniprot_count=0,
+        )
+        
+        manifest_path = tmp_path / "snapshot.json"
+        effective_status_counts = Counter({"curated": 4, "predicted": 4})
+        
+        snapshot_id = write_snapshot_manifest(
+            moondb_info,
+            plantmp_info,
+            "c" * 64,
+            8,
+            effective_status_counts,
+            0,
+            manifest_path,
+        )
+        
+        assert manifest_path.exists()
+        
+        with open(manifest_path, encoding="utf-8") as f:
+            manifest = json.load(f)
+        
+        required_fields = [
+            "snapshot_id",
+            "generated_at",
+            "schema_version",
+            "aggregation_policy_id",
+            "transformation_id",
+            "input_files",
+            "input_total_claims",
+            "input_claims_by_source",
+            "output_path",
+            "output_sha256",
+            "output_record_count",
+            "effective_status_counts",
+            "exclusions_count",
+            "reproducibility_statement",
+        ]
+        for field in required_fields:
+            assert field in manifest, f"Missing field: {field}"
+        
+        assert manifest["schema_version"] == SNAPSHOT_SCHEMA_VERSION
+        assert manifest["input_total_claims"] == 8
+        assert manifest["output_record_count"] == 8
+        assert manifest["exclusions_count"] == 0
+        
+    def test_snapshot_id_deterministic(self, tmp_path: Path) -> None:
+        """Test that snapshot ID is deterministic from input SHA-256."""
+        import json
+        from scripts.generate_effective_status_moondb_plantmp import (
+            write_snapshot_manifest,
+            InputFileInfo,
+        )
+        from collections import Counter
+        
+        moondb_info = InputFileInfo(
+            path=Path("moondb.csv"),
+            sha256="a" * 64,
+            claim_count=1,
+            sources=Counter(),
+            statuses=Counter(),
+            uniprot_count=0,
+            blank_uniprot_count=0,
+        )
+        plantmp_info = InputFileInfo(
+            path=Path("plantmp.csv"),
+            sha256="b" * 64,
+            claim_count=1,
+            sources=Counter(),
+            statuses=Counter(),
+            uniprot_count=0,
+            blank_uniprot_count=0,
+        )
+        
+        manifest_path1 = tmp_path / "snapshot1.json"
+        manifest_path2 = tmp_path / "snapshot2.json"
+        
+        write_snapshot_manifest(
+            moondb_info, plantmp_info, "c" * 64, 1, Counter(), 0, manifest_path1
+        )
+        write_snapshot_manifest(
+            moondb_info, plantmp_info, "c" * 64, 1, Counter(), 0, manifest_path2
+        )
+        
+        with open(manifest_path1) as f1, open(manifest_path2) as f2:
+            m1 = json.load(f1)
+            m2 = json.load(f2)
+            # snapshot_id should be the same
+            assert m1["snapshot_id"] == m2["snapshot_id"]
+            # but generated_at will differ (timestamp)
+            # All other fields should be the same
+            assert m1["output_sha256"] == m2["output_sha256"]
+            assert m1["output_record_count"] == m2["output_record_count"]
