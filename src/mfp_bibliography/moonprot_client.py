@@ -245,6 +245,8 @@ class MoonProtSmokeClient:
         error log, and stop the run.
         """
         requested = tuple(int(mpid) for mpid in mpids)
+        # Ensure error log always exists with header (even on successful runs)
+        self._init_csv(self._config.error_log_path, ERROR_LOG_HEADER)
         out_of_scope = [mpid for mpid in requested if mpid not in ALLOWED_MPIDS]
         if out_of_scope:
             for mpid in out_of_scope:
@@ -478,6 +480,15 @@ class MoonProtSmokeClient:
         )
         self._last_request_at = self._clock()
         return response
+
+    @staticmethod
+    def _init_csv(path: Path, header: tuple[str, ...]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        needs_header = not path.exists() or path.stat().st_size == 0
+        if needs_header:
+            with path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.writer(handle, lineterminator="\n")
+                writer.writerow(header)
 
     @staticmethod
     def _append_csv_row(path: Path, header: tuple[str, ...], row: tuple[str, ...]) -> None:

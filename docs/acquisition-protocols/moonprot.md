@@ -68,6 +68,8 @@ Store a separate error log with exactly these fields:
 - `http_status`
 - `attempted_at`
 
+The error log file at `data/interim/moonprot_smoke_error_log.csv` **must always
+ exist** after a run, even on complete success (header-only).
 `http_status` is empty when not applicable (e.g. robots gate, timeout,
 parser error). Every failed or skipped attempt produces one error-log record.
 

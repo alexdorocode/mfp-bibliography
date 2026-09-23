@@ -145,7 +145,10 @@ def test_successful_acquisition_persists_byte_exact_artifacts(tmp_path: Path) ->
     assert result_header == list(SMOKE_RESULT_HEADER)
     assert result_rows == [["1", "P12345", "Cytochrome c"]]
 
-    assert not (tmp_path / "data" / "interim" / "moonprot_smoke_error_log.csv").exists()
+    # Error log must always exist with header (header-only on success)
+    error_header, error_rows = read_csv(tmp_path / "data" / "interim" / "moonprot_smoke_error_log.csv")
+    assert error_header == list(ERROR_LOG_HEADER)
+    assert error_rows == []
     # honest UA and configured timeout are passed through to every request
     assert all(call["user_agent"] == UA for call in transport.calls)
     assert all(call["timeout"] == 15.0 for call in transport.calls)
@@ -458,6 +461,10 @@ def test_sequential_multi_mpid_acquisition(tmp_path: Path) -> None:
         ["2", "P2", "Beta"],
         ["3", "P3", "Gamma"],
     ]
+    # Error log must always exist with header (header-only on success)
+    error_header, error_rows = read_csv(tmp_path / "data" / "interim" / "moonprot_smoke_error_log.csv")
+    assert error_header == list(ERROR_LOG_HEADER)
+    assert error_rows == []
 
 
 def test_no_real_http_during_execution_with_injected_transport(
