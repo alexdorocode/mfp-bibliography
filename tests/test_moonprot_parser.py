@@ -205,40 +205,41 @@ def test_fixture_cli_is_reproducible() -> None:
     assert parsed["record"]["moonprot_id"] == "2"
 
 
-def test_known_absent_marker_no_entry_found() -> None:
-    html = "<html><body><p>No entry found for MoonProt ID 103</p></body></html>"
+def test_known_absent_phrase_in_title() -> None:
+    html = "<html><head><title>No entry found - MoonProt</title></head><body></body></html>"
     with pytest.raises(MoonProtKnownAbsentError) as excinfo:
         parse_moonprot_html(html, expected_mpid=103)
     assert excinfo.value.absent_marker == "no entry found"
     assert isinstance(excinfo.value, MoonProtParseError)
 
 
-def test_known_absent_marker_no_such_protein() -> None:
-    html = "<html><body><h1>No such protein</h1></body></html>"
+def test_known_absent_phrase_in_h1() -> None:
+    html = "<html><head><title>MoonProt</title></head><body><h1>No such protein</h1></body></html>"
     with pytest.raises(MoonProtKnownAbsentError) as excinfo:
         parse_moonprot_html(html, expected_mpid=999)
     assert excinfo.value.absent_marker == "no such protein"
+    assert isinstance(excinfo.value, MoonProtParseError)
 
 
-def test_known_absent_marker_protein_not_found() -> None:
-    html = "<html><body>Protein not found</body></html>"
+def test_known_absent_phrase_in_h2() -> None:
+    html = "<html><head><title>MoonProt</title></head><body><h2>Protein not found</h2></body></html>"
     with pytest.raises(MoonProtKnownAbsentError) as excinfo:
         parse_moonprot_html(html, expected_mpid=1000)
     assert excinfo.value.absent_marker == "protein not found"
 
 
-def test_known_absent_marker_this_record_does_not_exist() -> None:
-    html = "<html><body>This record does not exist</body></html>"
-    with pytest.raises(MoonProtKnownAbsentError) as excinfo:
-        parse_moonprot_html(html, expected_mpid=1001)
-    assert excinfo.value.absent_marker == "this record does not exist"
-
-
-def test_known_absent_marker_case_insensitive() -> None:
-    html = "<html><body><p>NO ENTRY FOUND for MoonProt ID 103</p></body></html>"
+def test_known_absent_phrase_case_insensitive() -> None:
+    html = "<html><head><title>NO ENTRY FOUND - MoonProt</title></head><body></body></html>"
     with pytest.raises(MoonProtKnownAbsentError) as excinfo:
         parse_moonprot_html(html, expected_mpid=103)
     assert excinfo.value.absent_marker == "no entry found"
+
+
+def test_known_absent_soft_404_signature() -> None:
+    html = '<!DOCTYPE html><html><head><title>MoonProt</title></head><body><h1>Protein Detail</h1><p>No entry found for MoonProt ID 103</p></body></html>'
+    with pytest.raises(MoonProtKnownAbsentError) as excinfo:
+        parse_moonprot_html(html, expected_mpid=103)
+    assert excinfo.value.absent_marker == "soft_404_template"
 
 
 def test_table_less_200_without_absent_marker_still_raises_malformed() -> None:
@@ -246,3 +247,43 @@ def test_table_less_200_without_absent_marker_still_raises_malformed() -> None:
     with pytest.raises(MoonProtMalformedHtmlError) as excinfo:
         parse_moonprot_html(html)
     assert excinfo.value.table_found is False
+
+
+def test_page_with_404_in_body_not_classified_as_absent() -> None:
+    """A valid page containing '404' in body text should NOT be classified as absent."""
+    html = """<html><head><title>MoonProt Protein Detail</title></head>
+<body><h1>Protein Detail</h1>
+<table>
+<tr><th>MoonProt ID</th><td>404</td></tr>
+<tr><th>UniProt ID</th><td>P12345</td></tr>
+<tr><th>Name(s)</th><td>Protein 404</td></tr>
+</table>
+<p>Note: Not related to HTTP 404 error</p>
+</body></html>"""
+    # Should parse successfully, not raise KnownAbsentError
+    record = parse_moonprot_html(html)
+    assert record.moonprot_id == "404"
+    assert record.uniprot_id == "P12345"
+
+
+def test_page_with_no_record_in_body_not_classified_as_absent() -> None:
+    """A page with 'no record' in body but valid table should NOT be classified as absent."""
+    html = """<html><head><title>MoonProt Protein Detail</title></head>
+<body><h1>Protein Detail</h1>
+<p>Note: no record of modifications</p>
+<table>
+<tr><th>MoonProt ID</th><td>10</td></tr>
+<tr><th>UniProt ID</th><td>P12345</td></tr>
+<tr><th>Name(s)</th><td>Test Protein</td></tr>
+</table>
+</body></html>"""
+    # Should parse successfully, not raise KnownAbsentError
+    record = parse_moonprot_html(html)
+    assert record.moonprot_id == "10"
+
+
+def test_mpid_103_fixture_recognised_as_absent() -> None:
+    """The actual MPID 103 fixture must still be recognised as known absent."""
+    with pytest.raises(MoonProtKnownAbsentError) as excinfo:
+        parse_moonprot_fixture(FIXTURES / "mpid_103_absent.html", expected_mpid=103)
+    assert excinfo.value.absent_marker == "soft_404_template"

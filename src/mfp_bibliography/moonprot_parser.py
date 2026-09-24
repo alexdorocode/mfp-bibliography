@@ -13,6 +13,7 @@ typed parse errors.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
 from pathlib import Path
@@ -82,15 +83,31 @@ class MoonProtMpidConflictError(MoonProtParseError):
 
 
 class MoonProtKnownAbsentError(MoonProtParseError):
-    """The page explicitly indicates the requested MoonProt ID is absent/not found."""
+    """The page explicitly indicates the requested MoonProt ID is absent/not found.
+    
+    Detection is based on:
+    1. Exact absence phrases in <title>, <h1>, or <h2> elements; OR
+    2. Documented soft-404 template signature from captured MPID 103 response.
+    """
 
-    ABSENT_MARKERS = frozenset({
+    # Absence phrases checked ONLY in title/h1/h2 element text (case-insensitive)
+    ABSENT_PHRASES = frozenset({
         "no entry found",
+        "entry not found",
         "no such protein",
         "protein not found",
+        "page not found",
+        "not found",
         "this record does not exist",
         "moonprot id not found",
         "no details available",
+    })
+    
+    # Documented soft-404 template signature from MPID 103 capture:
+    # HTML contains <h1>Protein Detail</h1> and <p>No entry found for MoonProt ID
+    SOFT_404_SIGNATURE = frozenset({
+        "<h1>protein detail</h1>",
+        "<p>no entry found for moonprot id",
     })
 
     def __init__(self, message: str, *, absent_marker: str) -> None:
@@ -116,6 +133,50 @@ class MoonProtRecord:
             "missing_fields": list(self.missing_fields),
             "field_text": dict(self.field_text),
         }
+
+
+def _extract_principal_text(html_text: str) -> str:
+    """Extract concatenated text from <title>, <h1>, and <h2> elements.
+    
+    Returns all text content from these principal elements, joined with spaces,
+    in lowercase for case-insensitive matching.
+    """
+    class PrincipalTextExtractor(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__(convert_charrefs=True)
+            self.text_parts: list[str] = []
+            self._in_target = False
+            
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if tag in ("title", "h1", "h2"):
+                self._in_target = True
+                
+        def handle_endtag(self, tag: str) -> None:
+            if tag in ("title", "h1", "h2"):
+                self._in_target = False
+                
+        def handle_data(self, data: str) -> None:
+            if self._in_target:
+                self.text_parts.append(data)
+    
+    parser = PrincipalTextExtractor()
+    parser.feed(html_text)
+    parser.close()
+    return " ".join(parser.text_parts).lower()
+
+
+def _check_soft_404_signature(html_text: str) -> bool:
+    """Check for documented soft-404 template signature from MPID 103 capture.
+    
+    Matches the exact structural signature: presence of both
+    <h1>Protein Detail</h1> and <p>No entry found for MoonProt ID in the raw HTML.
+    Uses case-insensitive matching on the raw HTML tags.
+    """
+    lower_html = html_text.lower()
+    for sig in MoonProtKnownAbsentError.SOFT_404_SIGNATURE:
+        if sig not in lower_html:
+            return False
+    return True
 
 
 class _MoonProtTableParser(HTMLParser):
@@ -169,14 +230,22 @@ def parse_moonprot_html(
     returned record. Raises MoonProtMalformedHtmlError, MoonProtDuplicateLabelError,
     MoonProtMissingMpidError, MoonProtMpidConflictError, or MoonProtKnownAbsentError on failure.
     """
-    # Check for known absent markers before parsing
-    lower_text = html_text.lower()
-    for marker in MoonProtKnownAbsentError.ABSENT_MARKERS:
-        if marker in lower_text:
+    # Check for known absent: first try principal elements (title/h1/h2)
+    # Sort phrases by length (longest first) to match most specific first
+    principal_text = _extract_principal_text(html_text)
+    for phrase in sorted(MoonProtKnownAbsentError.ABSENT_PHRASES, key=len, reverse=True):
+        if phrase in principal_text:
             raise MoonProtKnownAbsentError(
-                f"Page contains absent marker: {marker!r}",
-                absent_marker=marker,
+                f"Page contains absent phrase in title/h1/h2: {phrase!r}",
+                absent_marker=phrase,
             )
+    
+    # If not found in principal elements, check documented soft-404 signature
+    if _check_soft_404_signature(html_text):
+        raise MoonProtKnownAbsentError(
+            "Page matches documented soft-404 template signature",
+            absent_marker="soft_404_template",
+        )
     
     parser = _MoonProtTableParser()
     parser.feed(html_text)

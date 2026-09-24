@@ -478,7 +478,8 @@ def test_batch_client_no_real_http(tmp_path: Path, monkeypatch: pytest.MonkeyPat
 
 def test_known_absent_continues_batch_and_logs(tmp_path: Path) -> None:
     from mfp_bibliography.moonprot_parser import MOONPROT_URL_PATTERN, MoonProtKnownAbsentError
-    absent_html = b"<html><body><p>No entry found for MoonProt ID 103</p></body></html>"
+    # Use soft-404 signature: <h1>Protein Detail</h1> + <p>No entry found for MoonProt ID
+    absent_html = b'<!DOCTYPE html><html><head><title>MoonProt</title></head><body><h1>Protein Detail</h1><p>No entry found for MoonProt ID 103</p></body></html>'
     
     client, transport = make_batch_client(
         tmp_path,
@@ -504,7 +505,7 @@ def test_known_absent_continues_batch_and_logs(tmp_path: Path) -> None:
     assert len(rows) == 1
     assert rows[0][0] == "103"
     assert rows[0][2] == "200"
-    assert rows[0][3] == "no entry found"
+    assert rows[0][3] == "soft_404_template"
     
     # Check raw HTML was NOT persisted
     raw = tmp_path / "data" / "raw" / "moonprot" / "mpid_103.html"
@@ -513,10 +514,10 @@ def test_known_absent_continues_batch_and_logs(tmp_path: Path) -> None:
 
 def test_known_absent_skips_already_logged_mpid(tmp_path: Path) -> None:
     from mfp_bibliography.moonprot_parser import MOONPROT_URL_PATTERN
-    # Pre-populate absent log
+    # Pre-populate absent log with new marker
     absent_log = tmp_path / "data" / "interim" / "moonprot_absent_log.csv"
     absent_log.parent.mkdir(parents=True)
-    absent_log.write_text("mpid,url,http_status,absent_marker,detected_at\n103,http://example.org,200,no entry found,2026-01-01T00:00:00Z\n")
+    absent_log.write_text("mpid,url,http_status,absent_marker,detected_at\n103,http://example.org,200,soft_404_template,2026-01-01T00:00:00Z\n")
     
     client, transport = make_batch_client(tmp_path, {})
     
@@ -564,7 +565,8 @@ def test_parser_error_still_stops_batch(tmp_path: Path) -> None:
 
 def test_batch_report_distinguishes_all_statuses(tmp_path: Path) -> None:
     from mfp_bibliography.moonprot_parser import MOONPROT_URL_PATTERN
-    absent_html = b"<html><body><p>No entry found for MoonProt ID 103</p></body></html>"
+    # Use soft-404 signature: <h1>Protein Detail</h1> + <p>No entry found for MoonProt ID
+    absent_html = b'<!DOCTYPE html><html><head><title>MoonProt</title></head><body><h1>Protein Detail</h1><p>No entry found for MoonProt ID 3</p></body></html>'
     
     client, transport = make_batch_client(
         tmp_path,
