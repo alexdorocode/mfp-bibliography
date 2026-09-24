@@ -15,6 +15,7 @@ from mfp_bibliography.moonprot_parser import (
     PLANNED_MPID_RANGE,
     MOONPROT_URL_PATTERN,
     MoonProtDuplicateLabelError,
+    MoonProtKnownAbsentError,
     MoonProtMalformedHtmlError,
     MoonProtMissingMpidError,
     MoonProtMpidConflictError,
@@ -202,3 +203,46 @@ def test_fixture_cli_is_reproducible() -> None:
     assert parsed["contract_id"] == CONTRACT_ID
     assert parsed["ok"] is True
     assert parsed["record"]["moonprot_id"] == "2"
+
+
+def test_known_absent_marker_no_entry_found() -> None:
+    html = "<html><body><p>No entry found for MoonProt ID 103</p></body></html>"
+    with pytest.raises(MoonProtKnownAbsentError) as excinfo:
+        parse_moonprot_html(html, expected_mpid=103)
+    assert excinfo.value.absent_marker == "no entry found"
+    assert isinstance(excinfo.value, MoonProtParseError)
+
+
+def test_known_absent_marker_no_such_protein() -> None:
+    html = "<html><body><h1>No such protein</h1></body></html>"
+    with pytest.raises(MoonProtKnownAbsentError) as excinfo:
+        parse_moonprot_html(html, expected_mpid=999)
+    assert excinfo.value.absent_marker == "no such protein"
+
+
+def test_known_absent_marker_protein_not_found() -> None:
+    html = "<html><body>Protein not found</body></html>"
+    with pytest.raises(MoonProtKnownAbsentError) as excinfo:
+        parse_moonprot_html(html, expected_mpid=1000)
+    assert excinfo.value.absent_marker == "protein not found"
+
+
+def test_known_absent_marker_this_record_does_not_exist() -> None:
+    html = "<html><body>This record does not exist</body></html>"
+    with pytest.raises(MoonProtKnownAbsentError) as excinfo:
+        parse_moonprot_html(html, expected_mpid=1001)
+    assert excinfo.value.absent_marker == "this record does not exist"
+
+
+def test_known_absent_marker_case_insensitive() -> None:
+    html = "<html><body><p>NO ENTRY FOUND for MoonProt ID 103</p></body></html>"
+    with pytest.raises(MoonProtKnownAbsentError) as excinfo:
+        parse_moonprot_html(html, expected_mpid=103)
+    assert excinfo.value.absent_marker == "no entry found"
+
+
+def test_table_less_200_without_absent_marker_still_raises_malformed() -> None:
+    html = "<html><body><p>Some other error</p></body></html>"
+    with pytest.raises(MoonProtMalformedHtmlError) as excinfo:
+        parse_moonprot_html(html)
+    assert excinfo.value.table_found is False

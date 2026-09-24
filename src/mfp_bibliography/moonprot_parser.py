@@ -81,6 +81,23 @@ class MoonProtMpidConflictError(MoonProtParseError):
         self.expected_mpid = expected_mpid
 
 
+class MoonProtKnownAbsentError(MoonProtParseError):
+    """The page explicitly indicates the requested MoonProt ID is absent/not found."""
+
+    ABSENT_MARKERS = frozenset({
+        "no entry found",
+        "no such protein",
+        "protein not found",
+        "this record does not exist",
+        "moonprot id not found",
+        "no details available",
+    })
+
+    def __init__(self, message: str, *, absent_marker: str) -> None:
+        super().__init__(message)
+        self.absent_marker = absent_marker
+
+
 @dataclass(frozen=True)
 class MoonProtRecord:
     """Structured extraction result from one MoonProt fixture."""
@@ -150,8 +167,17 @@ def parse_moonprot_html(
     Fields are located by visible labels; row order is irrelevant. Missing
     `uniprot_id`/`protein_name` are reported through `missing_fields` on the
     returned record. Raises MoonProtMalformedHtmlError, MoonProtDuplicateLabelError,
-    MoonProtMissingMpidError, or MoonProtMpidConflictError on failure.
+    MoonProtMissingMpidError, MoonProtMpidConflictError, or MoonProtKnownAbsentError on failure.
     """
+    # Check for known absent markers before parsing
+    lower_text = html_text.lower()
+    for marker in MoonProtKnownAbsentError.ABSENT_MARKERS:
+        if marker in lower_text:
+            raise MoonProtKnownAbsentError(
+                f"Page contains absent marker: {marker!r}",
+                absent_marker=marker,
+            )
+    
     parser = _MoonProtTableParser()
     parser.feed(html_text)
     parser.close()

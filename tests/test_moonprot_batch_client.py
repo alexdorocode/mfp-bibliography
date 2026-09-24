@@ -11,6 +11,7 @@ from mfp_bibliography.moonprot_client import (
     BATCH_ALLOWED_MPID_RANGE,
     BATCH_CONTRACT_ID,
     MAX_BATCH_SIZE,
+    ABSENT_LOG_HEADER,
     ERROR_LOG_HEADER,
     INDEX_HEADER,
     ROBOTS_URL,
@@ -21,6 +22,7 @@ from mfp_bibliography.moonprot_client import (
     MoonProtBatchConfig,
     BatchRunReport,
 )
+from mfp_bibliography.moonprot_parser import MoonProtKnownAbsentError, MoonProtParseError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 UA = "mfp-bibliography/0.1 (contact: curator@example.org)"
@@ -469,3 +471,123 @@ def test_batch_client_no_real_http(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     
     report = client.run(["1"])  # full execution path with fake transport: no HTTP
     assert report.acquired_mpids == (1,)
+
+
+# -- Known absent tests -------------------------------------------------------------
+
+
+def test_known_absent_continues_batch_and_logs(tmp_path: Path) -> None:
+    from mfp_bibliography.moonprot_parser import MOONPROT_URL_PATTERN, MoonProtKnownAbsentError
+    absent_html = b"<html><body><p>No entry found for MoonProt ID 103</p></body></html>"
+    
+    client, transport = make_batch_client(
+        tmp_path,
+        {
+            ROBOTS_URL: ok_response(robots_body(allow=True)),
+            MOONPROT_URL_PATTERN.format(id=103): ok_response(absent_html),
+            MOONPROT_URL_PATTERN.format(id=104): ok_response(protein_html(104)),
+        },
+    )
+    
+    report = client.run(["103", "104"])
+    
+    assert report.stopped is False
+    assert report.acquired_mpids == (104,)
+    assert report.known_absent_mpids == (103,)
+    assert report.skipped_mpids == ()
+    
+    # Check absent log was created
+    absent_path = tmp_path / "data" / "interim" / "moonprot_absent_log.csv"
+    assert absent_path.exists()
+    header, rows = read_csv(absent_path)
+    assert header == list(ABSENT_LOG_HEADER)
+    assert len(rows) == 1
+    assert rows[0][0] == "103"
+    assert rows[0][2] == "200"
+    assert rows[0][3] == "no entry found"
+    
+    # Check raw HTML was NOT persisted
+    raw = tmp_path / "data" / "raw" / "moonprot" / "mpid_103.html"
+    assert not raw.exists()
+
+
+def test_known_absent_skips_already_logged_mpid(tmp_path: Path) -> None:
+    from mfp_bibliography.moonprot_parser import MOONPROT_URL_PATTERN
+    # Pre-populate absent log
+    absent_log = tmp_path / "data" / "interim" / "moonprot_absent_log.csv"
+    absent_log.parent.mkdir(parents=True)
+    absent_log.write_text("mpid,url,http_status,absent_marker,detected_at\n103,http://example.org,200,no entry found,2026-01-01T00:00:00Z\n")
+    
+    client, transport = make_batch_client(tmp_path, {})
+    
+    report = client.run(["103", "104"])
+    
+    assert report.stopped is True
+    assert report.stop_reason == "validation_error"
+    # MPID 103 should be rejected as already known absent
+    assert any("already known absent" in outcome.detail for outcome in report.outcomes if outcome.detail)
+
+
+def test_parser_error_still_stops_batch(tmp_path: Path) -> None:
+    from mfp_bibliography.moonprot_parser import MOONPROT_URL_PATTERN
+    # HTML with no table and no absent marker - generic malformed
+    malformed_html = b"<html><body><p>Some other error</p></body></html>"
+    
+    client, transport = make_batch_client(
+        tmp_path,
+        {
+            ROBOTS_URL: ok_response(robots_body(allow=True)),
+            MOONPROT_URL_PATTERN.format(id=103): ok_response(malformed_html),
+            MOONPROT_URL_PATTERN.format(id=104): ok_response(protein_html(104)),
+        },
+    )
+    
+    report = client.run(["103", "104"])
+    
+    # Should stop on parser error (not known absent)
+    assert report.stopped is True
+    assert report.stop_reason == "parser_error"
+    assert report.acquired_mpids == ()
+    assert report.stopped_mpids == (103,)
+    assert report.skipped_mpids == (104,)
+    
+    # Check raw HTML was NOT persisted
+    raw = tmp_path / "data" / "raw" / "moonprot" / "mpid_103.html"
+    assert not raw.exists()
+    
+    # Check absent log was NOT created (not a known absent case)
+    absent_path = tmp_path / "data" / "interim" / "moonprot_absent_log.csv"
+    if absent_path.exists():
+        header, rows = read_csv(absent_path)
+        assert len(rows) == 0
+
+
+def test_batch_report_distinguishes_all_statuses(tmp_path: Path) -> None:
+    from mfp_bibliography.moonprot_parser import MOONPROT_URL_PATTERN
+    absent_html = b"<html><body><p>No entry found for MoonProt ID 103</p></body></html>"
+    
+    client, transport = make_batch_client(
+        tmp_path,
+        {
+            ROBOTS_URL: ok_response(robots_body(allow=True)),
+            MOONPROT_URL_PATTERN.format(id=1): ok_response(protein_html(1)),
+            MOONPROT_URL_PATTERN.format(id=2): TransportResponse(500, {}, b"error"),
+            MOONPROT_URL_PATTERN.format(id=3): ok_response(absent_html),
+            MOONPROT_URL_PATTERN.format(id=4): ok_response(protein_html(4)),
+        },
+        continue_on_error=True,
+    )
+    
+    report = client.run(["1", "2", "3", "4"])
+    
+    assert report.acquired_mpids == (1, 4)
+    assert report.known_absent_mpids == (3,)
+    assert report.stopped_mpids == (2,)
+    assert report.skipped_mpids == ()
+    
+    # Check JSON output has all categories
+    report_dict = report.to_dict()
+    assert "acquired_mpids" in report_dict
+    assert "known_absent_mpids" in report_dict
+    assert "stopped_mpids" in report_dict
+    assert "skipped_mpids" in report_dict

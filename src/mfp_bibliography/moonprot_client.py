@@ -53,6 +53,7 @@ from typing import Any
 
 from mfp_bibliography.moonprot_parser import (
     MOONPROT_URL_PATTERN,
+    MoonProtKnownAbsentError,
     MoonProtParseError,
     parse_moonprot_html,
 )
@@ -93,6 +94,13 @@ ERROR_LOG_HEADER = (
     "detail",
     "http_status",
     "attempted_at",
+)
+ABSENT_LOG_HEADER = (
+    "mpid",
+    "url",
+    "http_status",
+    "absent_marker",
+    "detected_at",
 )
 SMOKE_RESULT_HEADER = ("mpid", "uniprot_id", "protein_name")
 
@@ -170,6 +178,10 @@ class MoonProtSmokeConfig:
     @property
     def error_log_path(self) -> Path:
         return self.root / "data" / "interim" / "moonprot_smoke_error_log.csv"
+
+    @property
+    def absent_log_path(self) -> Path:
+        return self.root / "data" / "interim" / "moonprot_absent_log.csv"
 
 
 @dataclass(frozen=True)
@@ -607,23 +619,31 @@ class MoonProtBatchConfig:
     def error_log_path(self) -> Path:
         return self.root / "data" / "interim" / "moonprot_smoke_error_log.csv"
 
+    @property
+    def absent_log_path(self) -> Path:
+        return self.root / "data" / "interim" / "moonprot_absent_log.csv"
+
 
 @dataclass(frozen=True)
 class BatchMpidOutcome:
     mpid: int
-    status: str  # "acquired", "stopped", "skipped"
+    status: str  # "acquired", "known_absent", "stopped", "skipped"
     error_type: str | None = None
     detail: str | None = None
     http_status: int | None = None
+    absent_marker: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        result = {
             "mpid": self.mpid,
             "status": self.status,
             "error_type": self.error_type,
             "detail": self.detail,
             "http_status": self.http_status,
         }
+        if self.absent_marker is not None:
+            result["absent_marker"] = self.absent_marker
+        return result
 
 
 @dataclass(frozen=True)
@@ -636,6 +656,10 @@ class BatchRunReport:
     @property
     def acquired_mpids(self) -> tuple[int, ...]:
         return tuple(outcome.mpid for outcome in self.outcomes if outcome.status == "acquired")
+
+    @property
+    def known_absent_mpids(self) -> tuple[int, ...]:
+        return tuple(outcome.mpid for outcome in self.outcomes if outcome.status == "known_absent")
 
     @property
     def stopped_mpids(self) -> tuple[int, ...]:
@@ -652,6 +676,7 @@ class BatchRunReport:
             "stopped": self.stopped,
             "stop_reason": self.stop_reason,
             "acquired_mpids": list(self.acquired_mpids),
+            "known_absent_mpids": list(self.known_absent_mpids),
             "stopped_mpids": list(self.stopped_mpids),
             "skipped_mpids": list(self.skipped_mpids),
         }
@@ -665,6 +690,17 @@ class _BatchGateStop(Exception):
         self.error_type = error_type
         self.detail = detail
         self.http_status = http_status
+
+
+class _KnownAbsentStop(Exception):
+    """Internal: the MPID was detected as known absent."""
+
+    def __init__(self, mpid: int, url: str, http_status: int, absent_marker: str) -> None:
+        super().__init__(f"MPID {mpid} is known absent")
+        self.mpid = mpid
+        self.url = url
+        self.http_status = http_status
+        self.absent_marker = absent_marker
 
 
 class MoonProtBatchClient:
@@ -730,6 +766,9 @@ class MoonProtBatchClient:
             return valid, errors
         
         # Check each MPID
+        absent_log_path = self._config.absent_log_path
+        absent_mpids = self._load_absent_mpids(absent_log_path) if absent_log_path.exists() else set()
+        
         for mpid in mpids:
             # Check range
             if not (BATCH_ALLOWED_MPID_RANGE[0] <= mpid <= BATCH_ALLOWED_MPID_RANGE[1]):
@@ -742,9 +781,29 @@ class MoonProtBatchClient:
                 errors.append(f"MPID {mpid} already exists at {raw_path}")
                 continue
             
+            # Check if already known absent
+            if mpid in absent_mpids:
+                errors.append(f"MPID {mpid} already known absent")
+                continue
+            
             valid.append(mpid)
         
         return valid, errors
+    
+    @staticmethod
+    def _load_absent_mpids(path: Path) -> set[int]:
+        """Load set of MPIDs from the absent log."""
+        if not path.exists():
+            return set()
+        mpids = set()
+        with path.open(encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                try:
+                    mpids.add(int(row["mpid"]))
+                except (ValueError, KeyError):
+                    continue
+        return mpids
 
     def run(self, mpids: Iterable[int | str]) -> BatchRunReport:
         """Acquire the given MPIDs sequentially in batch mode.
@@ -832,6 +891,9 @@ class MoonProtBatchClient:
                 stop_reason="validation_error",
             )
         
+        # Ensure absent log always exists with header
+        self._init_csv(self._config.absent_log_path, ABSENT_LOG_HEADER)
+        
         outcomes: list[BatchMpidOutcome] = []
         stop: _BatchGateStop | None = None
         processed_count = 0
@@ -842,6 +904,20 @@ class MoonProtBatchClient:
                 continue
             try:
                 self._acquire(mpid)
+            except _KnownAbsentStop as absent:
+                # Log the absent record
+                self._log_absent(
+                    absent.mpid,
+                    absent.url,
+                    absent.http_status,
+                    absent.absent_marker,
+                )
+                outcomes.append(
+                    BatchMpidOutcome(
+                        mpid, "known_absent", error_type=None, detail=None,
+                        http_status=absent.http_status, absent_marker=absent.absent_marker
+                    )
+                )
             except _GateStop as gate:
                 stop = _BatchGateStop(gate.error_type, gate.detail, gate.http_status)
                 self._gate_to_error_log(mpid, gate)
@@ -902,6 +978,8 @@ class MoonProtBatchClient:
 
         try:
             record = parse_moonprot_html(decoded, expected_mpid=mpid)
+        except MoonProtKnownAbsentError as exc:
+            raise _KnownAbsentStop(mpid, url, response.status_code, exc.absent_marker) from exc
         except MoonProtParseError as exc:
             raise _GateStop(
                 "parser_error",
@@ -1036,6 +1114,26 @@ class MoonProtBatchClient:
 
     def _gate_to_error_log(self, mpid: int, gate: _GateStop) -> None:
         self._log_error(mpid, protein_url(mpid), gate.error_type, gate.detail, gate.http_status)
+
+    def _log_absent(
+        self,
+        mpid: int,
+        url: str,
+        http_status: int,
+        absent_marker: str,
+    ) -> None:
+        path = self._config.absent_log_path
+        self._append_csv_row(
+            path,
+            ABSENT_LOG_HEADER,
+            (
+                str(mpid),
+                url,
+                str(http_status),
+                absent_marker,
+                _utc_now_iso(),
+            ),
+        )
 
     def _request(self, url: str) -> TransportResponse:
         if self._last_request_at is not None:
