@@ -31,6 +31,7 @@ source_mappings:
 # Sources with no observed status field; all their claims are unresolved.
 unmapped_sources:
   - SRC_MULTIFACETEDPROTDB
+  - SRC_MULTITASKPROTDB_II
 
 # Fields that must never be mapped: structural metadata, not claim evidence.
 excluded_fields:

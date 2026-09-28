@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- MoonProt known-absent and unresolved MPIDs (103, 542, 543, 626) are now coverage-only status rows and no longer materialize as source records or protein entities (ADR-006).
+
+### Changed
+- MVP catalog counts after the correction: 1,165 source records (MoonProt 702), 1,073 protein entities, 45 exact UniProt merges, `fallback_identity_records = 0`.
+
 ## [v0.1.0-source-freeze] - Unreleased
 
 ### Added
