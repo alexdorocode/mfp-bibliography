@@ -3,7 +3,7 @@
 ## Versioning
 
 - Python package versioning follows PEP 440 (current package version: `0.1.0`).
-- Repository milestones/releases may include descriptive labels (current target: `v0.1.0-source-freeze`).
+- Repository milestones/releases may include descriptive labels. Historical milestone: `v0.1.0-source-freeze`. Current milestone: the five-source catalog candidate `mfp-catalog-candidate-v0.2.0` (CANDIDATE — packaged under `releases/`, not yet tagged or published), toward the future `mfp_catalog_v1` release.
 
 ## Meaning of `v0.1.0-source-freeze`
 

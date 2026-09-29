@@ -33,8 +33,8 @@ Evidence-bearing counts must be linked to reproducible outputs (generated artifa
 Snapshot as of 2026-09-28; counts from `data/processed/mfp_catalog_mvp/summary.json`.
 
 - **Build command:** `PYTHONPATH=src python scripts/build_mfp_catalog_mvp.py`
-- 2,268 source records; 2,013 protein entities; 184 exact-UniProt merges.
-- Included sources: MoonProt 702 (see [acquisition protocol](../acquisition-protocols/moonprot.md)); MoonDB 351 ([profile](../source-profiles/moondb.md)); PlantMP 112 ([profile](../source-profiles/plantmp.md)); MultifacetedProtDB 1,103 ([profile](../source-profiles/multifacetedprotdb.md), no source status field — evidence claims 0).
+- 2,962 source records; 2,322 protein entities; 463 exact-UniProt merges.
+- Included sources: MoonProt 702 (see [acquisition protocol](../acquisition-protocols/moonprot.md)); MoonDB 351 ([profile](../source-profiles/moondb.md)); PlantMP 112 ([profile](../source-profiles/plantmp.md)); MultifacetedProtDB 1,103 ([profile](../source-profiles/multifacetedprotdb.md)); MultitaskProtDB-II 694 ([profile](../source-profiles/multitaskprotdb-ii.md), annotation-entry grain; 685 accessions; evidence claims 0).
 - MoonProt coverage-only MPIDs ([ADR-006](../decisions/ADR-006-coverage-only-moonprot-status-rows.md)): MPID 103 known absent; MPIDs 542, 543, 626 unresolved (identifiers, not counts). They carry no source records or protein entities.
 - [MultifacetedProtDB](../source-profiles/multifacetedprotdb.md) and [MultitaskProtDB-II](../source-profiles/multitaskprotdb-ii.md): raw data only, not ingested.
 
@@ -60,22 +60,22 @@ Snapshot as of 2026-09-28; counts from `data/processed/mfp_catalog_mvp/summary.j
 - **Acceptance criteria:** each claim retains its original source label verbatim; provenance complete.
 - **Out of scope:** new data acquisition; relabeling or transforming source claims.
 - **Blockers / limitations:** retrieval date of the raw artifact is unknown locally.
-- **Next action:** finalize profiling; implement ingestion into `mfp_assertions`.
+- **Next action:** none; ingestion is complete (traceability R20). Open limitation: the raw artifact's retrieval date is unknown locally.
 
 ### Phase C — MultitaskProtDB-II profiling and ingestion
 
-- **Status:** planned.
+- **Status:** completed (catalog contract MFPB_0_19_MFP_CATALOG_MVP_V2). 694 annotation-entry rows ingested; repeated accessions are distinct observations; zero invented claims; reference anomalies stay attached to their rows.
 - **Objective:** same treatment as Phase B for MultitaskProtDB-II.
 - **Evidence:** raw data in `data/raw/multitaskprotdb-ii/`; [source profile](../source-profiles/multitaskprotdb-ii.md).
 - **Smallest deliverable:** records ingested with complete provenance.
 - **Acceptance criteria:** deduplication only by exact normalized UniProt accession.
 - **Out of scope:** fuzzy or inferred merges.
 - **Blockers / limitations:** profile completeness not yet reviewed against the raw artifact.
-- **Next action:** review and extend the source profile; define the ingestion contract.
+- **Next action:** ingestion is complete (traceability R21, contract `MFPB_0_19_MFP_CATALOG_MVP_V2`); remaining open item is the profile-completeness review against the raw artifact.
 
 ### Phase D0 — Annotation and evidence data contract
 
-- **Status:** planned.
+- **Status:** planned — laboratory integration is explicitly deferred: the five-source candidate contains no verified article-to-GO relations, and no laboratory-system implementation has started.
 - **Objective:** define versioned schemas, controlled vocabularies, identifiers,
   provenance requirements, validation rules, and interchange contract for the
   laboratory annotation-retrieval system.
@@ -93,7 +93,7 @@ Snapshot as of 2026-09-28; counts from `data/processed/mfp_catalog_mvp/summary.j
 
 ### Phase D — Functional assertions and bibliographic evidence graph
 
-- **Status:** planned.
+- **Status:** planned — explicitly deferred until the candidate is stabilized and Phase D0's contract exists; no implementation started.
 - **Objective:** represent protein–function/GO–reference relations with
   assertion-level provenance, using the laboratory annotation-retrieval system.
 - **Evidence:** existing `mfp_proteins`, `mfp_source_records`,
@@ -122,12 +122,12 @@ Snapshot as of 2026-09-28; counts from `data/processed/mfp_catalog_mvp/summary.j
 
 - **Status:** planned.
 - **Objective:** publish a versioned, byte-reproducible catalog with total traceability.
-- **Evidence:** checksum-pinned precedent in [pre-MoonProt baseline v0.1](../releases/pre-moonprot-baseline-v0.1.md).
+- **Evidence:** checksum-pinned precedent in [pre-MoonProt baseline v0.1](../releases/pre-moonprot-baseline-v0.1.md); five-source candidate packaged at [mfp-catalog-candidate-v0.2.0](../releases/mfp-catalog-candidate-v0.2.0.md).
 - **Smallest deliverable:** packaged catalog CSV plus relational tables, versioned.
 - **Acceptance criteria:** release declares scope, limitations, file hashes, schema version, and reproduction order.
 - **Out of scope:** claims of complete MoonProt coverage while MPIDs remain unresolved.
 - **Blockers / limitations:** depends on Phases B–D0-D.
-- **Next action:** draft the release contract.
+- **Next action:** draft the final `mfp_catalog_v1` release contract; the candidate v0.2.0 under `releases/` is NOT final v1.
 
 ## Coverage caveat
 

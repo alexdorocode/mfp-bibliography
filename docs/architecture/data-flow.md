@@ -1,8 +1,10 @@
 # Catalog Data Flow (Current State)
 
-Verified baseline (`data/processed/mfp_catalog_mvp/summary.json`): 2,268 source
-records (MoonDB 351, MoonProt 702, MultifacetedProtDB 1,103, PlantMP 112),
-2,013 protein entities, 184 exact UniProt merges, coverage 702/1/3.
+Verified baseline (`data/processed/mfp_catalog_mvp/summary.json`): 2,962 source
+records (MoonDB 351, MoonProt 702, MultifacetedProtDB 1,103, MultitaskProtDB-II
+694, PlantMP 112), 2,322 protein entities, 463 exact UniProt merges, coverage
+702/1/3. The packaged copy of these counts is
+`releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json` (`measured_counts`).
 
 ## Acquisition vs offline transformation
 
@@ -42,9 +44,11 @@ absent-log provenance.
 
 ## Not implemented yet
 
-- MultitaskProtDB-II: RAW_ONLY (`data/raw/`, source profile exists; not in
-  catalog). MultifacetedProtDB is integrated as the fourth catalog source with
-  zero evidence claims (no status field in the source).
+- All five registered sources are integrated. MultifacetedProtDB and
+  MultitaskProtDB-II have no status field: zero evidence claims; their raw
+  data (including verbatim GO/GO_Moon text and record-level references) is
+  preserved as source data, never as verified GO annotations or GO–article
+  support.
 - Laboratory GO/evidence integration: FUTURE (contract only:
   `docs/bibliography/go-annotation-evidence-contract.md`, Phase D0/D).
 

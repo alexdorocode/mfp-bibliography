@@ -1,0 +1,90 @@
+{
+  "build_commands": [
+    "PYTHONPATH=src python scripts/build_mfp_catalog_mvp.py",
+    "PYTHONPATH=src python scripts/package_catalog_candidate.py"
+  ],
+  "candidate_id": "mfp-catalog-candidate-v0.2.0",
+  "catalog_contract": "MFPB_0_19_MFP_CATALOG_MVP_V2",
+  "checksums_file": "checksums.sha256",
+  "inputs": {
+    "interim_source_record_files": {
+      "SRC_MULTIFACETEDPROTDB": {
+        "path": "data/interim/source_records_multifacetedprotdb.csv",
+        "sha256": "0974121d077d674f36b8136f2f1c194f604a0213a8a93f9267ac2dc34435d142"
+      },
+      "SRC_MULTITASKPROTDB_II": {
+        "path": "data/interim/source_records_multitaskprotdb_ii.csv",
+        "sha256": "4b174308f976dbae76d2aea23d4504c6712d527ed6f2aa9958c43ba6ec5e4efb"
+      }
+    },
+    "moonprot_per_mpid_hashes": {
+      "artifact_index_sha256_whole_file": "2e09e297df0dc070c315870e6858e435c67f755575049490a59f9d87b5776b7d",
+      "note": "Per-MPID MoonProt HTML hashes are per-record (raw_sha256 in mfp_source_records.csv) and authoritative in data/raw/moonprot/artifact_index.csv; they are NOT whole-file hashes."
+    },
+    "raw_input_files": {
+      "SRC_MOONDB": {
+        "grain": "whole_file",
+        "path": "data/raw/moondb/all_emf_and_curated.tsv",
+        "sha256_whole_file": "c503101da091ba457f9480f094b67f939fe3b0ac9310b3f7e5d7868b21532d55"
+      },
+      "SRC_MULTIFACETEDPROTDB": {
+        "grain": "whole_file",
+        "path": "data/raw/multifacetedprotdb/MultifacetedProtDB_data.json",
+        "sha256_whole_file": "94bc65ded5615dc6a9b2ef37140c27b556fa4b8e387ee1bcd2d40c490625acd2"
+      },
+      "SRC_MULTITASKPROTDB_II": {
+        "grain": "whole_file",
+        "path": "data/raw/multitaskprotdb-ii/proteins.csv",
+        "sha256_whole_file": "84871fd9ae5c5785adc14047d8a318b8b09aeadbfb12d9a7dd5d66a062cf6482"
+      },
+      "SRC_PLANTMP": {
+        "grain": "whole_file",
+        "path": "data/raw/plantmp/PlantMP_all.csv",
+        "sha256_whole_file": "97ae53eccbbd3a9c2a1e9b3247db8bcc0b66de929bf4471b37187de5e3a494a9"
+      }
+    }
+  },
+  "measured_counts": {
+    "exact_uniprot_merge_count": 463,
+    "metric_definitions": {
+      "exact_uniprot_merge_count": "accessions claimed by >= 2 sources; NOT source_record_count minus protein_entity_count",
+      "protein_entity_count": "unique normalized UniProt accession entities",
+      "repeated_observations": "468 accessions with 640 extra rows within one source",
+      "source_record_count": "one row per source observation (row grain per source)"
+    },
+    "moonprot_coverage": {
+      "acquired": 702,
+      "known_absent": 1,
+      "unresolved": 3
+    },
+    "protein_entity_count": 2322,
+    "source_record_count": 2962,
+    "source_record_counts": {
+      "SRC_MOONDB": 351,
+      "SRC_MOONPROT": 702,
+      "SRC_MULTIFACETEDPROTDB": 1103,
+      "SRC_MULTITASKPROTDB_II": 694,
+      "SRC_PLANTMP": 112
+    }
+  },
+  "packaged_outputs": {
+    "mfp_assertions.csv": {
+      "sha256": "b3843dcdc99f6c172ce2ff49480024d12c4f239a52e326e23f86a4d80dc14fd5"
+    },
+    "mfp_coverage.csv": {
+      "sha256": "46889dcad5cab7907803c2f9e3ec127ad44da67dc133b03a56ff7de8bce9ad49"
+    },
+    "mfp_identifiers.csv": {
+      "sha256": "27afb04dd673ca81ea8f11b20b034fe8d4cb5a1efd41f140b1921306b2d9513c"
+    },
+    "mfp_proteins.csv": {
+      "sha256": "a2e6cde1eebcb620cc94e77f2d86923bbedc8d25f62f0acd888d3714930e5bfc"
+    },
+    "mfp_source_records.csv": {
+      "sha256": "89daf82e254c02943a98d11e7391504596ba86c607f33bf10bf39ae64b023129"
+    }
+  },
+  "protein_id_scheme": "MFPB_PROTEIN_ID_V1",
+  "status": "CANDIDATE \u2014 not the final v1 release",
+  "verification_command": "PYTHONPATH=src python scripts/package_catalog_candidate.py --verify"
+}

@@ -148,7 +148,7 @@
 ### Metric note (verified, not changed)
 - Current summary `exact_uniprot_merges = 184` counts normalized accessions claimed by ≥2 sources in the four-source catalog; the integration note's "163 overlaps" counts MultifacetedProtDB accessions already present among the previous three sources' proteins. They agree exactly: 45 (old three-source merges) + 163 (MF∩old proteins) − 24 (already merged among old sources and also in MF) = 184. No counts were altered.
 
-### Adapter status (interim; NOT integrated into the catalog)
+### Adapter status (integrated into the catalog, contract MFPB_0_19_MFP_CATALOG_MVP_V2)
 - Policy: `SRC_MULTITASKPROTDB_II` added to `unmapped_sources` in
   `configs/source_claim_policy_v0.1.yaml` (neutral `operational_status=unresolved`).
 - Implemented: `src/mfp_bibliography/multitaskprotdb_ii_records.py` +
@@ -167,7 +167,11 @@
 - Reference anomalies flagged at FIELD level, rows retained verbatim:
   2 `not_article_identifier` (rows 239: OMIM-style text; 422: `4ENL`) and
   1 `missing` (row 349). Never converted to PMID/DOI.
-- Conservation: 694 raw rows = 694 interim source records; 0 excluded.
+- Catalog integration done: 694 raw rows = 694 interim source records = 694
+  catalog source records (9 repeated accessions as separate observations);
+  evidence claims remain 0; GO/GO_Moon/functions/references preserved verbatim
+  as source data; the 3 reference anomalies stay attached to their rows and are
+  never promoted to verified PMID/DOI.
 
 ### Unresolved decisions
 - Whether GO/GO_Moon blocks should be additionally decomposed into structured GO-annotation interim rows under the GO contract in Phase D (source data either way).
