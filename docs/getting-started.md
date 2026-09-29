@@ -46,6 +46,10 @@ Source semantics: [source profiles](source-profiles/) (MoonProt is documented
 in its [acquisition protocol](acquisition-protocols/moonprot.md)).
 Pipeline architecture: [data-flow map](architecture/data-flow.md).
 
+Planned descriptive analyses of the packaged tables (coverage, overlap,
+composition — not validated articles or GO support):
+[five-source descriptive study plan](analysis/five-source-descriptive-study-plan.md).
+
 ## 2. Verify the package offline (PACKAGE_VERIFY)
 
 Checks internal package integrity only: file inventory, SHA-256 hashes

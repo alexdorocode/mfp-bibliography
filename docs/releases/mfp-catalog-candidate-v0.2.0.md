@@ -78,3 +78,32 @@ packager refuses to overwrite an existing candidate with different bytes.
 
 Tests: `tests/test_catalog_candidate.py` (packaging, REBUILD_COMPARE),
 `tests/test_candidate_package_verify.py` (offline PACKAGE_VERIFY).
+
+## Errata (documentation only — candidate bytes unchanged)
+
+- The packaged `DATA_DICTIONARY.md` describes `source_status` as a
+  "source-provided label, verbatim". This is imprecise for three of the five
+  sources:
+  - MoonDB and PlantMP: `source_status` holds the repository's
+    policy-mapped operational status (MFPB_0_7,
+    `configs/source_claim_policy_v0.1.yaml`: MoonDB `Curated`→`curated`,
+    `Predicted`→`predicted`; PlantMP `confirmed`→`curated`,
+    `likely`→`excluded_likely`, `predicted`→`predicted`). The verbatim
+    source-provided values are preserved in the `raw_claim_value` column of
+    `mfp_source_records.csv` (field `type`).
+  - MoonProt: `source_status=valid` is loader-generated (hard-coded in
+    `scripts/build_mfp_catalog_mvp.py`); MoonProt pages carry no claim
+    field. It is a technical/coverage status, not an experimental evidence
+    tier.
+- Evidence: `configs/source_claim_policy_v0.1.yaml`;
+  `src/mfp_bibliography/plantmp_claims.py::resolve_operational_status`;
+  `scripts/build_mfp_catalog_mvp.py` (MoonProt record construction);
+  packaged `mfp_source_records.csv` `raw_claim_field`/`raw_claim_value`.
+- Impact: none on scope or counts — verbatim labels ARE preserved (in
+  `raw_claim_value`) and per-source counts are unaffected. The imprecise
+  dictionary text can only be corrected in a future candidate version; the
+  packaged candidate v0.2.0 is not modified.
+- The corrected status-label analysis is
+  `analysis/five-source-v0.2.0/q5_status_labels_v2/` (provenance-corrected);
+  the earlier Q5 output (`q5_status_labels/`, v1) mislabeled policy-mapped
+  statuses as "verbatim" and is superseded, left byte-unchanged.
