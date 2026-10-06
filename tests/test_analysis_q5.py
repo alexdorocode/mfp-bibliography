@@ -13,7 +13,7 @@ from mfp_bibliography import analysis_q5
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts/analyze_question5.py"
-CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.2.0"
+CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.3.0"
 RECORD_HEADER = ["source_name", "source_record_id", "protein_id",
                  "source_status", "operational_status",
                  "raw_claim_field", "raw_claim_value"]

@@ -75,7 +75,11 @@ Snapshot as of 2026-09-28; counts from `data/processed/mfp_catalog_mvp/summary.j
 
 ### Phase D0 — Annotation and evidence data contract
 
-- **Status:** planned — laboratory integration is explicitly deferred: the five-source candidate contains no verified article-to-GO relations, and no laboratory-system implementation has started.
+- **Status:** planned — deferred to a post-`mfp_catalog_v1` version: D0/D are
+  formally out of scope for v1 by maintainers' decision
+  ([ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md));
+  the five-source candidate contains no verified article-to-GO relations, and
+  no laboratory-system implementation has started.
 - **Objective:** define versioned schemas, controlled vocabularies, identifiers,
   provenance requirements, validation rules, and interchange contract for the
   laboratory annotation-retrieval system.
@@ -93,7 +97,11 @@ Snapshot as of 2026-09-28; counts from `data/processed/mfp_catalog_mvp/summary.j
 
 ### Phase D — Functional assertions and bibliographic evidence graph
 
-- **Status:** planned — explicitly deferred until the candidate is stabilized and Phase D0's contract exists; no implementation started.
+- **Status:** planned — deferred to a post-`mfp_catalog_v1` version (out of
+  scope for v1 per
+  [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md));
+  until the candidate is stabilized and Phase D0's contract exists; no
+  implementation started.
 - **Objective:** represent protein–function/GO–reference relations with
   assertion-level provenance, using the laboratory annotation-retrieval system.
 - **Evidence:** existing `mfp_proteins`, `mfp_source_records`,
@@ -122,12 +130,15 @@ Snapshot as of 2026-09-28; counts from `data/processed/mfp_catalog_mvp/summary.j
 
 - **Status:** planned.
 - **Objective:** publish a versioned, byte-reproducible catalog with total traceability.
-- **Evidence:** checksum-pinned precedent in [pre-MoonProt baseline v0.1](../releases/pre-moonprot-baseline-v0.1.md); five-source candidate packaged at [mfp-catalog-candidate-v0.2.0](../releases/mfp-catalog-candidate-v0.2.0.md).
+- **Evidence:** checksum-pinned precedent in [pre-MoonProt baseline v0.1](../releases/pre-moonprot-baseline-v0.1.md); five-source candidates packaged at [v0.2.0](../releases/mfp-catalog-candidate-v0.2.0.md) (superseded, immutable) and [v0.3.0](../releases/mfp-catalog-candidate-v0.3.0.md) (current).
 - **Smallest deliverable:** packaged catalog CSV plus relational tables, versioned.
 - **Acceptance criteria:** release declares scope, limitations, file hashes, schema version, and reproduction order.
 - **Out of scope:** claims of complete MoonProt coverage while MPIDs remain unresolved.
-- **Blockers / limitations:** depends on Phases B–D0-D.
-- **Next action:** draft the final `mfp_catalog_v1` release contract; the candidate v0.2.0 under `releases/` is NOT final v1.
+- **Blockers / limitations:** Phases B and C are complete; D0/D are formally
+  out of scope for v1 and deferred to a future version (APPROVED DESCOPE,
+  [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md)).
+- **Next action:** finalize the `mfp_catalog_v1` release contract; the
+  candidate v0.3.0 under `releases/` (superseding v0.2.0) is NOT final v1.
 
 ## Coverage caveat
 

@@ -15,7 +15,7 @@ from tests.test_analysis_q2 import build_q2_candidate
 from tests.test_analysis_q1 import build_candidate
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.2.0"
+CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.3.0"
 COVERAGE_HEADER = ["mpid", "status"]
 
 

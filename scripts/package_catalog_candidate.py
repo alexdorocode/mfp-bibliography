@@ -34,7 +34,9 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-CANDIDATE_ID = "mfp-catalog-candidate-v0.2.0"
+CANDIDATE_ID = "mfp-catalog-candidate-v0.3.0"
+# Historical candidate kept immutable and verifiable:
+SUPERSEDED_CANDIDATE_IDS = ("mfp-catalog-candidate-v0.2.0",)
 CATALOG_CONTRACT_ID = "MFPB_0_19_MFP_CATALOG_MVP_V2"
 PROTEIN_ID_SCHEME = "MFPB_PROTEIN_ID_V1"
 
@@ -261,11 +263,22 @@ PlantMP ({counts['source_record_counts']['SRC_PLANTMP']}).
   annotation-entry grain: 9 accessions with 2 rows each).
 
 ## Source statuses
-- MoonDB and PlantMP carry explicit source labels (curated/predicted etc.),
-  preserved verbatim.
+- Verbatim source-provided labels live in `raw_claim_value` (contextualized by
+  `raw_claim_field`; MoonDB/PlantMP field `type`), preserved with original
+  spelling/case.
+- `source_status` is the repository POLICY-MAPPED status (MFPB_0_7), not a
+  verbatim label; MoonProt's `source_status=valid` is a loader-generated
+  technical status, not a source evidence label.
 - MultifacetedProtDB and MultitaskProtDB-II have NO explicit source evidence
   status. Their `operational_status=unresolved` is a neutral administrative
   policy value, NOT a scientific label and NOT evidence.
+- Source labels are source-specific; they are NOT a cross-source evidence
+  scale and are never compared or harmonized across sources.
+
+## Deferred
+- A packaged `validation_report.json` artifact is deferred to the
+  `mfp_catalog_v1` release (release-contract gate 4); this candidate is
+  verified by the offline PACKAGE_VERIFY command below.
 
 ## Limitations
 - No verified article-to-GO relationships exist in this candidate. All
@@ -303,11 +316,21 @@ def build_data_dictionary() -> str:
 - PK: (`source_name`, `source_record_id`); `source_record_id` is stable per source
   (row-position based for Multitask/MultitaskProtDB-II snapshots).
 - `protein_id` (FK -> mfp_proteins.protein_id): exactly one per record.
-- `source_status`: source-provided label, verbatim; EMPTY (null) for
-  MultifacetedProtDB and MultitaskProtDB-II — never invented.
+- `source_status`: repository POLICY-MAPPED status (MFPB_0_7,
+  configs/source_claim_policy_v0.1.yaml), NOT a verbatim source label:
+  MoonDB/PlantMP carry the policy-mapped value (e.g. PlantMP raw `likely` ->
+  `excluded_likely`); MoonProt carries the loader-generated technical status
+  `valid` (not a source evidence label); EMPTY (null) for MultifacetedProtDB
+  and MultitaskProtDB-II — never invented.
 - `operational_status`: repository administrative bucket (policy-mapped for
   MoonDB/PlantMP; neutral `unresolved` for status-less sources). NOT a
   scientific label.
+- `raw_claim_field` / `raw_claim_value`: the VERBATIM source-provided label
+  and its source field (MoonDB/PlantMP: field `type`, e.g. `Curated`,
+  `Predicted`, `confirmed`, `likely`, `predicted`, original spelling/case);
+  the authoritative location of source labels. `source_status` and
+  `raw_claim_value` are NOT interchangeable, and source labels are NOT a
+  cross-source evidence scale.
 - `raw_path`, `raw_sha256` (per-record MoonProt HTML), `raw_file_sha256`
   (whole-file MoonDB/PlantMP/Multifaceted/Multitask artifacts).
 - Raw-data columns (`genes_raw`, `annotation_raw`, `go_raw`, `go_moon_raw`,
@@ -479,15 +502,17 @@ def check_packaged_tables(target: Path, manifest: dict) -> None:
             f"{counts['exact_uniprot_merge_count']}")
 
 
-def verify_package(releases_root: Path) -> int:
+def verify_package(releases_root: Path, candidate_id: str = CANDIDATE_ID) -> int:
     """PACKAGE_VERIFY: offline integrity check of the packaged candidate.
 
-    Reads only files inside ``releases/<CANDIDATE_ID>/``. Requires no raw
+    Reads only files inside ``releases/<candidate_id>/``. Requires no raw
     inputs, interim files, ``data/processed/`` outputs, network, Git tags or
-    catalog rebuild. Never writes into the candidate.
+    catalog rebuild. Never writes into the candidate. The candidate_id must
+    match the target directory name and the MANIFEST candidate_id, so
+    superseded immutable candidates remain verifiable offline.
     """
     try:
-        target = releases_root / CANDIDATE_ID
+        target = releases_root / candidate_id
         if not target.is_dir():
             raise PackagingError(f"candidate directory {target} not found")
 
@@ -522,9 +547,13 @@ def verify_package(releases_root: Path) -> int:
 
         # MANIFEST.json: identity, contract, packaged-table hashes.
         manifest = json.loads((target / "MANIFEST.json").read_text())
-        if manifest.get("candidate_id") != CANDIDATE_ID:
+        if manifest.get("candidate_id") != candidate_id:
             raise PackagingError(
-                f"MANIFEST candidate_id {manifest.get('candidate_id')!r} != {CANDIDATE_ID!r}")
+                f"MANIFEST candidate_id {manifest.get('candidate_id')!r} != "
+                f"{candidate_id!r}")
+        if target.name != candidate_id:
+            raise PackagingError(
+                f"candidate directory name {target.name!r} != {candidate_id!r}")
         if manifest.get("catalog_contract") != CATALOG_CONTRACT_ID:
             raise PackagingError(
                 f"MANIFEST catalog_contract {manifest.get('catalog_contract')!r} != "
@@ -540,7 +569,7 @@ def verify_package(releases_root: Path) -> int:
         check_packaged_tables(target, manifest)
 
         print(
-            f"Candidate {CANDIDATE_ID} PACKAGE_VERIFY OK: inventory, hashes, "
+            f"Candidate {candidate_id} PACKAGE_VERIFY OK: inventory, hashes, "
             "row counts, primary keys and foreign keys consistent with MANIFEST.json.")
         return 0
     except (PackagingError, OSError, KeyError, ValueError) as exc:
@@ -590,6 +619,10 @@ def main() -> int:
         "--verify-package", action="store_true",
         help="PACKAGE_VERIFY: offline integrity check of the packaged candidate; "
              "reads only files inside the candidate directory (clean-clone safe)")
+    parser.add_argument(
+        "--candidate-id", default=CANDIDATE_ID,
+        help=f"candidate directory name under releases/ (default: {CANDIDATE_ID}); "
+             "use to verify superseded immutable candidates")
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--catalog-dir", type=Path, default=None)
     parser.add_argument("--releases-root", type=Path, default=None)
@@ -598,7 +631,7 @@ def main() -> int:
     catalog_dir = (args.catalog_dir or root / "data/processed/mfp_catalog_mvp").resolve()
     releases_root = (args.releases_root or root / "releases").resolve()
     if args.verify_package:
-        return verify_package(releases_root)
+        return verify_package(releases_root, args.candidate_id)
     if args.verify:
         return verify(root, catalog_dir, releases_root)
     return package(root, catalog_dir, releases_root)

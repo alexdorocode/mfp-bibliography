@@ -8,7 +8,7 @@ Aquest repositori prioritza traçabilitat i reproductibilitat.
 
 This repository preserves, documents, versions, and harmonizes public source datasets and bibliographic evidence related to multifunctional / moonlighting proteins (MF/MFP).
 
-It is a **bibliographic and provenance catalog**, currently materialized as the five-source candidate [`releases/mfp-catalog-candidate-v0.2.0/`](releases/mfp-catalog-candidate-v0.2.0/) (CANDIDATE — not the final v1 release).
+It is a **bibliographic and provenance catalog**, currently materialized as the five-source candidate [`releases/mfp-catalog-candidate-v0.3.0/`](releases/mfp-catalog-candidate-v0.3.0/) (CANDIDATE — not the final v1 release).
 
 It is **not**:
 
@@ -16,25 +16,25 @@ It is **not**:
 - a completed GO–article evidence graph: no verified article-to-GO relations exist in the candidate; all GO/reference text is raw, uninterpreted source data (laboratory GO integration is a planned future phase, see the [roadmap](docs/roadmap/mfp-catalog-implementation-plan.md));
 - an ML/modeling repository, embedding pipeline, web app, API, or large-scale scraping workflow.
 
-Python package version: `0.1.0` (PEP 440 compliant). Current repository milestone: the five-source catalog candidate `mfp-catalog-candidate-v0.2.0`.
+Python package version: `0.1.0` (PEP 440 compliant). Current repository milestone: the five-source catalog candidate `mfp-catalog-candidate-v0.3.0` (supersedes v0.2.0, which remains immutable and offline-verifiable).
 
 ## Start here: the candidate
 
-New to the data? Read [docs/getting-started.md](docs/getting-started.md), then open the candidate directory: [`releases/mfp-catalog-candidate-v0.2.0/`](releases/mfp-catalog-candidate-v0.2.0/).
+New to the data? Read [docs/getting-started.md](docs/getting-started.md), then open the candidate directory: [`releases/mfp-catalog-candidate-v0.2.0/`](releases/mfp-catalog-candidate-v0.3.0/).
 
-- **Primary table — [`mfp_proteins.csv`](releases/mfp-catalog-candidate-v0.2.0/mfp_proteins.csv)**: one row per protein entity (one per normalized UniProt accession).
+- **Primary table — [`mfp_proteins.csv`](releases/mfp-catalog-candidate-v0.3.0/mfp_proteins.csv)**: one row per protein entity (one per normalized UniProt accession).
 - The other packaged tables provide interpretation and provenance for those proteins:
   - `mfp_source_records.csv`: one row per source observation, with verbatim source labels and full raw-data provenance;
   - `mfp_identifiers.csv`: identifier claims per source record;
   - `mfp_assertions.csv`: administrative assertions (no invented evidence);
   - `mfp_coverage.csv`: MoonProt snapshot coverage-only statuses (never protein entities).
-- Column meanings and table grains: [DATA_DICTIONARY.md](releases/mfp-catalog-candidate-v0.2.0/DATA_DICTIONARY.md).
+- Column meanings and table grains: [DATA_DICTIONARY.md](releases/mfp-catalog-candidate-v0.3.0/DATA_DICTIONARY.md).
 
 Cross-source merging is only by exact normalized UniProt accession equality; absence from a source is never negative evidence.
 
 ## Included sources (five)
 
-Measured counts are defined by the candidate manifest — [`releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json`](releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json) (`measured_counts`) — not by this README or any historical note. As packaged in v0.2.0: 2,962 source records, 2,322 protein entities, 463 shared-accession merges.
+Measured counts are defined by the candidate manifest — [`releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json`](releases/mfp-catalog-candidate-v0.3.0/MANIFEST.json) (`measured_counts`) — not by this README or any historical note. As packaged in v0.3.0 (identical to v0.2.0 for all catalog tables): 2,962 source records, 2,322 protein entities, 463 shared-accession merges.
 
 | Source | Source records (v0.2.0 manifest) | Documentation |
 |---|---|---|
@@ -59,9 +59,9 @@ MoonProt coverage within its local snapshot is 702 acquired / 1 known absent / 3
 
 3. **Rebuild from raw/interim inputs** — only possible with local inputs beyond Git (MoonProt HTML artifacts, interim source-record CSVs, prior processed outputs are ignored by `.gitignore`). Prerequisites and caveats: [docs/getting-started.md](docs/getting-started.md).
 
-## Known limitations (candidate v0.2.0)
+## Known limitations (candidate v0.3.0)
 
-Full statement: [candidate README](releases/mfp-catalog-candidate-v0.2.0/README.md) and [release notes](docs/releases/mfp-catalog-candidate-v0.2.0.md).
+Full statement: [candidate README](releases/mfp-catalog-candidate-v0.3.0/README.md) and [release notes](docs/releases/mfp-catalog-candidate-v0.2.0.md).
 
 - MoonProt snapshot gaps: MPID 103 is known absent; MPIDs 542, 543 and 626 are unresolved. Coverage-only; no complete MoonProt coverage and no complete bibliography is claimed.
 - Three unverified MultitaskProtDB-II reference anomalies (rows `multitaskprotdb_ii_row_239/349/422`) remain raw; they are not PMIDs/DOIs.
@@ -90,11 +90,11 @@ Note: `.gitignore` ignores `data/*`; only files tracked before that rule remain 
 
 Architecture and data flow: [docs/architecture/data-flow.md](docs/architecture/data-flow.md). Release rules: [docs/release-policy.md](docs/release-policy.md). Surgical maintenance: [docs/maintenance/technical-maintenance-guide.md](docs/maintenance/technical-maintenance-guide.md).
 
-## Licensing boundaries (pre-release)
+## Licensing
 
-- Repository-owned code and documentation remain in pre-release status and are currently marked as all rights reserved pending a final repository license decision.
-- Third-party source datasets are governed by their own source-specific licensing and redistribution terms, which remain `to_be_verified`.
-- This repository does not currently claim redistribution permission for any third-party source dataset.
+- Project-authored code and documentation: **GNU AGPL v3.0 only** (SPDX `AGPL-3.0-only`) — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+- AGPL does **not** apply to third-party source datasets, raw files, copied tables or derived outputs whose source terms are unknown: they retain their applicable upstream terms, recorded as `terms_not_recorded`, which is not a grant of redistribution permission.
+- This repository does not claim redistribution permission for any third-party source dataset. Attribution and provenance are preserved (see [NOTICE](NOTICE) and `data/manifests/source_manifest.csv`).
 
 ## Repository status caveat
 

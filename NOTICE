@@ -1,0 +1,32 @@
+# NOTICE — Third-Party Data and License Classification
+
+Project-authored code and documentation: **AGPL-3.0-only** (see [LICENSE](LICENSE)).
+
+AGPL-3.0-only does NOT apply to third-party data, raw files, copied tables,
+or derived outputs whose source terms are unknown. External data retain
+their applicable upstream terms. `terms_not_recorded` is **not** a grant of
+redistribution permission.
+
+## License classification inventory
+
+| Class | Paths | Terms |
+|---|---|---|
+| Project-authored | `src/`, `scripts/`, `tests/`, `configs/`, `.github/`, `pyproject.toml`, project-authored docs under `docs/` (governance, profiles, contracts, ADRs, plans), `README.md`, `CHANGELOG.md`, `CITATION.cff`, `LICENSE`, `NOTICE` | AGPL-3.0-only |
+| Third-party (verbatim) | `data/raw/moondb/`, `data/raw/plantmp/`, `data/raw/multifacetedprotdb/`, `data/raw/multitaskprotdb-ii/`, `data/raw/moonprot/` (702 HTML artifacts + `artifact_index.csv`) | Source-specific; recorded as `terms_not_recorded` (previously `to_be_verified`); attribution and provenance preserved in `data/manifests/source_manifest.csv` and the MoonProt artifact index |
+| Mixed or derived | `data/fixtures/`, `tests/fixtures/` (fixture extracts derived from source data); `data/interim/`, `data/processed/` (derived outputs); packaged candidate tables under `releases/mfp-catalog-candidate-v0.2.0/` and `releases/mfp-catalog-candidate-v0.3.0/` (contain verbatim third-party source text); `analysis/` aggregates (derived from the packaged candidate) | Not relicensed by AGPL; governed by the upstream terms of the contained third-party data; distribution requires per-source terms verification |
+
+## Policy
+
+- Source attribution and provenance are always preserved: source name,
+  origin/URL when known, available retrieval dates, whole-file SHA-256
+  hashes and acquisition method are recorded in `data/manifests/source_manifest.csv`
+  and, for MoonProt, in `data/raw/moonprot/artifact_index.csv`.
+- The five sources (MoonDB, MoonProt, MultifacetedProtDB, MultitaskProtDB-II,
+  PlantMP) have license terms recorded as `terms_not_recorded`. Until per-source
+  terms are verified and recorded, no redistribution of their data is
+  authorized by this repository.
+- Data received directly from a source maintainer, if it ever occurs, must be
+  recorded as such with date and channel; no such receipt is currently
+  recorded.
+- This NOTICE is project-authored documentation (AGPL-3.0-only) and does not
+  assert any rights over third-party data.

@@ -21,7 +21,7 @@ from mfp_bibliography import analysis_q1
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts/analyze_question1.py"
-CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.2.0"
+CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.3.0"
 RECORD_HEADER = ["source_name", "source_record_id", "protein_id"]
 PROTEIN_HEADER = ["protein_id"]
 

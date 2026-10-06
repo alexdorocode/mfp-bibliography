@@ -15,7 +15,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CATALOG_DIR = REPO_ROOT / "data/processed/mfp_catalog_mvp"
 SCRIPT = REPO_ROOT / "scripts/package_catalog_candidate.py"
-CANDIDATE_ID = "mfp-catalog-candidate-v0.2.0"
+CANDIDATE_ID = "mfp-catalog-candidate-v0.3.0"
 TABLES = [
     "mfp_proteins.csv", "mfp_source_records.csv", "mfp_identifiers.csv",
     "mfp_assertions.csv", "mfp_coverage.csv",

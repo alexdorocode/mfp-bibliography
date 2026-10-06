@@ -1,7 +1,7 @@
 """Question 3 analysis: number of distinct sources per protein entity.
 
 Deterministic, stdlib-only aggregation over the packaged candidate CSVs of
-`mfp-catalog-candidate-v0.2.0` (see
+the packaged five-source candidate (see
 docs/analysis/five-source-descriptive-study-plan.md, Q3).
 
 Definition: for each protein_id, the number of DISTINCT `source_name`
@@ -33,7 +33,7 @@ from mfp_bibliography.analysis_q2 import compute_source_sets
 ANALYSIS_VERSION = "q3-sources-per-protein-v1"
 BAR_COLOR = "#0072B2"
 TEXT_COLOR = "#333333"
-# Pinned candidate v0.2.0 expectations (derived first, then compared).
+# Pinned five-source candidate expectations (derived first, then compared).
 PINNED_EXPECTED_BINS = {1: 1859, 2: 361, 3: 83, 4: 19, 5: 0}
 
 
@@ -78,7 +78,7 @@ def render_csv(totals: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_svg(totals: dict) -> str:
+def render_svg(totals: dict, candidate_label: str) -> str:
     """Deterministic labeled bar chart of bins 1..N (zero bins shown)."""
     width, height = 980, 430
     left, right, top, bottom = 90, 40, 96, 108
@@ -101,7 +101,7 @@ def render_svg(totals: dict) -> str:
         f'font-size="16" font-weight="bold" fill="{TEXT_COLOR}">Q3: Number of '
         'distinct sources per protein entity</text>',
         f'<text x="{left}" y="46" font-family="Helvetica,Arial,sans-serif" '
-        f'font-size="11" fill="{TEXT_COLOR}">Candidate mfp-catalog-candidate-v0.2.0 — '
+        f'font-size="11" fill="{TEXT_COLOR}">{candidate_label} — '
         'catalog coverage description, not evidence quality or prevalence</text>',
         f'<text x="{left}" y="66" font-family="Helvetica,Arial,sans-serif" '
         f'font-size="11" fill="{TEXT_COLOR}">unit: protein entity '
@@ -198,7 +198,10 @@ def run(candidate_dir: Path, output_dir: Path,
         input_hashes = verify_inputs(candidate_dir, manifest)
         totals = aggregate(candidate_dir, manifest, expected_bins=expected_bins)
         csv_bytes = render_csv(totals).encode("utf-8")
-        svg_bytes = render_svg(totals).encode("utf-8")
+        svg_bytes = render_svg(
+            totals,
+            candidate_label=str(manifest.get("candidate_id") or "unknown-candidate")
+        ).encode("utf-8")
         readme_bytes = render_readme(
             reproduction_command
             or "PYTHONPATH=src python scripts/analyze_question3.py").encode("utf-8")

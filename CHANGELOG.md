@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
+### Changed
+- Repository license clarified: project-authored code and documentation are
+  AGPL-3.0-only (`LICENSE`, `NOTICE`); third-party data and derived outputs
+  are NOT relicensed — their terms remain recorded as `terms_not_recorded`,
+  which is not a redistribution grant.
+
 ### Added
+- Five-source catalog candidate `mfp-catalog-candidate-v0.3.0` under
+  `releases/` — documentation-only correction of source-status semantics
+  (policy-mapped `source_status` vs verbatim `raw_claim_value`; MoonProt
+  `valid` as loader-generated technical status; no cross-source evidence
+  scale). All five catalog CSVs are byte-identical to v0.2.0; counts, input
+  hashes and catalog contract `MFPB_0_19_MFP_CATALOG_MVP_V2` unchanged.
+  v0.2.0 remains immutable and offline-verifiable
+  (`--verify-package --candidate-id mfp-catalog-candidate-v0.2.0`).
 - Five-source catalog candidate `mfp-catalog-candidate-v0.2.0` under `releases/` (catalog contract `MFPB_0_19_MFP_CATALOG_MVP_V2`, protein ID scheme `MFPB_PROTEIN_ID_V1`). Measured counts are defined by the candidate manifest, `releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json` (key `measured_counts`): five sources (MoonDB, MoonProt, MultifacetedProtDB, MultitaskProtDB-II, PlantMP); 2,962 source records; 2,322 protein entities; 463 cross-source shared accessions; MoonProt coverage 702 acquired / 1 known absent / 3 unresolved. Status: CANDIDATE — not a tagged or published release; see `docs/releases/mfp-catalog-candidate-v0.2.0.md`.
 - Offline `PACKAGE_VERIFY` mode for the packaged candidate (`scripts/package_catalog_candidate.py --verify-package`), checks inventory, hashes, row counts, primary and foreign keys against the candidate manifest without rebuilt outputs; tests in `tests/test_candidate_package_verify.py`. The pre-existing `--verify` mode is `REBUILD_COMPARE` and requires a locally rebuilt catalog.
 

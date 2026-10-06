@@ -1,7 +1,7 @@
 """Offline PACKAGE_VERIFY tests for the packaged catalog candidate.
 
 Unlike ``test_catalog_candidate.py`` (packaging + REBUILD_COMPARE), these
-tests require nothing outside ``releases/mfp-catalog-candidate-v0.2.0/`` —
+tests require nothing outside ``releases/mfp-catalog-candidate-v0.3.0/`` —
 no ``data/processed/``, raw or interim inputs — so they run in a clean
 clone.
 """
@@ -20,7 +20,8 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts/package_catalog_candidate.py"
-CANDIDATE_ID = "mfp-catalog-candidate-v0.2.0"
+CANDIDATE_ID = "mfp-catalog-candidate-v0.3.0"
+SUPERSEDED_CANDIDATE_ID = "mfp-catalog-candidate-v0.2.0"
 REPO_RELEASES = REPO_ROOT / "releases"
 TABLES = [
     "mfp_proteins.csv", "mfp_source_records.csv", "mfp_identifiers.csv",
@@ -28,12 +29,13 @@ TABLES = [
 ]
 
 
-def run_verify_package(releases_root: Path):
+def run_verify_package(releases_root: Path, candidate_id: str | None = None):
     env = {"PATH": "/usr/bin:/bin", "PYTHONPATH": str(REPO_ROOT / "src")}
-    return subprocess.run(
-        [sys.executable, str(SCRIPT), "--verify-package",
-         "--releases-root", str(releases_root)],
-        capture_output=True, text=True, env=env)
+    args = [sys.executable, str(SCRIPT), "--verify-package",
+            "--releases-root", str(releases_root)]
+    if candidate_id is not None:
+        args += ["--candidate-id", candidate_id]
+    return subprocess.run(args, capture_output=True, text=True, env=env)
 
 
 def sha(path: Path) -> str:
@@ -70,6 +72,12 @@ class TestPackageVerifyOffline:
         result = run_verify_package(REPO_RELEASES)
         assert result.returncode == 0, result.stderr
         assert "PACKAGE_VERIFY OK" in result.stdout
+
+    def test_superseded_v020_candidate_still_verifies(self):
+        result = run_verify_package(
+            REPO_RELEASES, candidate_id=SUPERSEDED_CANDIDATE_ID)
+        assert result.returncode == 0, result.stderr
+        assert "mfp-catalog-candidate-v0.2.0 PACKAGE_VERIFY OK" in result.stdout
 
     def test_tampered_csv_fails_with_hash_diagnostic(self, candidate_copy):
         table = candidate_copy / "mfp_proteins.csv"

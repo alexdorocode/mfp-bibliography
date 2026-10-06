@@ -1,7 +1,7 @@
 """Question 4 analysis: MoonProt MPID snapshot coverage (statuses only).
 
 Deterministic, stdlib-only aggregation over the packaged
-`mfp_coverage.csv` of `mfp-catalog-candidate-v0.2.0` (see
+`mfp_coverage.csv` of the packaged five-source candidate (see
 docs/analysis/five-source-descriptive-study-plan.md, Q4).
 
 The MPID universe is DECLARED, not inferred from filenames: the manifest's
@@ -33,7 +33,7 @@ BAR_COLOR = "#0072B2"
 TEXT_COLOR = "#333333"
 COVERAGE_TABLE = "mfp_coverage.csv"
 ALLOWED_STATUSES = ("acquired", "known_absent", "unresolved")
-# Pinned candidate v0.2.0 expectations (derived first, then compared).
+# Pinned five-source candidate expectations (derived first, then compared).
 PINNED_KNOWN_ABSENT_MPIDS = (103,)
 PINNED_UNRESOLVED_MPIDS = (542, 543, 626)
 
@@ -138,7 +138,7 @@ def render_csv(totals: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_svg(totals: dict) -> str:
+def render_svg(totals: dict, candidate_label: str) -> str:
     """Deterministic labeled bar chart; denominator is MPIDs, not proteins."""
     width, height = 980, 430
     left, right, top, bottom = 90, 40, 96, 118
@@ -161,7 +161,7 @@ def render_svg(totals: dict) -> str:
         f'font-size="16" font-weight="bold" fill="{TEXT_COLOR}">Q4: MoonProt MPID '
         'snapshot coverage by status</text>',
         f'<text x="{left}" y="46" font-family="Helvetica,Arial,sans-serif" '
-        f'font-size="11" fill="{TEXT_COLOR}">Candidate mfp-catalog-candidate-v0.2.0 — '
+        f'font-size="11" fill="{TEXT_COLOR}">{candidate_label} — '
         'acquisition bookkeeping only, not evidence or protein counts</text>',
         f'<text x="{left}" y="66" font-family="Helvetica,Arial,sans-serif" '
         f'font-size="11" fill="{TEXT_COLOR}">unit: MPID; denominator '
@@ -262,7 +262,10 @@ def run(candidate_dir: Path, output_dir: Path,
             expected_known_absent=expected_known_absent,
             expected_unresolved=expected_unresolved)
         csv_bytes = render_csv(totals).encode("utf-8")
-        svg_bytes = render_svg(totals).encode("utf-8")
+        svg_bytes = render_svg(
+            totals,
+            candidate_label=str(manifest.get("candidate_id") or "unknown-candidate")
+        ).encode("utf-8")
         readme_bytes = render_readme(
             reproduction_command
             or "PYTHONPATH=src python scripts/analyze_question4.py").encode("utf-8")

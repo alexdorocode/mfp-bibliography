@@ -1,7 +1,7 @@
 """Question 2 analysis: exact source-set overlap (exclusive combinations).
 
 Deterministic, stdlib-only aggregation over the packaged candidate CSVs of
-`mfp-catalog-candidate-v0.2.0` (see
+the packaged five-source candidate (see
 docs/analysis/five-source-descriptive-study-plan.md, Q2). Reads only the
 packaged tables; never writes inside the candidate; byte-stable outputs.
 
@@ -51,7 +51,7 @@ DISPLAY_LABELS = {
     "SRC_MULTITASKPROTDB_II": "Multitask-II",
     "SRC_PLANTMP": "PlantMP",
 }
-# Pinned candidate v0.2.0 expectations (derived first, then compared).
+# Pinned five-source candidate expectations (derived first, then compared).
 PINNED_EXPECTED_BINS = {1: 1859, 2: 361, 3: 83, 4: 19, 5: 0}
 
 
@@ -154,7 +154,7 @@ def _display_label(source_set: str) -> str:
     return "|".join(DISPLAY_LABELS.get(s, s) for s in source_set.split("|"))
 
 
-def render_svg(rows: list[dict], totals: dict) -> str:
+def render_svg(rows: list[dict], totals: dict, candidate_label: str) -> str:
     """Deterministic horizontal-bar SVG; every observed combination is shown."""
     width = 980
     left, right = 300, 150
@@ -180,7 +180,7 @@ def render_svg(rows: list[dict], totals: dict) -> str:
         f'font-size="16" font-weight="bold" fill="{TEXT_COLOR}">Q2: Protein overlap '
         'by exact source set (exclusive combinations)</text>',
         f'<text x="{left - 280}" y="46" font-family="Helvetica,Arial,sans-serif" '
-        f'font-size="11" fill="{TEXT_COLOR}">Candidate mfp-catalog-candidate-v0.2.0 — '
+        f'font-size="11" fill="{TEXT_COLOR}">{candidate_label} — '
         'catalog coverage description, not evidence quality or prevalence</text>',
         f'<text x="{left - 280}" y="66" font-family="Helvetica,Arial,sans-serif" '
         f'font-size="10" fill="{TEXT_COLOR}">{escape(legend)}</text>',
@@ -281,7 +281,10 @@ def run(candidate_dir: Path, output_dir: Path,
         totals = aggregate(candidate_dir, manifest, expected_bins=expected_bins)
         exclusive_bytes = render_exclusive_csv(totals["exclusive_rows"]).encode("utf-8")
         pairwise_bytes = render_pairwise_csv(totals["pairwise_rows"]).encode("utf-8")
-        svg_bytes = render_svg(totals["exclusive_rows"], totals).encode("utf-8")
+        svg_bytes = render_svg(
+            totals["exclusive_rows"], totals,
+            candidate_label=str(manifest.get("candidate_id") or "unknown-candidate")
+        ).encode("utf-8")
         readme_bytes = render_readme(
             reproduction_command
             or "PYTHONPATH=src python scripts/analyze_question2.py").encode("utf-8")

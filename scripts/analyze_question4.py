@@ -23,7 +23,7 @@ from mfp_bibliography.analysis_q4 import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CANDIDATE_ID = "mfp-catalog-candidate-v0.2.0"
+CANDIDATE_ID = "mfp-catalog-candidate-v0.3.0"
 DEFAULT_CANDIDATE = REPO_ROOT / "releases" / CANDIDATE_ID
 DEFAULT_OUTPUT = REPO_ROOT / "analysis" / "five-source-v0.2.0" / "q4_moonprot_coverage"
 

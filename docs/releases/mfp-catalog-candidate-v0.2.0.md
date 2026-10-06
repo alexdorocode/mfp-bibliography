@@ -79,7 +79,8 @@ packager refuses to overwrite an existing candidate with different bytes.
 Tests: `tests/test_catalog_candidate.py` (packaging, REBUILD_COMPARE),
 `tests/test_candidate_package_verify.py` (offline PACKAGE_VERIFY).
 
-## Errata (documentation only — candidate bytes unchanged)
+## Errata (documentation only — candidate bytes unchanged; corrected in
+[candidate v0.3.0](mfp-catalog-candidate-v0.3.0.md))
 
 - The packaged `DATA_DICTIONARY.md` describes `source_status` as a
   "source-provided label, verbatim". This is imprecise for three of the five
@@ -101,8 +102,10 @@ Tests: `tests/test_catalog_candidate.py` (packaging, REBUILD_COMPARE),
   packaged `mfp_source_records.csv` `raw_claim_field`/`raw_claim_value`.
 - Impact: none on scope or counts — verbatim labels ARE preserved (in
   `raw_claim_value`) and per-source counts are unaffected. The imprecise
-  dictionary text can only be corrected in a future candidate version; the
-  packaged candidate v0.2.0 is not modified.
+  dictionary text is CORRECTED in candidate
+  [v0.3.0](mfp-catalog-candidate-v0.3.0.md) (documentation-only; catalog CSVs
+  byte-identical); the packaged candidate v0.2.0 itself is not modified and
+  this erratum remains valid for it.
 - The corrected status-label analysis is
   `analysis/five-source-v0.2.0/q5_status_labels_v2/` (provenance-corrected);
   the earlier Q5 output (`q5_status_labels/`, v1) mislabeled policy-mapped

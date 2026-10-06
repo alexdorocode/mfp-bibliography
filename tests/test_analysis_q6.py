@@ -13,7 +13,7 @@ from mfp_bibliography import analysis_q6
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts/analyze_question6.py"
-CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.2.0"
+CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.3.0"
 PROTEIN_HEADER = ["protein_id", "canonical_uniprot_accession", "canonical_name",
                   "canonical_gene", "canonical_organism", "taxonomy_id",
                   "entity_status"]

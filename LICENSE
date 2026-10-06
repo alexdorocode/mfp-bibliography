@@ -1,5 +1,21 @@
-All rights reserved.
+License statement — mfp-bibliography
 
-This repository is in pre-release bootstrap state. Repository-owned code and documentation are not yet relicensed for open redistribution; a definitive license decision is pending maintainer review.
+The project-authored code and documentation of this repository are licensed
+under the GNU Affero General Public License v3.0 only (SPDX:
+AGPL-3.0-only).
 
-Third-party source datasets and bibliographic artifacts referenced by this project are governed by their own source-specific licensing and redistribution terms. Those terms remain to_be_verified per source, and this repository does not claim blanket redistribution rights for third-party data.
+Scope of AGPL-3.0-only: files authored by this project — source code under
+src/ and scripts/, tests, configuration, build metadata, and
+project-authored documentation. See NOTICE for the classification of
+third-party and derived data.
+
+EXPLICITLY NOT COVERED by AGPL-3.0-only: third-party source datasets, raw
+files, copied tables and derived catalog outputs whose source terms are
+unknown or not recorded. Those retain their applicable upstream terms; this
+repository claims no redistribution permission for them. `terms_not_recorded`
+is not a grant of redistribution permission.
+
+The canonical verbatim license text of the GNU AGPL v3.0 is published by the
+Free Software Foundation at https://www.gnu.org/licenses/agpl-3.0.txt. It was
+not embedded in this file at the time of writing because the verbatim text
+was not available locally; embed it before distributing the repository.

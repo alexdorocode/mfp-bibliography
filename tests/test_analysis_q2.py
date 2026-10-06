@@ -16,7 +16,7 @@ from tests.test_analysis_q1 import build_candidate
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts/analyze_question2.py"
-CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.2.0"
+CANDIDATE = REPO_ROOT / "releases/mfp-catalog-candidate-v0.3.0"
 
 
 def build_q2_candidate(tmp_path: Path, records: list[list[str]],

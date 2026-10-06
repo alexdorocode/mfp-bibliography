@@ -6,7 +6,7 @@
 > statistical significance claims are made or implied.
 
 Design-only document. Inputs are exclusively the packaged CSVs in
-[`releases/mfp-catalog-candidate-v0.2.0/`](../../releases/mfp-catalog-candidate-v0.2.0/);
+[`releases/mfp-catalog-candidate-v0.3.0/`](../../releases/mfp-catalog-candidate-v0.2.0/);
 grains and columns follow its
 [`DATA_DICTIONARY.md`](../../releases/mfp-catalog-candidate-v0.2.0/DATA_DICTIONARY.md).
 Authoritative counts:
@@ -57,7 +57,10 @@ live in each output's provenance manifest, not here.
 
 Outputs are deterministic and byte-stable; reruns are idempotent for
 identical bytes and refuse to overwrite different bytes (use a new analysis
-version instead).
+version instead). The existing outputs under `analysis/five-source-v0.2.0/`
+were generated from candidate v0.2.0, whose catalog CSVs are byte-identical
+to candidate v0.3.0: rerunning against v0.3.0 reproduces every aggregate CSV
+byte-identically, differing only in candidate-id version-label metadata.
 
 ### Q1. Source records vs protein entities (separate units)
 Title: "Records per source and unique protein entities".

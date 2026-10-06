@@ -1,7 +1,7 @@
 """Question 1 analysis: source records vs unique protein entities by source.
 
 Deterministic, stdlib-only aggregation over the packaged candidate CSVs of
-`mfp-catalog-candidate-v0.2.0` (see
+the packaged five-source candidate (see
 docs/analysis/five-source-descriptive-study-plan.md, Q1). Reads only the
 packaged tables; never writes inside the candidate. Outputs are byte-stable
 (no timestamps).
@@ -151,7 +151,7 @@ def _nice_ceiling(value: float) -> int:
     return 10 ** 8
 
 
-def render_svg(rows: list[dict], totals: dict) -> str:
+def render_svg(rows: list[dict], totals: dict, candidate_label: str) -> str:
     """Deterministic, accessible grouped-bar SVG; all text is XML-escaped."""
     width, height = 980, 470
     left, right, top, bottom = 110, 30, 96, 104
@@ -175,7 +175,7 @@ def render_svg(rows: list[dict], totals: dict) -> str:
         f'font-weight="bold" fill="{TEXT_COLOR}">Q1: Source records vs unique protein '
         'entities by source</text>',
         f'<text x="{left}" y="48" font-family="Helvetica,Arial,sans-serif" font-size="11" '
-        f'fill="{TEXT_COLOR}">Candidate mfp-catalog-candidate-v0.2.0 — catalog coverage '
+        f'fill="{TEXT_COLOR}">{candidate_label} — catalog coverage '
         'description, not validated articles, GO support or prevalence</text>',
     ]
     # Legend
@@ -309,7 +309,10 @@ def run(candidate_dir: Path, output_dir: Path,
         manifest = load_manifest(candidate_dir)
         input_hashes = verify_inputs(candidate_dir, manifest)
         rows, totals = aggregate(candidate_dir, manifest)
-        svg_bytes = render_svg(rows, totals).encode("utf-8")
+        svg_bytes = render_svg(
+            rows, totals,
+            candidate_label=str(manifest.get("candidate_id") or "unknown-candidate")
+        ).encode("utf-8")
         csv_bytes = render_csv(rows).encode("utf-8")
         readme_bytes = render_readme(
             reproduction_command

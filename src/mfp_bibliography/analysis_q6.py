@@ -1,7 +1,7 @@
 """Question 6 analysis: completeness of canonical protein fields.
 
 Deterministic, stdlib-only aggregation over the packaged
-`mfp_proteins.csv` of `mfp-catalog-candidate-v0.2.0` (see
+`mfp_proteins.csv` of the packaged five-source candidate (see
 docs/analysis/five-source-descriptive-study-plan.md, Q6).
 
 Unit: protein entity. Denominator: the candidate manifest's
@@ -144,7 +144,7 @@ def render_csv(totals: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_svg(totals: dict) -> str:
+def render_svg(totals: dict, candidate_label: str) -> str:
     """Deterministic horizontal bars; populated vs empty, denominator stated."""
     width, height = 980, 380
     left, right, top, bottom = 300, 130, 96, 96
@@ -163,7 +163,7 @@ def render_svg(totals: dict) -> str:
         f'font-size="16" font-weight="bold" fill="{TEXT_COLOR}">Q6: Completeness '
         'of canonical protein fields</text>',
         f'<text x="{left - 280}" y="46" font-family="Helvetica,Arial,sans-serif" '
-        f'font-size="11" fill="{TEXT_COLOR}">Candidate mfp-catalog-candidate-v0.2.0 '
+        f'font-size="11" fill="{TEXT_COLOR}">{candidate_label} '
         '— catalog packaging completeness; NOT evidence, protein presence or '
         'source quality</text>',
         f'<text x="{left - 280}" y="66" font-family="Helvetica,Arial,sans-serif" '
@@ -219,7 +219,8 @@ claims.
 ## Unit, denominator and value handling
 
 - Unit: protein entity. Denominator: the candidate manifest's
-  `protein_entity_count` (2,322 for candidate v0.2.0), reconciled against
+  `protein_entity_count` (2,322 for the pinned five-source candidate),
+  reconciled against
   the derived row count and the unique `protein_id` count.
 - A value is POPULATED iff it is not null and its stripped form is not
   empty; whitespace-only values count as empty.
@@ -279,7 +280,10 @@ def run(candidate_dir: Path, output_dir: Path,
         input_hash = verify_input(candidate_dir, manifest)
         totals = aggregate(candidate_dir, manifest)
         csv_bytes = render_csv(totals).encode("utf-8")
-        svg_bytes = render_svg(totals).encode("utf-8")
+        svg_bytes = render_svg(
+            totals,
+            candidate_label=str(manifest.get("candidate_id") or "unknown-candidate")
+        ).encode("utf-8")
         readme_bytes = render_readme(
             reproduction_command
             or "PYTHONPATH=src python scripts/analyze_question6.py").encode("utf-8")

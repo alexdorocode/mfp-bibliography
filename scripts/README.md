@@ -29,7 +29,7 @@ are policy-governed and must be run manually with explicit approval (see
 - `--verify-package` — **PACKAGE_VERIFY** (offline; works in a clone): checks
   inventory, packaged SHA-256 hashes, CSV row counts, primary keys and
   cross-table foreign keys against the candidate `MANIFEST.json`. Reads only
-  files inside `releases/mfp-catalog-candidate-v0.2.0/`.
+  files inside `releases/mfp-catalog-candidate-v0.3.0/`.
 - `--verify` — **REBUILD_COMPARE**: compares packaged bytes against a locally
   rebuilt `data/processed/mfp_catalog_mvp/` catalog; requires external,
   hash-identical raw/interim inputs not all distributed in Git.

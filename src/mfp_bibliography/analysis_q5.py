@@ -1,7 +1,7 @@
 """Question 5 analysis (v2, corrected provenance): status-label inventory.
 
 Deterministic, stdlib-only aggregation over the packaged
-`mfp_source_records.csv` of `mfp-catalog-candidate-v0.2.0` (see
+`mfp_source_records.csv` of the packaged five-source candidate (see
 docs/analysis/five-source-descriptive-study-plan.md, Q5).
 
 Corrected semantics (supersedes q5-status-labels-v1, which mislabeled
@@ -242,7 +242,7 @@ def render_policy_csv(totals: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_svg(totals: dict) -> str:
+def render_svg(totals: dict, candidate_label: str) -> str:
     """Source-faceted bars of SOURCE-PROVIDED labels (per-source scale)."""
     by_source: dict[str, list[dict]] = {}
     for row in totals["availability_rows"]:
@@ -268,7 +268,7 @@ def render_svg(totals: dict) -> str:
         f'font-size="16" font-weight="bold" fill="{TEXT_COLOR}">Q5 v2: '
         'Source-provided status labels per source</text>',
         f'<text x="40" y="46" font-family="Helvetica,Arial,sans-serif" '
-        f'font-size="11" fill="{TEXT_COLOR}">Candidate mfp-catalog-candidate-v0.2.0 '
+        f'font-size="11" fill="{TEXT_COLOR}">{candidate_label} '
         '— verbatim labels (raw_claim_value) only; NOT a shared evidence scale; '
         'not MF/NMF truth</text>',
         f'<text x="40" y="66" font-family="Helvetica,Arial,sans-serif" '
@@ -393,7 +393,10 @@ def run(candidate_dir: Path, output_dir: Path,
         totals = aggregate(candidate_dir, manifest)
         availability_bytes = render_availability_csv(totals).encode("utf-8")
         policy_bytes = render_policy_csv(totals).encode("utf-8")
-        svg_bytes = render_svg(totals).encode("utf-8")
+        svg_bytes = render_svg(
+            totals,
+            candidate_label=str(manifest.get("candidate_id") or "unknown-candidate")
+        ).encode("utf-8")
         readme_bytes = render_readme(
             reproduction_command
             or "PYTHONPATH=src python scripts/analyze_question5.py").encode("utf-8")

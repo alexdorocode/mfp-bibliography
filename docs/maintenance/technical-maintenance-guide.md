@@ -1,7 +1,7 @@
 # Technical Maintenance Guide (five-source catalog)
 
 Surgical maintenance of the current five-source candidate
-([`mfp-catalog-candidate-v0.2.0`](../../releases/mfp-catalog-candidate-v0.2.0/))
+([`mfp-catalog-candidate-v0.3.0`](../../releases/mfp-catalog-candidate-v0.3.0/); supersedes v0.2.0, which stays immutable and verifiable)
 with minimal, traceable changes. Companion documents:
 [data-flow map](../architecture/data-flow.md),
 [traceability matrix](../architecture/requirements-traceability.md),
@@ -55,7 +55,7 @@ relations exist in the candidate.
 | Change source-status interpretation | `configs/source_claim_policy_v0.1.yaml`, `src/mfp_bibliography/source_claims.py::load_claim_policy`, `effective_status.py::_resolve_effective_status` | [source-claim policy](../source-claim-policy.md), [effective-status contract](../effective-status-contract.md), [ADR-004](../decisions/ADR-004-evidence-label-benchmark-separation.md) | `tests/test_source_claim_policy.py`, `tests/test_effective_status.py` | claims CSVs rebuilt; `operational_status`/assertions re-derived; labels stay verbatim |
 | Change accession normalization or protein_id | `src/mfp_bibliography/normalization.py` | [ADR-005](../decisions/ADR-005-deterministic-protein-ids.md) — scheme change requires a new ADR | `tests/test_normalization.py`; `TestProteinIdScheme`, `TestCrossProcessDeterminism` in `tests/test_mfp_catalog_mvp.py` | all protein IDs change → full rebuild, migration report, new candidate + contract review |
 | Change coverage / known-absent handling | `scripts/build_mfp_catalog_mvp.py` (`load_moonprot_records`, `build_coverage`, `MOONPROT_SNAPSHOT_MPID_MIN/MAX`) | [ADR-006](../decisions/ADR-006-coverage-only-moonprot-status-rows.md) | `tests/test_moonprot_universe.py`; `TestCoverageOnlyMpids` in `tests/test_mfp_catalog_mvp.py` | `mfp_coverage.csv`; coverage-only MPIDs never become entities |
-| Change a catalog column or assertion | `scripts/build_mfp_catalog_mvp.py` (headers, writers, `build_assertions`) | catalog contract `MFPB_0_19_MFP_CATALOG_MVP_V2` — semantic change bumps the contract | `tests/test_mfp_catalog_mvp.py`, `tests/test_catalog_integrity.py` | packaged tables + [DATA_DICTIONARY](../../releases/mfp-catalog-candidate-v0.2.0/DATA_DICTIONARY.md); new candidate |
+| Change a catalog column or assertion | `scripts/build_mfp_catalog_mvp.py` (headers, writers, `build_assertions`) | catalog contract `MFPB_0_19_MFP_CATALOG_MVP_V2` — semantic change bumps the contract | `tests/test_mfp_catalog_mvp.py`, `tests/test_catalog_integrity.py` | packaged tables + [DATA_DICTIONARY](../../releases/mfp-catalog-candidate-v0.3.0/DATA_DICTIONARY.md); new candidate |
 | Change a raw checksum / provenance binding | `src/mfp_bibliography/raw_input_verification.py::verify_catalog_inputs`; `data/manifests/source_manifest.csv`, `data/raw/moonprot/artifact_index.csv` | [ADR-002](../decisions/ADR-002-raw-data-immutability.md), [ADR-003](../decisions/ADR-003-provenance-and-transformations.md) | `tests/test_raw_input_verification.py` (mismatch/missing/duplicate) | build fails non-zero on tampered input; never edit raw bytes — re-register or re-acquire via policy |
 | Change candidate packaging / verification | `scripts/package_catalog_candidate.py` | [release policy](../release-policy.md); candidate note | `tests/test_catalog_candidate.py` (package + REBUILD_COMPARE), `tests/test_candidate_package_verify.py` (PACKAGE_VERIFY) | existing candidate never overwritten; changed package = new candidate version |
 | Add GO evidence / reference relations (later) | none yet | [GO annotation contract](../bibliography/go-annotation-evidence-contract.md); R14–R17 | none exist — UNKNOWN until implemented | new tables (`mfp_function_assertions`, `mfp_references`, ...); record-level references must not become function-level support |
@@ -63,7 +63,7 @@ relations exist in the candidate.
 ## 3. Safe workflow
 
 1. Inspect the baseline: read the candidate
-   [`MANIFEST.json`](../../releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json)
+   [`MANIFEST.json`](../../releases/mfp-catalog-candidate-v0.3.0/MANIFEST.json)
    (`measured_counts`) and `git status`. Do not assume the working tree is
    clean.
 2. Define exactly one behavioral change; write it down before editing.

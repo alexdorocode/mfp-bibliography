@@ -1,7 +1,7 @@
 # Getting Started
 
 Ordered guide for a new reader of the five-source candidate
-[`releases/mfp-catalog-candidate-v0.2.0/`](../releases/mfp-catalog-candidate-v0.2.0/):
+[`releases/mfp-catalog-candidate-v0.3.0/`](../releases/mfp-catalog-candidate-v0.3.0/):
 **inspect → offline verify → (optional) local tests → (optional) rebuild**.
 
 ## Prerequisites
@@ -25,18 +25,18 @@ pip install -e .[dev]
 ## 1. Inspect the packaged CSVs
 
 Open the candidate directory
-[`releases/mfp-catalog-candidate-v0.2.0/`](../releases/mfp-catalog-candidate-v0.2.0/)
+[`releases/mfp-catalog-candidate-v0.3.0/`](../releases/mfp-catalog-candidate-v0.3.0/)
 with any CSV reader. Start with the primary table:
 
-- [`mfp_proteins.csv`](../releases/mfp-catalog-candidate-v0.2.0/mfp_proteins.csv) —
-  one row per protein entity (2,322 in v0.2.0; authoritative counts are in
-  [`MANIFEST.json`](../releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json),
+- [`mfp_proteins.csv`](../releases/mfp-catalog-candidate-v0.3.0/mfp_proteins.csv) —
+  one row per protein entity (2,322 in v0.3.0; authoritative counts are in
+  [`MANIFEST.json`](../releases/mfp-catalog-candidate-v0.3.0/MANIFEST.json),
   key `measured_counts`).
 - Provenance and interpretation tables: `mfp_source_records.csv` (one row per
   source observation), `mfp_identifiers.csv`, `mfp_assertions.csv`,
   `mfp_coverage.csv` (MoonProt snapshot coverage statuses only).
 - Column definitions and table grains:
-  [`DATA_DICTIONARY.md`](../releases/mfp-catalog-candidate-v0.2.0/DATA_DICTIONARY.md).
+  [`DATA_DICTIONARY.md`](../releases/mfp-catalog-candidate-v0.3.0/DATA_DICTIONARY.md).
 
 Optional, no Python needed — verify the packaged file hashes with a standard
 checksum tool from inside the candidate directory
@@ -94,7 +94,7 @@ Caveats, checked against the test suite:
 ## 4. Optional: rebuild the catalog
 
 Rebuilding means re-running the commands recorded in the candidate's
-[`MANIFEST.json`](../releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json)
+[`MANIFEST.json`](../releases/mfp-catalog-candidate-v0.3.0/MANIFEST.json)
 (`build_commands`) to regenerate `data/processed/mfp_catalog_mvp/` and
 repackage. Two hard prerequisites:
 
@@ -118,8 +118,8 @@ verify) instead of rebuilding.
 
 Rebuild rules and immutability: [release policy](release-policy.md).
 Candidate scope and limitations:
-[release notes](releases/mfp-catalog-candidate-v0.2.0.md) and the
-[candidate README](../releases/mfp-catalog-candidate-v0.2.0/README.md).
+[release notes](releases/mfp-catalog-candidate-v0.3.0.md) and the
+[candidate README](../releases/mfp-catalog-candidate-v0.3.0/README.md).
 
 ## Clone status caveat
 
