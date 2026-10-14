@@ -5,7 +5,8 @@ Surgical maintenance of the current five-source candidate
 with minimal, traceable changes. Companion documents:
 [data-flow map](../architecture/data-flow.md),
 [traceability matrix](../architecture/requirements-traceability.md),
-[release policy](../release-policy.md), [getting started](../getting-started.md).
+[release policy](../release-policy.md), [getting started](../getting-started.md),
+and [BioData snapshot & restore guide](biodata-snapshot-and-restore-guide.md).
 
 ## 1. System boundaries
 

@@ -1,0 +1,68 @@
+{
+  "snapshot_id": "biodata_mfp_snapshot_20261014",
+  "created_at_utc": "2026-10-14T07:49:00Z",
+  "source_database": "BioData",
+  "server": {
+    "engine": "PostgreSQL",
+    "version": "16.13",
+    "container_name": "pgvectorsql",
+    "image": "pgvector/pgvector:pg16"
+  },
+  "dump_artifact": {
+    "filename": "biodata_mfp_snapshot_20261014.dump",
+    "format": "custom (-F c)",
+    "size_bytes": 5031619,
+    "sha256": "be5dec2e16f08e4c72291b0f61e7804c82f72b4368d3ce0ac066592d315ea72b",
+    "compression": "zlib (built-in pg_dump custom format)"
+  },
+  "table_row_counts": {
+    "accession": 2330,
+    "protein": 2182,
+    "sequence": 2160,
+    "go_terms": 9376,
+    "protein_go_term_annotation": 96186,
+    "chain": 0
+  },
+  "dry_run_restoration_verification": {
+    "verified": true,
+    "verified_at_utc": "2026-10-14T07:49:48Z",
+    "test_database": "BioData_Restore_Test",
+    "status": "SUCCESS_EXACT_MATCH",
+    "verified_counts": {
+      "accession": 2330,
+      "protein": 2182,
+      "sequence": 2160,
+      "go_terms": 9376,
+      "protein_go_term_annotation": 96186,
+      "chain": 0
+    }
+  },
+  "repository_context": {
+    "mfp-bibliography": {
+      "branch": "moonprot-offline-preparation",
+      "commit": "700c1890e2f02703e4a1070a350054c2e88ef07f"
+    },
+    "protein-information-system": {
+      "branch": "feature/quickgo-annotations-v2",
+      "commit": "c00222f281224f8bc6cf3b75487771765c92c85b"
+    },
+    "mfp-dataset-designer": {
+      "branch": "develop-standardizing-0",
+      "commit": "bf296c098935c13b3164bb89dbbb9a5a3a789a69"
+    }
+  },
+  "restoration_instructions": {
+    "isolated_database": [
+      "docker exec pgvectorsql createdb -U usuario BioData_Restored",
+      "docker cp data/snapshots/biodata_mfp_snapshot_20261014.dump pgvectorsql:/tmp/restore.dump",
+      "docker exec pgvectorsql pg_restore -U usuario -d BioData_Restored --clean --if-exists -v /tmp/restore.dump",
+      "docker exec pgvectorsql rm -f /tmp/restore.dump"
+    ],
+    "overwrite_live_database": [
+      "# ATENCIÓ: Sobreescriu la base de dades BioData existent",
+      "docker cp data/snapshots/biodata_mfp_snapshot_20261014.dump pgvectorsql:/tmp/restore.dump",
+      "docker exec pgvectorsql pg_restore -U usuario -d BioData --clean --if-exists -v /tmp/restore.dump",
+      "docker exec pgvectorsql rm -f /tmp/restore.dump"
+    ]
+  }
+}
