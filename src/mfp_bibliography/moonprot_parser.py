@@ -116,6 +116,18 @@ class MoonProtKnownAbsentError(MoonProtParseError):
 
 
 @dataclass(frozen=True)
+class MoonProtFunctionDetail:
+    """Detailed function section parsed from a MoonProt fixture."""
+
+    function_index: int
+    description: str | None = None
+    references_raw: str | None = None
+    pmids: tuple[str, ...] = ()
+    ec_number: str | None = None
+    cellular_location: str | None = None
+
+
+@dataclass(frozen=True)
 class MoonProtRecord:
     """Structured extraction result from one MoonProt fixture."""
 
@@ -124,6 +136,8 @@ class MoonProtRecord:
     protein_name: str | None
     missing_fields: tuple[str, ...] = ()
     field_text: dict[str, str] = field(default_factory=dict)
+    raw_go_terms: str | None = None
+    functions: tuple[MoonProtFunctionDetail, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -290,12 +304,47 @@ def parse_moonprot_html(
         for name, value in ((FIELD_UNIPROT_ID, uniprot_id), (FIELD_PROTEIN_NAME, protein_name))
         if value is None
     )
+
+    raw_go_terms: str | None = None
+    functions: list[MoonProtFunctionDetail] = []
+    current_func: dict[str, Any] | None = None
+
+    for label, value in parser.rows:
+        if label == "GO terms":
+            raw_go_terms = value.strip() or None
+        elif label == "Function description":
+            if current_func is not None:
+                functions.append(MoonProtFunctionDetail(**current_func))
+            current_func = {
+                "function_index": len(functions) + 1,
+                "description": value.strip() or None,
+                "references_raw": None,
+                "pmids": (),
+                "ec_number": None,
+                "cellular_location": None,
+            }
+        elif current_func is not None:
+            if label == "References for function":
+                current_func["references_raw"] = value.strip() or None
+                pmids = re.findall(r"pubmed/(\d+)|PMID:\s*(\d+)", value, re.IGNORECASE)
+                extracted_pmids = tuple(p[0] or p[1] for p in pmids)
+                current_func["pmids"] = extracted_pmids
+            elif label == "E.C. number":
+                current_func["ec_number"] = value.strip() or None
+            elif label == "Cellular location of function":
+                current_func["cellular_location"] = value.strip() or None
+
+    if current_func is not None:
+        functions.append(MoonProtFunctionDetail(**current_func))
+
     return MoonProtRecord(
         moonprot_id=field_text[LABEL_MOONPROT_ID],
         uniprot_id=uniprot_id,
         protein_name=protein_name,
         missing_fields=missing_fields,
         field_text=field_text,
+        raw_go_terms=raw_go_terms,
+        functions=tuple(functions),
     )
 
 
