@@ -20,7 +20,11 @@ from typing import Any
 from mfp_bibliography.functional_normalization import (
     ProteinFacetsRecord,
     load_ec2go_mappings,
+    load_obo_aspects,
+    load_moondb_emf_data,
+    load_moondb_manual_data,
     normalize_moonprot_record,
+    normalize_moondb_record,
     normalize_multitaskprotdb_ii_record,
     normalize_plantmp_record,
     resolve_mono_source_record,
@@ -82,6 +86,12 @@ def main() -> None:
     print("\n[1/5] Connecting to TargetData PostgreSQL and loading ontology mappings...")
     ec2go = load_ec2go_mappings()
     print(f"  Loaded {len(ec2go)} EC-to-GO xref mappings from go-basic.obo")
+    obo_aspects = load_obo_aspects()
+    print(f"  Loaded {len(obo_aspects)} GO aspect mappings from go-basic.obo")
+    moondb_emf = load_moondb_emf_data()
+    print(f"  Loaded {len(moondb_emf)} EMF prediction entries from all_EMF_annotation.tsv")
+    moondb_manual = load_moondb_manual_data()
+    print(f"  Loaded {len(moondb_manual)} manually curated entries from all_manual_curated.tsv")
 
     td_client = None
     aspect_lookup = {}
@@ -94,7 +104,7 @@ def main() -> None:
         print(f"  [WARNING] TargetData database connection failed ({exc}). Proceeding offline with source-raw mappings only.")
         td_client = None
 
-    # 2. Process Rich Facet Sources (PlantMP, MultitaskProtDB-II, MoonProt)
+    # 2. Process Rich Facet Sources (PlantMP, MultitaskProtDB-II, MoonProt, MoonDB)
     print("\n[2/5] Parsing rich facet datasets...")
     resolved_facets_by_protein_id: dict[str, ProteinFacetsRecord] = {}
     record_facets: list[ProteinFacetsRecord] = []
@@ -140,10 +150,30 @@ def main() -> None:
             continue
     print(f"  MoonProt: processed {count_moonprot} HTML pages.")
 
+    # MoonDB (processed with rich EMF and manual curated data)
+    count_moondb = 0
+    with CATALOG_RECORDS_PATH.open("r", encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            if row["source_name"] != "SRC_MOONDB":
+                continue
+            rec = normalize_moondb_record(
+                accession=row["uniprot_id"],
+                source_record_id=row["source_record_id"],
+                emf_data=moondb_emf,
+                manual_data=moondb_manual,
+                td_client=td_client,
+                obo_aspects=obo_aspects,
+            )
+            record_facets.append(rec)
+            if rec.protein_id and rec.protein_id not in resolved_facets_by_protein_id:
+                resolved_facets_by_protein_id[rec.protein_id] = rec
+            count_moondb += 1
+    print(f"  MoonDB: processed {count_moondb} records with rich facets.")
+
     print(f"  Total rich proteins with resolved facets: {len(resolved_facets_by_protein_id)}")
 
-    # 3. Process MoonDB and MultifacetedProtDB with Cross-Source Inheritance
-    print("\n[3/5] Processing MoonDB and MultifacetedProtDB (inheritance & mono-source resolution)...")
+    # 3. Process MultifacetedProtDB with Cross-Source Inheritance
+    print("\n[3/5] Processing MultifacetedProtDB (inheritance & mono-source resolution)...")
     if not CATALOG_RECORDS_PATH.exists():
         print(f"  [ERROR] Catalog records not found at {CATALOG_RECORDS_PATH}. Run build_mfp_catalog_mvp.py first.")
         sys.exit(1)
@@ -154,7 +184,7 @@ def main() -> None:
     with CATALOG_RECORDS_PATH.open("r", encoding="utf-8", newline="") as f:
         for row in csv.DictReader(f):
             source_name = row["source_name"]
-            if source_name not in ("SRC_MOONDB", "SRC_MULTIFACETEDPROTDB"):
+            if source_name != "SRC_MULTIFACETEDPROTDB":
                 continue
 
             protein_id = row["protein_id"]
@@ -191,7 +221,7 @@ def main() -> None:
                 record_facets.append(mono_rec)
                 mono_source_count += 1
 
-    print(f"  MoonDB & MultifacetedProtDB: {inherited_count} inherited facets; {mono_source_count} mono-source unassigned.")
+    print(f"  MultifacetedProtDB: {inherited_count} inherited facets; {mono_source_count} mono-source unassigned.")
 
     # 4. Build Unified Protein-Level Facets (one row per protein entity)
     print("\n[4/5] Building unified protein entity facets (mfp_protein_facets.csv)...")

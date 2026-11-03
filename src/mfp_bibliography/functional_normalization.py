@@ -24,6 +24,9 @@ DEFAULT_OBO_PATHS = (
     Path("/home/alexdoro/repositories/FANTASIA/go-basic.obo"),
 )
 
+DEFAULT_MOONDB_EMF_PATH = Path("data/raw/moondb/all_EMF_annotation.tsv")
+DEFAULT_MOONDB_MANUAL_PATH = Path("data/raw/moondb/all_manual_curated.tsv")
+
 RE_GO_ID = re.compile(r"GO:(\d{7})")
 RE_NUM_ONLY = re.compile(r"\b(\d{7})\b")
 RE_ARTICLE_NUM = re.compile(r"^\d+$")
@@ -87,6 +90,71 @@ def load_ec2go_mappings(obo_path: str | Path | None = None) -> dict[str, str]:
                 if ec not in ec2go:
                     ec2go[ec] = current_go
     return ec2go
+
+
+def load_obo_aspects(obo_path: str | Path | None = None) -> dict[str, str]:
+    """Parse go-basic.obo to extract namespace aspect (BP, MF, CC) for primary and alt IDs."""
+    candidate_path = None
+    if obo_path:
+        p = Path(obo_path)
+        if p.exists():
+            candidate_path = p
+    else:
+        for p in DEFAULT_OBO_PATHS:
+            if p.exists():
+                candidate_path = p
+                break
+
+    if not candidate_path:
+        return {}
+
+    obo_aspects: dict[str, str] = {}
+    current_ids: list[str] = []
+    with candidate_path.open("r", encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            line = line.strip()
+            if line == "[Term]":
+                current_ids = []
+            elif line.startswith("id: GO:"):
+                current_ids.append(line[4:].strip())
+            elif line.startswith("alt_id: GO:"):
+                current_ids.append(line[8:].strip())
+            elif line.startswith("namespace:") and current_ids:
+                ns = line[10:].strip().lower()
+                asp = None
+                if ns == "biological_process":
+                    asp = "BP"
+                elif ns == "molecular_function":
+                    asp = "MF"
+                elif ns == "cellular_component":
+                    asp = "CC"
+                if asp:
+                    for cid in current_ids:
+                        obo_aspects[cid] = asp
+    return obo_aspects
+
+
+CELLULAR_LOCATION_KEYWORDS: tuple[tuple[re.Pattern, str], ...] = (
+    (re.compile(r"\b(nucle(us|ar|i))\b", re.IGNORECASE), "GO:0005634"),  # nucleus
+    (re.compile(r"\b(plasma\s*membrane)\b", re.IGNORECASE), "GO:0005886"),  # plasma membrane
+    (re.compile(r"\b(cytosol|cytosolic|cytoplasm)\b", re.IGNORECASE), "GO:0005737"),  # cytoplasm
+    (re.compile(r"\b(mitochondri(on|al|a))\b", re.IGNORECASE), "GO:0005739"),  # mitochondrion
+    (re.compile(r"\b(extracellular)\b", re.IGNORECASE), "GO:0005576"),  # extracellular region
+    (re.compile(r"\b(endosom(e|al)|escrt)\b", re.IGNORECASE), "GO:0005768"),  # endosome
+    (re.compile(r"\b(eye\s*lens|lens)\b", re.IGNORECASE), "GO:0005212"),  # structural constituent of eye lens
+    (re.compile(r"\b(membrane)\b", re.IGNORECASE), "GO:0016020"),  # membrane
+)
+
+
+def extract_cellular_components_from_text(text: str | None) -> list[str]:
+    """Detect cellular compartment keywords in text (e.g. from Condition: clauses) and map to GO-CC."""
+    if not text:
+        return []
+    terms = set()
+    for pattern, go_id in CELLULAR_LOCATION_KEYWORDS:
+        if pattern.search(text):
+            terms.add(go_id)
+    return sorted(terms)
 
 
 @dataclass
@@ -253,8 +321,10 @@ def normalize_multitaskprotdb_ii_record(
             line_rest = go_moon_raw[end_pos:end_pos + 40].lower()
             if "process" in line_rest or "response" in line_rest:
                 bp2_terms.append(gid)
-            elif "activity" in line_rest or "binding" in line_rest:
+            elif "activity" in line_rest or "binding" in line_rest or "function" in line_rest:
                 mf2_terms.append(gid)
+            elif "component" in line_rest or "cellular" in line_rest:
+                cc2_terms.append(gid)
             else:
                 bp2_terms.append(gid)
 
@@ -447,4 +517,203 @@ def resolve_mono_source_record(
         facet_status="unassigned_mono_source",
         resolution_sources="none",
         notes=notes,
+    )
+
+
+def load_moondb_emf_data(path: str | Path | None = None) -> dict[str, dict[str, Any]]:
+    """Load all_EMF_annotation.tsv into a dictionary grouped by UniprotKB_AC.
+    Preserves raw terms_1 and terms_2 without imposing fixed categories.
+    """
+    file_path = Path(path) if path else DEFAULT_MOONDB_EMF_PATH
+    if not file_path.exists():
+        return {}
+
+    emf_data: dict[str, dict[str, Any]] = {}
+    with file_path.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f, delimiter="\t")
+        for row in reader:
+            acc = normalize_uniprot_accession(row.get("UniprotKB_AC"))
+            if not acc:
+                continue
+            if acc not in emf_data:
+                emf_data[acc] = {
+                    "terms_1": set(),
+                    "terms_2": set(),
+                    "names_1": set(),
+                    "names_2": set(),
+                }
+            g1 = row.get("GO_ID_1", "").strip()
+            g2 = row.get("GO_ID_2", "").strip()
+            if g1:
+                emf_data[acc]["terms_1"].add(g1)
+            if g2:
+                emf_data[acc]["terms_2"].add(g2)
+            n1 = row.get("GO_Name_1", "").strip()
+            n2 = row.get("GO_ID_Name", "").strip()
+            if n1:
+                emf_data[acc]["names_1"].add(n1)
+            if n2:
+                emf_data[acc]["names_2"].add(n2)
+    return emf_data
+
+
+def load_moondb_manual_data(path: str | Path | None = None) -> dict[str, dict[str, Any]]:
+    """Load all_manual_curated.tsv into a dictionary keyed by UniprotAC."""
+    file_path = Path(path) if path else DEFAULT_MOONDB_MANUAL_PATH
+    if not file_path.exists():
+        return {}
+
+    manual_data: dict[str, dict[str, Any]] = {}
+    with file_path.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f, delimiter="\t")
+        for row in reader:
+            acc = normalize_uniprot_accession(row.get("UniprotAC"))
+            if not acc:
+                continue
+            f1 = row.get("Function_1_text", "").strip()
+            f2 = row.get("Function_2_text", "").strip()
+            raw_pubs = row.get("Publications", "").strip()
+            pubs = [p.strip() for p in raw_pubs.split(",") if p.strip() and p.strip().isdigit()]
+            cc1_terms = extract_cellular_components_from_text(f1)
+            cc2_terms = extract_cellular_components_from_text(f2)
+            manual_data[acc] = {
+                "f1": f1,
+                "f2": f2,
+                "pubs": pubs,
+                "cc1_terms": cc1_terms,
+                "cc2_terms": cc2_terms,
+                "species": row.get("Species", "").strip(),
+            }
+    return manual_data
+
+
+def normalize_moondb_record(
+    accession: str,
+    source_record_id: str,
+    emf_data: dict[str, dict[str, Any]] | None = None,
+    manual_data: dict[str, dict[str, Any]] | None = None,
+    td_client: TargetDataClient | None = None,
+    obo_aspects: dict[str, str] | None = None,
+) -> ProteinFacetsRecord:
+    """Normalize a MoonDB protein using rich EMF predictions or manual curation data.
+    Dynamically routes each GO term according to its real ontology aspect (BP, MF, CC).
+    """
+    clean_acc = normalize_uniprot_accession(accession) or ""
+    protein_id = make_protein_id_uniprot(clean_acc) if clean_acc else ""
+    emf_data = emf_data or {}
+    manual_data = manual_data or {}
+    obo_aspects = obo_aspects or {}
+
+    def get_aspect(go_id: str) -> str | None:
+        if td_client:
+            asp = td_client.get_go_aspect(go_id)
+            if asp:
+                return asp
+        return obo_aspects.get(go_id)
+
+    bp1_terms: list[str] = []
+    mf1_terms: list[str] = []
+    cc1_terms: list[str] = []
+    pmid1 = ""
+    func1_desc = ""
+
+    bp2_terms: list[str] = []
+    mf2_terms: list[str] = []
+    cc2_terms: list[str] = []
+    pmid2 = ""
+    func2_desc = ""
+
+    res_sources = []
+
+    # Priority 1: Manual Curated
+    if clean_acc in manual_data:
+        m = manual_data[clean_acc]
+        func1_desc = m["f1"]
+        func2_desc = m["f2"]
+        pmid2 = "; ".join(m["pubs"])
+        cc1_terms.extend(m["cc1_terms"])
+        cc2_terms.extend(m["cc2_terms"])
+        res_sources.append("source_raw_moondb_curated")
+
+        # Query TargetData with PMIDs to enrich GO terms
+        if td_client and clean_acc and m["pubs"]:
+            for p in m["pubs"]:
+                annos = td_client.get_annotations_by_pmid(clean_acc, p)
+                if annos:
+                    res_sources.append("targetdata_matched_pmid")
+                for a in annos:
+                    if a["aspect"] == "BP":
+                        bp2_terms.append(a["go_id"])
+                    elif a["aspect"] == "MF":
+                        mf2_terms.append(a["go_id"])
+                    elif a["aspect"] == "CC" and a["go_id"] not in cc2_terms:
+                        cc2_terms.append(a["go_id"])
+
+    # Priority 2: Predicted EMF
+    elif clean_acc in emf_data:
+        emf = emf_data[clean_acc]
+        func1_desc = "; ".join(sorted(emf["names_1"]))
+        func2_desc = "; ".join(sorted(emf["names_2"]))
+        res_sources.append("source_raw_moondb_emf")
+
+        # Dynamically classify terms_1 by their true ontology aspect
+        for g in sorted(emf["terms_1"]):
+            asp = get_aspect(g)
+            if asp == "BP":
+                bp1_terms.append(g)
+            elif asp == "MF":
+                mf1_terms.append(g)
+            elif asp == "CC":
+                cc1_terms.append(g)
+            else:
+                bp1_terms.append(g)
+
+        # Dynamically classify terms_2 by their true ontology aspect
+        for g in sorted(emf["terms_2"]):
+            asp = get_aspect(g)
+            if asp == "BP":
+                bp2_terms.append(g)
+            elif asp == "MF":
+                mf2_terms.append(g)
+            elif asp == "CC":
+                cc2_terms.append(g)
+            else:
+                bp2_terms.append(g)
+
+        # Enrich with TargetData overall annotations if missing MF / CC
+        if td_client and clean_acc and (not mf1_terms or not cc1_terms):
+            all_td = td_client.get_annotations_for_accession(clean_acc)
+            for a in all_td:
+                if a["aspect"] == "MF" and not mf1_terms:
+                    mf1_terms.append(a["go_id"])
+                    res_sources.append("targetdata_enriched")
+                elif a["aspect"] == "CC" and not cc1_terms:
+                    cc1_terms.append(a["go_id"])
+                    res_sources.append("targetdata_enriched")
+
+    else:
+        return resolve_mono_source_record("SRC_MOONDB", source_record_id, clean_acc, td_client)
+
+    has_facet1 = bool(bp1_terms or mf1_terms or cc1_terms or func1_desc)
+    has_facet2 = bool(bp2_terms or mf2_terms or cc2_terms or func2_desc or pmid2)
+    status = "resolved" if (has_facet1 and has_facet2) else ("partial" if (has_facet1 or has_facet2) else "unresolved")
+
+    return ProteinFacetsRecord(
+        protein_id=protein_id,
+        canonical_uniprot_accession=clean_acc,
+        source_name="SRC_MOONDB",
+        source_record_id=source_record_id,
+        bp1=join_terms(bp1_terms),
+        mf1=join_terms(mf1_terms),
+        cc1=join_terms(cc1_terms),
+        pmid1=pmid1,
+        func1_desc=func1_desc,
+        bp2=join_terms(bp2_terms),
+        mf2=join_terms(mf2_terms),
+        cc2=join_terms(cc2_terms),
+        pmid2=pmid2,
+        func2_desc=func2_desc,
+        facet_status=status,
+        resolution_sources="; ".join(sorted(set(res_sources))),
+        notes="Normalized via MoonDB EMF predictions or manual curation.",
     )
