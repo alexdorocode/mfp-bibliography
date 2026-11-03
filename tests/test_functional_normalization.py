@@ -42,6 +42,17 @@ def test_join_terms() -> None:
     assert join_terms([]) == ""
 
 
+def test_load_obo_aspects_with_alt_id() -> None:
+    aspects = load_obo_aspects()
+    if aspects:
+        # GO:0036211 is primary ID (BP)
+        assert aspects.get("GO:0036211") == "BP"
+        # GO:0006464 is alt_id of GO:0036211 (BP)
+        assert aspects.get("GO:0006464") == "BP"
+        # GO:0016021 is alt_id of GO:0005886 / GO:0016020 (CC)
+        assert aspects.get("GO:0016021") == "CC"
+
+
 def test_extract_cellular_components_from_text() -> None:
     text1 = "Condition: present in plasma membrane or cytoplasm"
     cc1 = extract_cellular_components_from_text(text1)

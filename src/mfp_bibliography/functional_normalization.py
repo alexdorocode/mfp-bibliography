@@ -110,27 +110,34 @@ def load_obo_aspects(obo_path: str | Path | None = None) -> dict[str, str]:
 
     obo_aspects: dict[str, str] = {}
     current_ids: list[str] = []
+    current_asp: str | None = None
+
+    def flush_stanza() -> None:
+        if current_asp and current_ids:
+            for cid in current_ids:
+                obo_aspects[cid] = current_asp
+
     with candidate_path.open("r", encoding="utf-8", errors="ignore") as f:
         for line in f:
             line = line.strip()
             if line == "[Term]":
+                flush_stanza()
                 current_ids = []
+                current_asp = None
             elif line.startswith("id: GO:"):
                 current_ids.append(line[4:].strip())
             elif line.startswith("alt_id: GO:"):
                 current_ids.append(line[8:].strip())
-            elif line.startswith("namespace:") and current_ids:
+            elif line.startswith("namespace:"):
                 ns = line[10:].strip().lower()
-                asp = None
                 if ns == "biological_process":
-                    asp = "BP"
+                    current_asp = "BP"
                 elif ns == "molecular_function":
-                    asp = "MF"
+                    current_asp = "MF"
                 elif ns == "cellular_component":
-                    asp = "CC"
-                if asp:
-                    for cid in current_ids:
-                        obo_aspects[cid] = asp
+                    current_asp = "CC"
+        flush_stanza()
+
     return obo_aspects
 
 
