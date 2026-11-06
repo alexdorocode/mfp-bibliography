@@ -1,0 +1,65 @@
+[
+  {
+    "source_record_id": "multitask_syn_001",
+    "protein_id": "MFP:U:0123456789abcdef",
+    "source_id": "SRC_MULTITASKPROTDB_II",
+    "claims_extracted_count": 2,
+    "coverage_status": "claims_extracted",
+    "metadata_annotation_raw": null,
+    "notes": null
+  },
+  {
+    "source_record_id": "multitask_syn_002",
+    "protein_id": "MFP:U:0123456789abcdef",
+    "source_id": "SRC_MULTITASKPROTDB_II",
+    "claims_extracted_count": 1,
+    "coverage_status": "claims_extracted",
+    "metadata_annotation_raw": null,
+    "notes": "Secondary record from same source"
+  },
+  {
+    "source_record_id": "plantmp_syn_001",
+    "protein_id": "MFP:U:0123456789abcdef",
+    "source_id": "SRC_PLANTMP",
+    "claims_extracted_count": 1,
+    "coverage_status": "claims_extracted",
+    "metadata_annotation_raw": null,
+    "notes": null
+  },
+  {
+    "source_record_id": "moonprot_syn_001",
+    "protein_id": "MFP:U:fedcba9876543210",
+    "source_id": "SRC_MOONPROT",
+    "claims_extracted_count": 3,
+    "coverage_status": "claims_extracted",
+    "metadata_annotation_raw": null,
+    "notes": "Exercises multiplicity >= 3"
+  },
+  {
+    "source_record_id": "moondb_syn_001",
+    "protein_id": "MFP:U:fedcba9876543210",
+    "source_id": "SRC_MOONDB",
+    "claims_extracted_count": 1,
+    "coverage_status": "claims_extracted",
+    "metadata_annotation_raw": null,
+    "notes": null
+  },
+  {
+    "source_record_id": "multifaceted_syn_001",
+    "protein_id": "MFP:U:1122334455667788",
+    "source_id": "SRC_MULTIFACETEDPROTDB",
+    "claims_extracted_count": 0,
+    "coverage_status": "no_discrete_functional_statements",
+    "metadata_annotation_raw": "5.0",
+    "notes": "Accession-only entry; float score preserved as metadata without fake claims"
+  },
+  {
+    "source_record_id": "plantmp_syn_fallback_001",
+    "protein_id": "MFP:F:SRC_PLANTMP:9988776655443322",
+    "source_id": "SRC_PLANTMP",
+    "claims_extracted_count": 1,
+    "coverage_status": "claims_extracted",
+    "metadata_annotation_raw": null,
+    "notes": "Fallback entity"
+  }
+]

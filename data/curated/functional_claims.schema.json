@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/functional_claims.schema.json",
+  "title": "MFP Functional Claim",
+  "description": "Relational functional claim model for MFPB_FUNCTIONAL_CLAIM_V1. One record per discrete functional statement observed in a source record. Multiplicity-preserving, no binary slot collapsing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claim_id",
+    "protein_id",
+    "source_id",
+    "source_record_id",
+    "claim_index",
+    "claim_role_raw",
+    "raw_claim_field",
+    "raw_claim_value",
+    "claim_assertion_type",
+    "source_go_ids",
+    "source_go_aspects",
+    "source_ec_number",
+    "linked_reference_ids",
+    "record_reference_ids",
+    "raw_file_path",
+    "raw_row_or_url",
+    "extraction_method",
+    "claim_status",
+    "notes"
+  ],
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "pattern": "^MFP:FC:[A-Za-z0-9_]+:[0-9a-f]{16}$",
+      "description": "Deterministic unique claim identifier under scheme MFPB_FUNCTIONAL_CLAIM_V1."
+    },
+    "protein_id": {
+      "type": "string",
+      "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$",
+      "description": "Entity identifier in mfp_proteins.csv under scheme MFPB_PROTEIN_ID_V1."
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SRC_[A-Z0-9_]+$",
+      "description": "Canonical source identifier from source catalog."
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-local record identifier linking to mfp_source_records.csv."
+    },
+    "claim_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Zero-based index of the claim statement within the source record observation."
+    },
+    "claim_role_raw": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Verbatim functional role declared by source (e.g. Canonical_Function, Moonlighting_function, canonical_function_bp), or null if unassigned."
+    },
+    "raw_claim_field": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-native field name from which the statement was extracted."
+    },
+    "raw_claim_value": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-native verbatim functional claim statement text."
+    },
+    "claim_assertion_type": {
+      "type": "string",
+      "enum": [
+        "curated",
+        "predicted",
+        "unresolved"
+      ],
+      "description": "Normalized curation tier of the functional assertion."
+    },
+    "source_go_ids": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Semicolon-space delimited list of GO identifiers explicitly provided in the raw source record for this claim, or null."
+    },
+    "source_go_aspects": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Semicolon-space delimited list of GO aspects (BP, MF, CC) explicitly indicated by the source, matching source_go_ids order, or null."
+    },
+    "source_ec_number": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "EC number explicitly provided in the raw source record for this claim, or null."
+    },
+    "linked_reference_ids": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Semicolon-space delimited list of bibliographic references explicitly tied by the source directly to this claim, or null."
+    },
+    "record_reference_ids": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Semicolon-space delimited list of record-level references provided by the source, unlinked to this specific claim, or null."
+    },
+    "raw_file_path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Relative repository path to the immutable raw artifact."
+    },
+    "raw_row_or_url": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Locator within the raw artifact (e.g. row:2, line:15, or URL)."
+    },
+    "extraction_method": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier and version of the extraction parser method."
+    },
+    "claim_status": {
+      "type": "string",
+      "enum": [
+        "valid",
+        "unsegmented_text",
+        "incomplete",
+        "ambiguous"
+      ],
+      "description": "Operational data quality and segmentation status of the claim."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Optional technical notes or parsing caveats, or null."
+    }
+  }
+}

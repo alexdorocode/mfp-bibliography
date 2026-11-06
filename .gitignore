@@ -6,4 +6,9 @@ __pycache__/
 
 *.egg-info/
 data/*
+!data/curated/
+data/curated/*
+!data/curated/README.md
+!data/curated/*.schema.json
 /analysis/
+/bibliography/

@@ -1,0 +1,31 @@
+﻿UniProt,Protein_Name,Long_Description,Canonical_Function,GO,Moonlighting_function,GO_Moon,Organism,Human_Disease,Drugs,Induction,PDBs,PDB_UniProt,Models,Reference
+A0A059U5R2,60S ribosomal protein L44,,Ribosomal protein,"GO:0005840; C:ribosome; IEA:UniProtKB-KW.
+GO:0003735; F:structural constituent of ribosome; IEA:InterPro.
+GO:0006412; P:translation; IEA:InterPro.",It supports abiotic stress resistance,"GO:0008150 biological_process
+GO:0050896 response to stimulus
+GO:0009628 response to abiotic stimulus
+GO:0006950 response to stress
+GO:0006970 response to osmotic stress",Aspergillus glaucus,,,,3j6x_82(83),,Phyre,24814782
+A0A0H2Q1X0,Glutamine synthetase,,ATP + L-glutamate + NH3 = ADP + phosphate + L-glutamine.,"GO:0015930; F:glutamate synthase activity; IEA:InterPro.
+GO:0006537; P:glutamate biosynthetic process; IEA:InterPro.",Plasminogen binding,"GO:0003674; F:molecular_function. Synonyms: molecular function.
+GO:0005488; F:binding. Synonyms: ligand.
+GO:0005515; F:protein binding. Synonyms: alpha-2 macroglobulin receptor-associated protein activity; protein degradation tagging activity; protein tagging activity; protein amino acid binding; protein folding chaperone.
+GO:0005102; F:receptor binding. Synonyms: receptor-associated protein activity; receptor ligand.
+GO:0046789; F:host cell surface receptor binding. Synonyms: cell surface antigen activity, host-interacting; cell surface receptor ligand.",Bifidobacterium bifidum,,,,1ea0_A(64),,Phyre,20167618
+A0A0H3CDS3,Bifunctional regulator KidO,,Activates DivJ,"GO"" id=""GO:0016021""C:integral component of membrane
+GO:0005622;C:intracellular
+GO:0005524;F:ATP binding
+GO:0000155;F:phosphorelay sensor kinase activity",Binds to FtsZ,"GO:0008150; P:biological_process. Synonyms: physiological process; biological process.
+GO:0000003; P:reproduction. Synonyms: reproductive physiological process.
+GO:0032505; P:reproduction of a single-celled organism.
+GO:0043093; P:FtsZ-dependent cytokinesis. Synonyms: prokaryote-type cytokinesis; prokaryotic fission; cytokinesis by binary fission.",Caulobacter crescentus,,,,,,Phyre,22014899
+B8GW64,CTP synthase,,Synthesizes CTP,"GO:0005524; F:ATP binding; IEA:UniProtKB-KW.
+GO:0003883; F:CTP synthase activity; IEA:UniProtKB-EC.
+GO:0046872; F:metal ion binding; IEA:UniProtKB-KW.
+GO:0044210; P:'de novo' CTP biosynthetic process; IEA:UniProtKB-UniPathway.
+GO:0006541; P:glutamine metabolic process; IEA:UniProtKB-KW.",Binds to CreS,,Caulobacter crescentus,,,,1s1m_A(79),,Phyre,22014899
+P0ABS8,DNA polymerase III subunit theta,,"DNA polymerase III is a complex, multichain enzyme responsible for most of the replicative synthesis in bacteria. This DNA polymerase also exhibits 3' to 5' exonuclease activity.","GO:0005829; C:cytosol; IDA:EcoCyc.
+GO:0044776; C:DNA polymerase III, core complex; IDA:EcoCyc.
+GO:0003677; F:DNA binding; IEA:InterPro.
+GO:0003887; F:DNA-directed DNA polymerase activity; IEA:UniProtKB-KW.
+GO:0006260; P:DNA replication; IEA:UniProtKB-KW.","Exhibits structural and functional similarities to a family of nucleoid-associated regulatory proteins, the Hha/YdgT-like proteins that are also encoded by enterobacterial ORFan genes (a regulatory function can be attributed to HolE)",,Escherichia coli,,,,2ae9_A(100),"1du2_A (100), 2ae9_A (100), 2axd_S (100), 2xy8_B (100), 5m1s_F (100)",Phyre,HIV-1 and murine leukemia virus infection (omim:600534)

@@ -1,0 +1,5 @@
+protein_id,canonical_uniprot_accession,canonical_name,canonical_gene,canonical_organism,taxonomy_id,entity_status
+MFP:U:0123456789abcdef,P00001,Synthetic Protein 1,SYN1,Synthetic organism,999999,resolved
+MFP:U:fedcba9876543210,P00002,Synthetic Protein 2,SYN2,Synthetic organism,999999,resolved
+MFP:U:1122334455667788,P00003,Synthetic Protein 3,SYN3,Synthetic organism,999999,resolved
+MFP:F:SRC_PLANTMP:9988776655443322,,Synthetic Fallback Protein,SYN4,Synthetic plant,999998,fallback

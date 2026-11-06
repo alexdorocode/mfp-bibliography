@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/functional_coverage.schema.json",
+  "title": "MFP Functional Coverage",
+  "description": "Per-source-record functional coverage accounting model for 100% denominator completeness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_record_id",
+    "protein_id",
+    "source_id",
+    "claims_extracted_count",
+    "coverage_status",
+    "metadata_annotation_raw",
+    "notes"
+  ],
+  "properties": {
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Foreign key to mfp_source_records.csv native record identifier."
+    },
+    "protein_id": {
+      "type": "string",
+      "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$",
+      "description": "Entity identifier in mfp_proteins.csv under scheme MFPB_PROTEIN_ID_V1."
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SRC_[A-Z0-9_]+$",
+      "description": "Canonical source identifier from source catalog."
+    },
+    "claims_extracted_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of discrete functional claim records generated in functional_claims for this source record."
+    },
+    "coverage_status": {
+      "type": "string",
+      "enum": [
+        "claims_extracted",
+        "no_discrete_functional_statements",
+        "unresolved_identity",
+        "parse_failure"
+      ],
+      "description": "Coverage status classification for denominator accounting."
+    },
+    "metadata_annotation_raw": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Verbatim source metadata or score (e.g. MultifacetedProtDB numeric score '5.0'), or null."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Optional coverage accounting notes, or null."
+    }
+  }
+}
