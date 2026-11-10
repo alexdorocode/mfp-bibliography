@@ -29,3 +29,14 @@ GO:0044776; C:DNA polymerase III, core complex; IDA:EcoCyc.
 GO:0003677; F:DNA binding; IEA:InterPro.
 GO:0003887; F:DNA-directed DNA polymerase activity; IEA:UniProtKB-KW.
 GO:0006260; P:DNA replication; IEA:UniProtKB-KW.","Exhibits structural and functional similarities to a family of nucleoid-associated regulatory proteins, the Hha/YdgT-like proteins that are also encoded by enterobacterial ORFan genes (a regulatory function can be attributed to HolE)",,Escherichia coli,,,,2ae9_A(100),"1du2_A (100), 2ae9_A (100), 2axd_S (100), 2xy8_B (100), 5m1s_F (100)",Phyre,HIV-1 and murine leukemia virus infection (omim:600534)
+Q9Y3E5,Pth2/Bit1 peptidyl-tRNA hydrolase 2/Bcl-2 inhibitor of transcription 1 EC:3.1.1.29,,Peptidyl-tRNA hydrolase 2,"GO:0005829; C:cytosol; IMP:UniProtKB.
+GO:0016020; C:membrane; IDA:UniProtKB.
+GO:0005739; C:mitochondrion; IDA:UniProtKB.
+GO:0004045; F:aminoacyl-tRNA hydrolase activity; IEA:UniProtKB-EC.
+GO:0006915; P:apoptotic process; IEA:UniProtKB-KW.
+GO:2000811; P:negative regulation of anoikis; IMP:UniProtKB.
+GO:0010629; P:negative regulation of gene expression; IMP:UniProtKB.
+GO:2000210; P:positive regulation of anoikis; IMP:UniProtKB.",Inhibitor of transcription,"GO:0005654; C:nucleoplasm; IDA:HPA.
+GO:0003677; F:DNA binding; IEA:InterPro.
+GO:0006355; P:regulation of transcription, DNA-templated; IEA:UniProtKB-KW.
+GO:0006351; P:transcription, DNA-templated; IEA:UniProtKB-KW.",Homo sapiens,Osteoarthritis (omim:601469),,,1q7s_A(100),1q7s_A/B (100),Phyre,14660562

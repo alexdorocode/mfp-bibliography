@@ -237,14 +237,40 @@ Emitted for every source record in the catalog to ensure complete denominator ac
 | Field Name | Type | Nullable | Description | Example |
 |---|---|---|---|---|
 | `source_record_id` | string | No | Foreign key to `mfp_source_records.csv`. | `multifacetedprotdb_row_1` |
-| `protein_id` | string | No | Foreign key to `mfp_proteins.csv`. | `MFP:U:P36873` |
+| `protein_id` | string | Conditional | Foreign key to `mfp_proteins.csv`. Enforces conditional nullability: must be `null` when `coverage_status = "unresolved_identity"`; must be a valid entity ID matching `^MFP:(U:[0-9a-f]{16}\|F:[A-Za-z0-9_]+:[0-9a-f]{16})$` for all other coverage statuses. Required in all records. | `MFP:U:8a15acf5a3765200` |
 | `source_id` | string | No | Source catalog identifier. | `SRC_MULTIFACETEDPROTDB` |
 | `claims_extracted_count` | integer | No | Number of rows generated in `functional_claims`. | `0` |
 | `coverage_status` | string | No | `claims_extracted`, `no_discrete_functional_statements`, `unresolved_identity`, `parse_failure`. | `no_discrete_functional_statements` |
 | `metadata_annotation_raw` | string | Yes | Verbatim raw annotation metadata (e.g. float score `5.0`). | `5.0` |
 | `notes` | string | Yes | Accounting notes. | `Accession-only record; score preserved as metadata` |
 
-### 5.3 Serialization and Sorting Invariants
+#### Conditional Nullability Rules for `protein_id`:
+1. `protein_id` is a strictly required property across all coverage records. Missing properties and empty strings (`""`) are rejected by schema validation.
+2. **`unresolved_identity`**: When `coverage_status = "unresolved_identity"`, `protein_id` MUST be `null`. This indicates that the current processing step could not establish a valid linkage to a catalog entity (e.g. due to missing or malformed accession, absence from the supplied catalog, or catalog linkage mismatch); it does not describe or assert proof that the biological entity does not exist in the catalog. Emitting invented sentinel entities (e.g. `MFP:U:0000000000000000`) is prohibited.
+3. **Resolved Statuses**: For all other currently defined coverage statuses (`claims_extracted`, `no_discrete_functional_statements`, `parse_failure`), `protein_id` MUST be a valid string conforming to `^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$`. `null` values are rejected for these statuses.
+4. **Deterministic Sorting**: Coverage records are deterministically sorted by `(protein_id or "" ASC, source_id ASC, source_record_id ASC)`, positioning unresolved records (`protein_id = null`) first without inventing fake identifiers.
+
+### 5.3 Data Contract: `source_go_annotations`
+Emitted for each discrete source-explicit Gene Ontology annotation observed in a source record. Preserves source annotations structurally with verbatim raw fragments, evidence codes, and optional claim linkage without requiring parallel delimited string parsing.
+
+| Field Name | Type | Nullable | Description | Example |
+|---|---|---|---|---|
+| `annotation_id` | string | No | Deterministic unique key under `MFPB_SOURCE_GO_ANNOTATION_V1`. | `MFP:SGA:MULTITASKPROTDB_II:0123456789abcdef` |
+| `protein_id` | string | No | Foreign key to `mfp_proteins.csv` under `MFPB_PROTEIN_ID_V1`. | `MFP:U:ac159de80a38c3e3` |
+| `source_id` | string | No | Canonical source catalog identifier. | `SRC_MULTITASKPROTDB_II` |
+| `source_record_id` | string | No | Foreign key to `mfp_source_records.csv`. | `multitaskprotdb_ii_row_1` |
+| `claim_id` | string | Yes | Optional foreign key to `functional_claims`, or null if no discrete text statement. | `MFP:FC:MULTITASKPROTDB_II:fedcba9876543210` |
+| `source_field` | string | No | Source-native field name from which annotation was extracted. | `GO` |
+| `annotation_index` | integer | No | Zero-based occurrence index within the source field/record. | `0` |
+| `raw_annotation_text` | string | No | Exact verbatim raw line or fragment from source. | `GO:0005840; C:ribosome; IEA:UniProtKB-KW.` |
+| `go_id` | string | No | Source-explicit GO identifier (`^GO:[0-9]{7}$`). | `GO:0005840` |
+| `go_aspect` | string | Yes | Source-declared aspect: `BP`, `MF`, `CC`, `unassigned`, or null. | `CC` |
+| `term_name` | string | Yes | Source-declared term description, or null if absent. | `ribosome` |
+| `evidence_raw` | string | Yes | Original evidence string, or null if absent. No inferred metadata. | `IEA:UniProtKB-KW` |
+| `annotation_status` | string | No | Parse status: `parsed`, `unassigned_aspect`, `ambiguous`, `raw_only`. | `parsed` |
+| `notes` | string | Yes | Optional parser notes, or null. | `null` |
+
+### 5.4 Serialization and Sorting Invariants
 - **Character Encoding**: UTF-8 without BOM; LF (`\n`) line endings.
 - **Null Serialization and Absence Representation**:
   - In in-memory and JSON representations, absence of value is explicitly represented by `null`. String fields enforce `minLength: 1`, making empty strings (`""`) invalid values to prevent ambiguous representation.
@@ -252,7 +278,7 @@ Emitted for every source record in the catalog to ensure complete denominator ac
   - In CSV deserialization to validated record objects, empty string cells (`""`) in nullable columns must be converted to `None` / `null`, while non-nullable fields containing empty strings fail validation.
 - **Delimiter and Multivalue Encoding**:
   - Comma (`,`) is the column delimiter for CSV.
-  - Semicolon followed by a space (`; `) is the delimiter for multivalue fields (`source_go_ids`, `source_go_aspects`, `linked_reference_ids`, `record_reference_ids`).
+  - Semicolon followed by a space (`; `) is the delimiter for multivalue fields in claims (`source_go_ids`, `source_go_aspects`, `linked_reference_ids`, `record_reference_ids`).
   - Original reference strings and raw identifiers must be preserved without modification. Multivalue decoding splits on `;` and strips whitespace, preserving verbatim identifier strings without ad-hoc percent-encoding.
 - **Deterministic Total Ordering**:
   - **`functional_claims` Total Tie-Breaking Key**: Records must be deterministically sorted by:
@@ -262,15 +288,23 @@ Emitted for every source record in the catalog to ensure complete denominator ac
     4. `claim_index` ASC
     5. `claim_id` ASC
     This 5-tuple provides an unambiguous total order even when a source database provides multiple distinct records for the same protein entity.
-  - **`functional_coverage` Total Order Key**: Records must be deterministically sorted by:
+  - **`source_go_annotations` Total Tie-Breaking Key**: Records must be deterministically sorted by:
     1. `protein_id` ASC
     2. `source_id` ASC
     3. `source_record_id` ASC
+    4. `source_field` ASC
+    5. `annotation_index` ASC
+    6. `annotation_id` ASC
+  - **`functional_coverage` Total Order Key**: Records must be deterministically sorted by:
+    1. `protein_id` or `""` ASC (null `protein_id` values sort first without fake sentinel injection)
+    2. `source_id` ASC
+    3. `source_record_id` ASC
 - **Round-Trip Fidelity**: String values containing commas, quotes, or newlines must be quoted under RFC 4180 rules. Parsing and re-serialization must preserve complete field equivalence.
-- **Deterministic Claim Identifier Derivation**:
+- **Deterministic Claim and Annotation Identifier Derivation**:
   - Claim IDs follow scheme `MFPB_FUNCTIONAL_CLAIM_V1`: `MFP:FC:<source_suffix>:<16hex_digest>`.
-  - The 16-hex digest is computed via SHA-256 over canonical namespace, source identity, source record locator, claim index, and raw claim field:
-    `SHA-256("MFPB_FUNCTIONAL_CLAIM_V1::<source_id>::<source_record_id>::<claim_index>::<raw_claim_field>")[:16]`.
+    Computed via `SHA-256("MFPB_FUNCTIONAL_CLAIM_V1::<source_id>::<source_record_id>::<claim_index>::<raw_claim_field>")[:16]`.
+  - Annotation IDs follow scheme `MFPB_SOURCE_GO_ANNOTATION_V1`: `MFP:SGA:<source_suffix>:<16hex_digest>`.
+    Computed via `SHA-256("MFPB_SOURCE_GO_ANNOTATION_V1::<source_id>::<source_record_id>::<source_field>::<annotation_index>::<go_id>")[:16]`.
   - Uniqueness is verified across the dataset, and any digest collision must raise a hard validation error.
 
 ---

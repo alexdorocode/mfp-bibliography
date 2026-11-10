@@ -21,9 +21,8 @@
       "description": "Foreign key to mfp_source_records.csv native record identifier."
     },
     "protein_id": {
-      "type": "string",
-      "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$",
-      "description": "Entity identifier in mfp_proteins.csv under scheme MFPB_PROTEIN_ID_V1."
+      "type": ["string", "null"],
+      "description": "Entity identifier in mfp_proteins.csv under scheme MFPB_PROTEIN_ID_V1, or null when coverage_status is unresolved_identity."
     },
     "source_id": {
       "type": "string",
@@ -56,5 +55,31 @@
       "minLength": 1,
       "description": "Optional coverage accounting notes, or null."
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "coverage_status": {
+            "const": "unresolved_identity"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "protein_id": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "protein_id": {
+            "type": "string",
+            "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$"
+          }
+        }
+      }
+    }
+  ]
 }

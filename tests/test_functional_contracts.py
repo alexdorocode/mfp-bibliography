@@ -106,14 +106,24 @@ def assert_catalog_referential_integrity(
     for cov in coverage:
         pid = cov["protein_id"]
         srid = cov["source_record_id"]
-        if pid not in valid_protein_ids:
-            raise ValueError(f"Coverage record for {srid} references unknown protein_id: {pid}")
-        if srid not in record_to_protein:
-            raise ValueError(f"Coverage record references unknown source_record_id: {srid}")
-        if record_to_protein[srid] != pid:
-            raise ValueError(
-                f"Coverage {srid} protein_id {pid} does not match catalog protein_id {record_to_protein[srid]}"
-            )
+        if pid is not None:
+            if pid not in valid_protein_ids:
+                raise ValueError(f"Coverage record for {srid} references unknown protein_id: {pid}")
+            if srid not in record_to_protein:
+                raise ValueError(f"Coverage record references unknown source_record_id: {srid}")
+            if record_to_protein[srid] != pid:
+                raise ValueError(
+                    f"Coverage {srid} protein_id {pid} does not match catalog protein_id {record_to_protein[srid]}"
+                )
+        else:
+            if cov.get("coverage_status") != "unresolved_identity":
+                raise ValueError(
+                    f"Coverage record {srid} has null protein_id but coverage_status is '{cov.get('coverage_status')}'"
+                )
+            if cov.get("claims_extracted_count", 0) != 0:
+                raise ValueError(
+                    f"Unresolved coverage record {srid} cannot have non-zero claims_extracted_count: {cov.get('claims_extracted_count')}"
+                )
 
 
 def assert_coverage_denominator_consistency(
@@ -188,14 +198,14 @@ def assert_total_coverage_ordering(records: list[dict[str, Any]]) -> list[dict[s
     """TEST-ONLY: Apply and verify total tie-breaking sort order for functional_coverage.
 
     Sort key:
-      1. protein_id ASC
+      1. protein_id or "" ASC (null values sort first)
       2. source_id ASC
       3. source_record_id ASC
     """
     return sorted(
         records,
         key=lambda r: (
-            r["protein_id"],
+            r["protein_id"] or "",
             r["source_id"],
             r["source_record_id"],
         ),
@@ -708,8 +718,8 @@ def test_total_coverage_ordering_rule() -> None:
     scrambled = [coverage[3], coverage[0], coverage[5], coverage[1], coverage[4], coverage[2]]
     sorted_cov = assert_total_coverage_ordering(scrambled)
 
-    keys = [(c["protein_id"], c["source_id"], c["source_record_id"]) for c in sorted_cov]
-    assert keys == sorted(keys), "Coverage sorting does not follow (protein_id, source_id, source_record_id)"
+    keys = [(c["protein_id"] or "", c["source_id"], c["source_record_id"]) for c in sorted_cov]
+    assert keys == sorted(keys), "Coverage sorting does not follow (protein_id or '', source_id, source_record_id)"
 
 
 def test_deterministic_claim_id_derivation_and_collision_detection() -> None:
@@ -772,4 +782,321 @@ def test_multivalue_decoding_preserves_original_references() -> None:
         # Verbatim preservation: no alterations, no artificial percent-encoding
         for token in tokens:
             assert "%" not in token
+
+
+# -----------------------------------------------------------------------------
+# Conditional Nullability & Coverage Schema Amendment Tests
+# -----------------------------------------------------------------------------
+
+def test_coverage_schema_conditional_nullability_valid() -> None:
+    """Verify valid coverage records under Draft 2020-12 conditional nullability rule."""
+    cov_validator = build_validator(COVERAGE_SCHEMA_PATH)
+
+    # 1. unresolved_identity + protein_id null (must be valid)
+    unresolved_rec = {
+        "source_record_id": "test_unresolved_001",
+        "protein_id": None,
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 0,
+        "coverage_status": "unresolved_identity",
+        "metadata_annotation_raw": None,
+        "notes": "Unresolved accession; identity unanchored",
+    }
+    cov_validator.validate(unresolved_rec)
+
+    # 2. claims_extracted + catalog-backed protein_id (must be valid)
+    resolved_claims_rec = {
+        "source_record_id": "test_resolved_001",
+        "protein_id": "MFP:U:0123456789abcdef",
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 2,
+        "coverage_status": "claims_extracted",
+        "metadata_annotation_raw": None,
+        "notes": None,
+    }
+    cov_validator.validate(resolved_claims_rec)
+
+    # 3. no_discrete_functional_statements + catalog-backed protein_id (must be valid)
+    no_statements_rec = {
+        "source_record_id": "test_resolved_002",
+        "protein_id": "MFP:U:0123456789abcdef",
+        "source_id": "SRC_MULTIFACETEDPROTDB",
+        "claims_extracted_count": 0,
+        "coverage_status": "no_discrete_functional_statements",
+        "metadata_annotation_raw": "5.0",
+        "notes": "Score preserved as metadata",
+    }
+    cov_validator.validate(no_statements_rec)
+
+    # 4. parse_failure + catalog-backed protein_id (must be valid)
+    parse_failure_rec = {
+        "source_record_id": "test_resolved_003",
+        "protein_id": "MFP:U:0123456789abcdef",
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 0,
+        "coverage_status": "parse_failure",
+        "metadata_annotation_raw": None,
+        "notes": "Malformed row syntax",
+    }
+    cov_validator.validate(parse_failure_rec)
+
+
+def test_coverage_schema_conditional_nullability_invalid_syntax() -> None:
+    """Verify invalid coverage records fail Draft 2020-12 schema validation."""
+    cov_validator = build_validator(COVERAGE_SCHEMA_PATH)
+
+    # Invalid 1: unresolved_identity + non-null protein_id (invented sentinel rejected)
+    inv_unresolved_non_null = {
+        "source_record_id": "test_inv_001",
+        "protein_id": "MFP:U:0000000000000000",
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 0,
+        "coverage_status": "unresolved_identity",
+        "metadata_annotation_raw": None,
+        "notes": None,
+    }
+    with pytest.raises(ValidationError):
+        cov_validator.validate(inv_unresolved_non_null)
+
+    # Invalid 2: claims_extracted + protein_id null (resolved status requires non-null string)
+    inv_resolved_null = {
+        "source_record_id": "test_inv_002",
+        "protein_id": None,
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 1,
+        "coverage_status": "claims_extracted",
+        "metadata_annotation_raw": None,
+        "notes": None,
+    }
+    with pytest.raises(ValidationError):
+        cov_validator.validate(inv_resolved_null)
+
+    # Invalid 3: no_discrete_functional_statements + protein_id null
+    inv_no_statements_null = {
+        "source_record_id": "test_inv_003",
+        "protein_id": None,
+        "source_id": "SRC_MULTIFACETEDPROTDB",
+        "claims_extracted_count": 0,
+        "coverage_status": "no_discrete_functional_statements",
+        "metadata_annotation_raw": None,
+        "notes": None,
+    }
+    with pytest.raises(ValidationError):
+        cov_validator.validate(inv_no_statements_null)
+
+    # Invalid 4: missing protein_id (property omitted)
+    inv_missing_protein_id = {
+        "source_record_id": "test_inv_004",
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 1,
+        "coverage_status": "claims_extracted",
+        "metadata_annotation_raw": None,
+        "notes": None,
+    }
+    with pytest.raises(ValidationError, match="'protein_id' is a required property"):
+        cov_validator.validate(inv_missing_protein_id)
+
+    # Invalid 5: empty protein_id string
+    inv_empty_protein_id = {
+        "source_record_id": "test_inv_005",
+        "protein_id": "",
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 1,
+        "coverage_status": "claims_extracted",
+        "metadata_annotation_raw": None,
+        "notes": None,
+    }
+    with pytest.raises(ValidationError):
+        cov_validator.validate(inv_empty_protein_id)
+
+    # Invalid 6: malformed non-null protein_id (does not match entity ID pattern)
+    inv_malformed_protein_id = {
+        "source_record_id": "test_inv_006",
+        "protein_id": "NOT_AN_MFP_IDENTIFIER",
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 1,
+        "coverage_status": "claims_extracted",
+        "metadata_annotation_raw": None,
+        "notes": None,
+    }
+    with pytest.raises(ValidationError):
+        cov_validator.validate(inv_malformed_protein_id)
+
+
+def test_coverage_referential_integrity_distinct_from_syntax() -> None:
+    """Verify that syntax validation and dataset-level referential integrity checks are distinct.
+
+    1. A well-formed protein_id passing schema syntax validation is rejected by
+       dataset referential integrity when absent from the catalog.
+    2. An unresolved identity record (protein_id = null) passes referential integrity
+       when claims_extracted_count = 0 and no claims/annotations exist for that record.
+    """
+    cov_validator = build_validator(COVERAGE_SCHEMA_PATH)
+    proteins_path = FIXTURES_DIR / "synthetic_catalog_proteins.csv"
+    source_records_path = FIXTURES_DIR / "synthetic_catalog_source_records.csv"
+
+    # Well-formed ID matching pattern, but absent from synthetic_catalog_proteins.csv
+    absent_well_formed_id = "MFP:U:9999999999999999"
+    coverage_rec = {
+        "source_record_id": "plantmp_syn_001",
+        "protein_id": absent_well_formed_id,
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 0,
+        "coverage_status": "no_discrete_functional_statements",
+        "metadata_annotation_raw": None,
+        "notes": None,
+    }
+    # Level 1: Syntax validation MUST PASS (pattern matches ^MFP:(U:...)$)
+    cov_validator.validate(coverage_rec)
+
+    # Level 2: Referential integrity check MUST FAIL (absent from catalog)
+    with pytest.raises(ValueError, match="references unknown protein_id"):
+        assert_catalog_referential_integrity(
+            claims=[],
+            coverage=[coverage_rec],
+            proteins_catalog_path=proteins_path,
+            source_records_catalog_path=source_records_path,
+        )
+
+    # Unresolved identity record with protein_id = null
+    unresolved_rec = {
+        "source_record_id": "unresolved_rec_001",
+        "protein_id": None,
+        "source_id": "SRC_PLANTMP",
+        "claims_extracted_count": 0,
+        "coverage_status": "unresolved_identity",
+        "metadata_annotation_raw": None,
+        "notes": "Unresolved accession",
+    }
+    # Level 1: Syntax validation PASSES
+    cov_validator.validate(unresolved_rec)
+
+    # Level 2: Referential integrity PASSES (unresolved records have null protein_id and 0 claims)
+    assert_catalog_referential_integrity(
+        claims=[],
+        coverage=[unresolved_rec],
+        proteins_catalog_path=proteins_path,
+        source_records_catalog_path=source_records_path,
+    )
+
+    # If an unresolved record illegally claims non-zero claims_extracted_count, referential integrity fails
+    invalid_unresolved_cov = dict(unresolved_rec, claims_extracted_count=1)
+    with pytest.raises(ValueError, match="cannot have non-zero claims_extracted_count"):
+        assert_catalog_referential_integrity(
+            claims=[],
+            coverage=[invalid_unresolved_cov],
+            proteins_catalog_path=proteins_path,
+            source_records_catalog_path=source_records_path,
+        )
+
+
+def test_unresolved_coverage_serialization_round_trip_and_ordering() -> None:
+    """Verify unresolved coverage serializes to JSON and CSV consistently and sorts deterministically.
+
+    1. JSON round-trip preserves protein_id = null without loss.
+    2. RFC 4180 CSV serialization maps null to empty string; deserialization converts "" back to None.
+    3. Total ordering sorts protein_id = null first deterministically without injecting fake IDs.
+    """
+    cov_validator = build_validator(COVERAGE_SCHEMA_PATH)
+
+    records = [
+        {
+            "source_record_id": "rec_resolved_002",
+            "protein_id": "MFP:U:fedcba9876543210",
+            "source_id": "SRC_MOONPROT",
+            "claims_extracted_count": 2,
+            "coverage_status": "claims_extracted",
+            "metadata_annotation_raw": None,
+            "notes": None,
+        },
+        {
+            "source_record_id": "rec_unresolved_002",
+            "protein_id": None,
+            "source_id": "SRC_PLANTMP",
+            "claims_extracted_count": 0,
+            "coverage_status": "unresolved_identity",
+            "metadata_annotation_raw": None,
+            "notes": "Second unresolved record",
+        },
+        {
+            "source_record_id": "rec_resolved_001",
+            "protein_id": "MFP:U:0123456789abcdef",
+            "source_id": "SRC_PLANTMP",
+            "claims_extracted_count": 1,
+            "coverage_status": "claims_extracted",
+            "metadata_annotation_raw": None,
+            "notes": None,
+        },
+        {
+            "source_record_id": "rec_unresolved_001",
+            "protein_id": None,
+            "source_id": "SRC_PLANTMP",
+            "claims_extracted_count": 0,
+            "coverage_status": "unresolved_identity",
+            "metadata_annotation_raw": None,
+            "notes": "First unresolved record",
+        },
+    ]
+
+    # Validate all input records
+    for r in records:
+        cov_validator.validate(r)
+
+    # 1. Deterministic sorting: null protein_ids sort first, ordered by (source_id, source_record_id)
+    sorted_records = assert_total_coverage_ordering(records)
+    expected_order = [
+        "rec_unresolved_001",
+        "rec_unresolved_002",
+        "rec_resolved_001",
+        "rec_resolved_002",
+    ]
+    assert [r["source_record_id"] for r in sorted_records] == expected_order
+
+    # 2. JSON serialization round-trip
+    json_bytes = json.dumps(sorted_records, indent=2).encode("utf-8")
+    json_decoded = json.loads(json_bytes.decode("utf-8"))
+    assert json_decoded == sorted_records
+    for r in json_decoded:
+        cov_validator.validate(r)
+
+    # 3. RFC 4180 CSV serialization round-trip
+    csv_fields = [
+        "source_record_id",
+        "protein_id",
+        "source_id",
+        "claims_extracted_count",
+        "coverage_status",
+        "metadata_annotation_raw",
+        "notes",
+    ]
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=csv_fields, lineterminator="\n")
+    writer.writeheader()
+    for r in sorted_records:
+        row = {}
+        for k in csv_fields:
+            val = r[k]
+            row[k] = "" if val is None else str(val)
+        writer.writerow(row)
+
+    csv_text = output.getvalue()
+
+    # Deserialization converts empty string in nullable columns back to None
+    reader = csv.DictReader(io.StringIO(csv_text))
+    csv_decoded = []
+    nullable_cols = {"protein_id", "metadata_annotation_raw", "notes"}
+    for row in reader:
+        rec = {}
+        for k, v in row.items():
+            if k in nullable_cols and v == "":
+                rec[k] = None
+            elif k == "claims_extracted_count":
+                rec[k] = int(v)
+            else:
+                rec[k] = v
+        csv_decoded.append(rec)
+
+    assert csv_decoded == sorted_records
+    for r in csv_decoded:
+        cov_validator.validate(r)
 

@@ -1,6 +1,10 @@
-﻿UniProt,Protein_Name,Long_Description,Canonical_Function,GO,Moonlighting_function,GO_Moon,Organism,Human_Disease,Drugs,Induction,PDBs,PDB_UniProt,Models,Reference
+UniProt,Protein_Name,Long_Description,Canonical_Function,GO,Moonlighting_function,GO_Moon,Organism,Human_Disease,Drugs,Induction,PDBs,PDB_UniProt,Models,Reference
 P12345,Synthetic Protein 1,,Only canonical activity,GO:0003824; F:catalytic activity,,,Synthetic organism,,,,,,Phyre,12345678
 P23456,Synthetic Protein 2,,,,Only moonlighting activity,GO:0005515; F:protein binding,Synthetic organism,,,,,,Phyre,23456789
 P34567,Synthetic Protein 3,,,,,,Synthetic organism,,,,,,Phyre,34567890
 INVALID_ACC,Synthetic Protein 4,,Canonical test,,Moonlighting test,,Synthetic organism,,,,,,Phyre,45678901
 P45678,Synthetic Protein 5,,Canonical multi ref,,Moonlighting multi ref,,Synthetic organism,,,,,,Phyre,"11111111, 22222222"
+P56789,Synthetic Protein 6 (Missing text with GO),,,GO:0003824; F:catalytic activity; IEA:UniProtKB-KW.,Synthetic moonlighting activity,,Synthetic organism,,,,,,Phyre,56789012
+P67890,"Synthetic Protein 7 (No text, but GO present)",,,GO:0004000; F:kinase activity; IEA:InterPro.,,,Synthetic organism,,,,,,Phyre,67890123
+P78901,Synthetic Protein 8 (Repeated GO IDs),,Canonical activity with repeated GO,"GO:0005840; C:ribosome; IEA:UniProtKB-KW.
+GO:0005840; C:ribosome; IDA:HPA.",Moonlighting activity,,Synthetic organism,,,,,,Phyre,78901234

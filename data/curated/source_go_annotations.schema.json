@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/source_go_annotations.schema.json",
+  "title": "MFP Source GO Annotation",
+  "description": "Relational model for source-explicit Gene Ontology annotations under scheme MFPB_SOURCE_GO_ANNOTATION_V1. Preserves source annotations structurally without inferring function-compartment links or contextual triplets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "annotation_id",
+    "protein_id",
+    "source_id",
+    "source_record_id",
+    "claim_id",
+    "source_field",
+    "annotation_index",
+    "raw_annotation_text",
+    "go_id",
+    "go_aspect",
+    "term_name",
+    "evidence_raw",
+    "annotation_status",
+    "notes"
+  ],
+  "properties": {
+    "annotation_id": {
+      "type": "string",
+      "pattern": "^MFP:SGA:[A-Za-z0-9_]+:[0-9a-f]{16}$",
+      "description": "Deterministic unique annotation identifier under scheme MFPB_SOURCE_GO_ANNOTATION_V1."
+    },
+    "protein_id": {
+      "type": "string",
+      "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$",
+      "description": "Entity identifier in mfp_proteins.csv under scheme MFPB_PROTEIN_ID_V1."
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SRC_[A-Z0-9_]+$",
+      "description": "Canonical source identifier from source catalog."
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-local record identifier linking to mfp_source_records.csv."
+    },
+    "claim_id": {
+      "type": ["string", "null"],
+      "pattern": "^MFP:FC:[A-Za-z0-9_]+:[0-9a-f]{16}$",
+      "description": "Optional foreign key linking to a discrete claim in functional_claims.schema.json, or null if the annotation has no linked text statement."
+    },
+    "source_field": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-native field name from which this annotation was extracted (e.g. 'GO', 'GO_Moon')."
+    },
+    "annotation_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Zero-based occurrence index of this annotation within the source field/record."
+    },
+    "raw_annotation_text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact verbatim raw text line or fragment from which the annotation was parsed."
+    },
+    "go_id": {
+      "type": "string",
+      "pattern": "^GO:[0-9]{7}$",
+      "description": "Source-explicit Gene Ontology identifier."
+    },
+    "go_aspect": {
+      "type": ["string", "null"],
+      "enum": [
+        "BP",
+        "MF",
+        "CC",
+        "unassigned",
+        null
+      ],
+      "description": "Source-declared Gene Ontology aspect (BP, MF, CC, or unassigned), or null if not indicated."
+    },
+    "term_name": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Source-declared term label or description, when explicitly provided in the raw line, or null."
+    },
+    "evidence_raw": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Original evidence string explicitly provided in the raw line (e.g. 'IEA:UniProtKB-KW', 'IDA:HPA'), or null if absent. No empty strings or inferred metadata."
+    },
+    "annotation_status": {
+      "type": "string",
+      "enum": [
+        "parsed",
+        "unassigned_aspect",
+        "ambiguous",
+        "raw_only"
+      ],
+      "description": "Explicit parse and review status of the source annotation."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Optional technical notes or parsing caveats, or null."
+    }
+  }
+}

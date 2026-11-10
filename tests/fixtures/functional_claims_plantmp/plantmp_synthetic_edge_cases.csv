@@ -1,0 +1,10 @@
+order,"protein name, gene",uniport_id,canonical_function_bp,canonical_function_mf,moonlighting_function_bp,moonlighting_function_mf,go_canonical_bp,go_canonical_mf,go_moonlighting_bp,go_moonlighting_mf,plant_species,pubmed_id,type
+1,"Synthetic protein 1, SYN1",P11111,BP translation initiation,,,,BP 0006412,,,,Arabidopsis thaliana,10000001,confirmed
+2,"Synthetic protein 2, SYN2",P22222,,,,MF adenylate cyclase activity,,,,MF 0004016,Arabidopsis thaliana,10000002,confirmed
+3,"Synthetic protein 3, SYN3",P33333,BP photosynthesis,MF ribulose-bisphosphate carboxylase activity,,,,,,,Arabidopsis thaliana,10000003,confirmed
+4,"Synthetic protein 4, SYN4",P44444,,,,,,,,,Arabidopsis thaliana,10000004,confirmed
+5,"Synthetic protein 5, SYN5",P55555,,,,,BP 0006412,,,MF 0003729,Arabidopsis thaliana,10000005,confirmed
+6,"Synthetic protein 6, SYN6",INVALID_ACC,BP root development,MF ATP binding,BP stress response,MF kinase activity,BP 0048364,MF 0005524,BP 0006950,MF 0004672,Arabidopsis thaliana,10000006,confirmed
+7,"Synthetic protein 7, SYN7",P77777,BP leaf development,MF protein binding,,,BP 0048366,MF 0005515,,,Arabidopsis thaliana,10000007,disputed
+8,"Synthetic protein 8, SYN8",P88888,BP embryo development,MF enzyme regulator activity,,,BP 0009790,MF 0030234,,,Arabidopsis thaliana,"11111111, 22222222",confirmed
+9,"Synthetic protein 9, SYN9",P99999,BP defense response,MF kinase activity,,MF guanylate cyclase activity,BP 0006952,MF 0004672,,MF 0004383,Arabidopsis thaliana,21088220 (Homolog of PEPR1),likely
