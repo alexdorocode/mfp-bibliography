@@ -165,22 +165,36 @@
 
 ---
 
-### Subsequent Incremental Tasks (Awaiting Authorization & Sign-off)
-
-> [!IMPORTANT]
-> The following tasks (TASK-05 to TASK-08) remain **STRICTLY UNAUTHORIZED / DEFERRED**. MoonProt (TASK-05) was deferred and NOT implemented under this instruction. No code, adapters, or pipeline modifications may be undertaken without explicit human approval.
-
----
-
 #### TASK-05: Implement MoonProt Dynamic Block Adapter
 - **Stage**: P3 (Capability Expansion)
 - **Requirement IDs**: `R-NORM-01`, `R-NORM-02`, `R-NORM-03`
-- **Status**: **DEFERRED / UNAUTHORIZED** (Coverage contract blocker resolved; awaiting explicit instruction to implement)
-- **Allowed Files**:
+- **Status**: **COMPLETED & VERIFIED UNDER BOUNDED AUTHORIZATION**
+- **Allowed Files Created/Modified**:
   - `src/mfp_bibliography/functional_claims_moonprot.py`
   - `tests/test_functional_claims_moonprot.py`
-- **Dependencies**: TASK-04
-- **Human Approval Required**: Yes.
+  - `tests/fixtures/functional_claims_moonprot/` (`README.md`, `real_mpid_*.html`, `synthetic_mpid_*.html`)
+- **Delivered Outcome**:
+  - Implemented source-grounded bounded MoonProt adapter adhering to relational claims model (`functional_claims.schema.json`), structured source GO annotations model (`source_go_annotations.schema.json`), and coverage model (`functional_coverage.schema.json`).
+  - **Reusable Existing Parser**: Reuses `MoonProtRecord` and parser logic from `src/mfp_bibliography/moonprot_parser.py` without creating a redundant HTML parser.
+  - **Dynamic Function Blocks**: Preserves one claim per explicit function block in `functions` (`functions[0].description`, `functions[1].description`, ...) without assuming a fixed two-function structure (verified on real-source $K=0$ case MPID 288, $K=1$, $K=2$, and $K=3$ synthetic cases).
+  - **Function-Level References**: PMIDs extracted directly from function blocks are preserved in `linked_reference_ids` with standard `PMID:` prefix; `record_reference_ids` remains `None` (MoonProt citations are function-specific).
+  - **No Triplet or Compartment Inference**: Cellular location text is preserved in claim `notes` (`cellular_location: ...`) without inferring cellular component (CC) terms or constructing contextual triplets.
+  - **Protein-Level GO Terms Preservation**: Top-level `GO terms` in MoonProt HTML apply to the protein as a whole and are NOT distributed across individual function claims. Instead, they are emitted in `source_go_annotations` with `claim_id = None`, preserving them structurally.
+  - **Catalog Linkage & Fallback Entities**: Authoritative catalog linkage via `load_moonprot_catalog_lookup()` (702 records in `mfp_source_records.csv`). Supports both canonical UniProt entities (`MFP:U:...`) and valid catalog fallback identities (`MFP:F:SRC_MOONPROT:...`).
+  - **Honest Null on Unresolved Identity**: Missing/malformed accessions or uncataloged records emit `protein_id = None` and `coverage_status = "unresolved_identity"` with 0 claims/annotations, fully adhering to Draft 2020-12 coverage contract without fabricating sentinels.
+  - **Deterministic Total Ordering**: Enforces 5-tuple claim sorting `(protein_id, source_id, source_record_id, claim_index, claim_id)`, 6-tuple annotation sorting `(protein_id, source_id, source_record_id, source_field, annotation_index, annotation_id)`, and 3-tuple coverage sorting `(protein_id or "", source_id, source_record_id)`.
+- **Verification Command & Result**:
+  ```bash
+  PYTHONPATH=src pytest -v tests/test_functional_claims_moonprot.py
+  ```
+  *Result: PASSED (22 passed in 0.42s).*
+
+---
+
+### Subsequent Incremental Tasks (Awaiting Authorization & Sign-off)
+
+> [!IMPORTANT]
+> The following tasks (TASK-06 to TASK-08) remain **STRICTLY UNAUTHORIZED / DEFERRED**. No code, adapters, or pipeline modifications may be undertaken without explicit human approval.
 
 ---
 
