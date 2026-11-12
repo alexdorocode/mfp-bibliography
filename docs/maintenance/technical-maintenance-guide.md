@@ -42,9 +42,8 @@ What exists today:
   `--verify` (REBUILD_COMPARE).
 
 Deferred: laboratory GO/evidence integration (roadmap Phases D0/D; contract
-only in the
-[GO annotation contract](../bibliography/go-annotation-evidence-contract.md);
-traceability R14–R17 remain documented_only). No verified article-to-GO
+only in [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md)
+(Phase D0); traceability R14–R17 remain documented_only). No verified article-to-GO
 relations exist in the candidate.
 
 ## 2. Surgical-change table
@@ -59,7 +58,7 @@ relations exist in the candidate.
 | Change a catalog column or assertion | `scripts/build_mfp_catalog_mvp.py` (headers, writers, `build_assertions`) | catalog contract `MFPB_0_19_MFP_CATALOG_MVP_V2` — semantic change bumps the contract | `tests/test_mfp_catalog_mvp.py`, `tests/test_catalog_integrity.py` | packaged tables + [DATA_DICTIONARY](../../releases/mfp-catalog-candidate-v0.3.0/DATA_DICTIONARY.md); new candidate |
 | Change a raw checksum / provenance binding | `src/mfp_bibliography/raw_input_verification.py::verify_catalog_inputs`; `data/manifests/source_manifest.csv`, `data/raw/moonprot/artifact_index.csv` | [ADR-002](../decisions/ADR-002-raw-data-immutability.md), [ADR-003](../decisions/ADR-003-provenance-and-transformations.md) | `tests/test_raw_input_verification.py` (mismatch/missing/duplicate) | build fails non-zero on tampered input; never edit raw bytes — re-register or re-acquire via policy |
 | Change candidate packaging / verification | `scripts/package_catalog_candidate.py` | [release policy](../release-policy.md); candidate note | `tests/test_catalog_candidate.py` (package + REBUILD_COMPARE), `tests/test_candidate_package_verify.py` (PACKAGE_VERIFY) | existing candidate never overwritten; changed package = new candidate version |
-| Add GO evidence / reference relations (later) | none yet | [GO annotation contract](../bibliography/go-annotation-evidence-contract.md); R14–R17 | none exist — UNKNOWN until implemented | new tables (`mfp_function_assertions`, `mfp_references`, ...); record-level references must not become function-level support |
+| Add GO evidence / reference relations (later) | none yet | [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md); R14–R17 | none exist — UNKNOWN until implemented | new tables (`mfp_function_assertions`, `mfp_references`, ...); record-level references must not become function-level support |
 
 ## 3. Safe workflow
 

@@ -119,7 +119,7 @@ The actual data processing and verification pipeline operating within `mfp-bibli
 
 [5. Candidate Packaging & Offline Verification (Offline)]
   scripts/package_catalog_candidate.py
-    ├─> Generates releases/mfp-catalog-candidate-v0.3.0/ (5 CSV tables, MANIFEST.json, checksums.sha256)
+    ├─> Generates releases/mfp-catalog-candidate-v0.3.0/ (5 CSV tables,  MANIFEST.json, checksums.sha256)
     └─> PACKAGE_VERIFY: offline check of inventory, hashes, row counts, PK/FK referential integrity
 
 [6. Five-Source Descriptive Study (Offline)]

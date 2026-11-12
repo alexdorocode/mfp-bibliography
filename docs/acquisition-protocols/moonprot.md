@@ -1,136 +1,80 @@
 # MoonProt Acquisition Protocol
 
-Status: smoke test completed. Bulk acquisition remains blocked pending approval gate.
+## Protocol Scope & Identity
+This document specifies the operational web acquisition protocol, offline parser guarantees, and snapshot accounting for MoonProt HTML endpoints.
 
-## Offline parser status (MFPB_0_11_MOONPROT_OFFLINE_PARSER)
+> [!NOTE]
+> This document is an **operational acquisition protocol**, not a fifth source profile. MoonProt data in this repository does not originate from a single flat tabular file, but from individual per-MPID HTML detail pages acquired and frozen under strict protocol gates.
 
-- **Implemented**: a pure, offline HTML parser for local fixtures only,
-  `src/mfp_bibliography/moonprot_parser.py`, with the fixture CLI
-  `scripts/parse_moonprot_fixture.py`.
-- **Guarantees**: fields are located by visible labels (`MoonProt ID`,
-  `UniProt ID`, `Name(s)`), never by fixed table row positions; raw label/value
-  text is preserved after minimal whitespace trimming; missing `uniprot_id` or
-  `Name(s)` are reported explicitly on the record; malformed HTML, duplicate
-  labels, a missing MoonProt ID, and an MPID conflicting with the expected
-  input ID raise typed parse errors.
-- **Out of scope**: the parser assigns no policy status and creates no source
-  claims.
+## Acquisition History & Current Status
+- **Smoke test acquisition (MPIDs 1–3)**: Completed, validated, and closed.
+- **Full snapshot acquisition (MPIDs 1–706)**: Completed on 2026-09-24 under controlled batch acquisition.
+- **Current operational state**: **FROZEN**. All 702 acquired HTML response files are immutable under [ADR-002](../decisions/ADR-002-raw-data-immutability.md). No further network acquisition is active or authorized.
 
-## Acquisition gate (explicit)
+### Measured Snapshot Denominator (2026-09-24)
+- **Target range**: Inclusive integer range `mpid=1..706` (706 targets).
+- **Acquired HTML records**: Exactly 702 files persisted at `data/raw/moonprot/mpid_{id}.html` (per-file provenance, HTTP 200 status, and individual SHA-256 hashes recorded in `data/raw/moonprot/artifact_index.csv`).
+- **Known-absent records**: Exactly 1 record (MPID `103`), confirmed as a soft-404 missing entry and logged in `data/interim/moonprot_absent_log.csv`.
+- **Unresolved records**: Exactly 3 records (MPIDs `408`, `488`, `650`), tracked as unacquired in `releases/mfp-catalog-candidate-v0.3.0/mfp_coverage.csv`.
+- **Denominator completeness**: $702 \text{ (acquired)} + 1 \text{ (known-absent)} + 3 \text{ (unresolved)} = 706 \text{ MPID targets}$ (100% accounting).
 
-The smoke test acquisition for MPIDs 1-3 is complete and validated.
+## Offline Parser Status (MFPB_0_11_MOONPROT_OFFLINE_PARSER)
+- **Implementation**: Pure, offline HTML parser `src/mfp_bibliography/moonprot_parser.py` and fixture CLI `scripts/parse_moonprot_fixture.py`.
+- **Guarantees**:
+  - Fields are located by visible text labels (`MoonProt ID`, `UniProt ID`, `Name(s)`), never by brittle table row indices.
+  - Raw label/value text is preserved with minimal whitespace normalization.
+  - Missing `uniprot_id` or `Name(s)` are explicitly flagged on the parsed record.
+  - Strict error handling: malformed HTML, duplicate labels, missing MoonProt ID, or ID mismatch against expected input raise typed parse errors.
+  - The parser contains **no network or HTTP client code** and operates strictly on local bytes.
 
-Real acquisition for MPIDs 4-706 remains a **future task only**, gated behind:
-- Maintainer contact and confirmation of responsible access pattern
-- Source terms/license/citation verification
-- Explicit batch plan and approval
+## Catalog Integration and Lifecycle Distinctions
 
-The parser and CLI contain **no network, HTTP client, scraper, retry, or
-acquisition code** and never contact MoonProt or any external URL without
-explicit transport injection. Do not claim permission for redistribution or
-bulk scraping.
+### 1. Packaged Candidate v0.3.0 (`releases/mfp-catalog-candidate-v0.3.0/`)
+- **Governing contract**: `MFPB_0_19_MFP_CATALOG_MVP_V2`.
+- **Unit of record**: Source observation records and coverage tracking rows.
+- **Packaged outputs**:
+  - `mfp_source_records.csv`: Exactly 702 source records with `source_id = SRC_MOONPROT`, parsed offline from `data/raw/moonprot/mpid_*.html`.
+  - `mfp_assertions.csv`: Exactly 702 assertion claims; mapped to `operational_status = confirmed` per `configs/source_claim_policy_v0.1.yaml` (MoonProt curates experimentally characterized moonlighting proteins).
+  - `mfp_coverage.csv`: Exactly 706 rows accounting for all MPIDs (702 `acquired`, 1 `known_absent`, 3 `unresolved`) per [ADR-006](../decisions/ADR-006-coverage-only-moonprot-status-rows.md).
+- **Entity merging**: Contributes to the 463 merged UniProt entities across candidate sources.
 
-## Planned target
+### 2. Committed Implementation
+- **Offline parser**: `src/mfp_bibliography/moonprot_parser.py`.
+- **Controlled acquisition CLIs**: `scripts/acquire_moonprot_smoke.py` and `scripts/acquire_moonprot_batch.py` (contain rate-limiting, persistence gating, and error logging).
+- **Catalog build integration**: `scripts/build_mfp_catalog_mvp.py` ingests the local HTML files and absent log offline.
+- **Functional dynamic block adapter**: `src/mfp_bibliography/functional_claims_moonprot.py` implements bounded extraction of functional statements and GO annotations from MoonProt HTML dynamic blocks.
 
-- URL pattern: `http://www.moonlightingproteins.org/protein_detail/?mpid={id}`
-- Full inclusive ID range (future, reference only): `mpid=1..706`
-- Target fields: `UniProt ID`, `Name(s)`
-- Expected extraction output format: `uniprot_id,name`
+### 3. Uncommitted / Pilot Development
+- **Integrated pilot cohort**: MoonProt contributes 7 empirical records (e.g. `moonprot_mpid_1`, `moonprot_mpid_2`, `moonprot_mpid_3`, etc.) to the 20-record empirical cohort in `data/interim/pilot/functional_claims_pilot.csv` generated by `scripts/build_functional_claims_pilot.py` under [ADR-008](../decisions/ADR-008-functional-normalization-pilot-scope.md).
 
-## Smoke scope (only approved execution scope)
+### 4. Proposed Capabilities
+- Extraction of functional statements and GO annotations across all 702 HTML records remains **deferred** under ADR-008 Level 3 until pilot evaluation is approved.
 
-- MPIDs `1`, `2`, `3` only. Any request outside `1,2,3` is a stop condition.
-- The full `1..706` range remains out of scope until a separate review.
+## Activity Domain Accounting
 
-## Raw artifact layout
+| Activity Domain | Status in Candidate v0.3.0 | Status in Development / Pilot | Reference / Governing Boundary |
+|---|---|---|---|
+| **Catalog Ingestion** | **Integrated**: 702 source records; 706 coverage entries | Fully reproducible offline | Contract `MFPB_0_19_MFP_CATALOG_MVP_V2` |
+| **Functional Extraction** | **None**: Only ID and Name extracted for catalog v0.3.0 | 7-record pilot cohort extracted | [ADR-008](../decisions/ADR-008-functional-normalization-pilot-scope.md) |
+| **GO Annotation Handling** | **None**: No GO parsed in candidate v0.3.0 | Structured rows in pilot annotations | Scheme `MFPB_SOURCE_GO_ANNOTATION_V1` |
+| **Local Bibliographic Review** | **Verbatim text only**: Citations preserved in HTML bytes | Formally out of scope for v1 | [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md) |
 
-- One raw file per MPID: `data/raw/moonprot/mpid_{id}.html` (e.g.
-  `mpid_1.html`), containing the response bytes **verbatim**, written once,
-  append-only per ADR-002 (never edited in place).
-- Raw files are written only through the persistence gate below; no partial or
-  failed-response bodies are ever persisted.
-- Per-file provenance lives exclusively in
-  `data/raw/moonprot/artifact_index.csv`, specified in
-  `moonprot-artifact-index.md`.
+## Authoritative Acquisition & Persistence Rules (Reference Protocol)
+These protocol rules governed the historical snapshot acquisition and remain mandatory for any future controlled acquisition:
 
-## Source manifest mapping
-
-- The source manifest keeps **one row per source**: `SRC_MOONPROT` represents
-  the acquisition batch only (method, acquisition window, aggregate notes).
-- Per-file provenance (URL, checksum, HTTP status, parser status) lives
-  exclusively in `artifact_index.csv`; it is never duplicated into the source
-  manifest.
-- The manifest schema is unchanged in this increment; no `SRC_MOONPROT` row
-  exists yet.
-
-## Error logging requirements
-
-Store a separate error log with exactly these fields:
-- `mpid`
-- `url`
-- `error_type`
-- `detail`
-- `http_status`
-- `attempted_at`
-
-The error log file at `data/interim/moonprot_smoke_error_log.csv` **must always
- exist** after a run, even on complete success (header-only).
-`http_status` is empty when not applicable (e.g. robots gate, timeout,
-parser error). Every failed or skipped attempt produces one error-log record.
-
-## Compliance and access constraints
-
-Before implementation/execution, inspect and respect applicable `robots.txt`, terms, access restrictions, and rate limits.
-
-## Execution requirements (first version)
-
-- **Sequential requests only**: never concurrent.
-- **Delay**: minimum 10 seconds between any two requests.
-- **User-Agent**: required, honest (identifies this project and a contact),
-  configurable; no spoofing of browser identifiers.
-- **Timeout**: 15 seconds per request.
-- **Retry**: at most 1 retry per MPID.
-- **Backoff**: minimum 30 seconds before any retry.
-- No silent failures: every attempt is reflected in the error log or the
-  artifact index.
-
-## Persistence gate (verbatim bytes only after all pass)
-
-Raw response bytes are persisted only after, in order:
-
-1. The `robots.txt`/terms gate passes for the target URL.
-2. The HTTP response is successful.
-3. There is no unexpected redirect.
-4. The content type is acceptable HTML.
-5. The offline parser succeeds with the expected MPID.
-
-Any failure means nothing is written to `data/raw/`; the attempt goes to the
-error log only.
-
-## Stop conditions (execution halts immediately)
-
-- `robots.txt` or terms disallow access.
-- A CAPTCHA, block, or JavaScript challenge page is detected.
-- An unexpected redirect or unacceptable content type is received.
-- HTTP 4xx/5xx persists after the single allowed retry.
-- A typed parser error occurs on a fetched page.
-- The raw file `data/raw/moonprot/mpid_{id}.html` already exists.
-- Any request would target an MPID outside `1,2,3`.
-
-## Parsing constraints
-
-The HTML parser must identify fields by labels, not fixed row positions.
-
-## Testing requirements
-
-- Local HTML fixtures are mandatory.
-- Mock network errors are mandatory.
-- Normal test runs must not perform real-network requests.
-
-## Approval gate
-
-MoonProt bulk scraping (MPIDs 4-706) is an approved **future task only** after
-source-policy review, maintainer contact, and explicit batch plan approval.
-
-The smoke test for MPIDs 1-3 is closed and validated. No further acquisition
-is permitted until the bulk acquisition gate is passed.
+1. **Target URL Pattern**: `http://www.moonlightingproteins.org/protein_detail/?mpid={id}`
+2. **Access Constraints**:
+   - Sequential requests only (never concurrent).
+   - Minimum 10 seconds delay between consecutive requests.
+   - Required honest User-Agent identifying the project and contact.
+   - 15-second request timeout; at most 1 retry per MPID with 30-second backoff.
+3. **Persistence Gate**:
+   - Raw bytes are written to `data/raw/moonprot/mpid_{id}.html` only if:
+     1. robots.txt / terms gate passes.
+     2. HTTP response status is 200 OK.
+     3. No unexpected redirect occurs.
+     4. Content-Type is valid HTML.
+     5. The offline parser successfully extracts the expected MPID.
+   - Any failure halts writing to `data/raw/` and appends an entry to the error log.
+4. **Error Logging**:
+   - Error log file at `data/interim/moonprot_batch_error_log.csv` records `mpid`, `url`, `error_type`, `detail`, `http_status`, and `attempted_at`.

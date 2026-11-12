@@ -24,7 +24,7 @@ versions, or publishes a release. The five-source candidates
 A versioned, byte-reproducible bibliographic and provenance catalog of
 multifunctional/moonlighting proteins from five sources. Measured counts are
 defined by the candidate manifest
-([`MANIFEST.json`](../../releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json),
+([`MANIFEST.json`](../../releases/mfp-catalog-candidate-v0.3.0/MANIFEST.json),
 `measured_counts`): 2,962 source records (MoonDB 351, MoonProt 702,
 MultifacetedProtDB 1,103, MultitaskProtDB-II 694, PlantMP 112); 2,322 protein
 entities; 463 cross-source shared accessions.

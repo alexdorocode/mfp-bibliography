@@ -12,7 +12,7 @@ The primary verified baseline snapshot of `BioData` is registered as follows:
 |---|---|
 | **Snapshot ID** | `biodata_mfp_snapshot_20261014` |
 | **Created At (UTC)** | 2026-10-14 07:49:00 UTC |
-| **Dump File Location** | [`data/snapshots/biodata_mfp_snapshot_20261014.dump`](../../data/snapshots/biodata_mfp_snapshot_20261014.dump) |
+| **Dump File Location** | `data/snapshots/biodata_mfp_snapshot_20261014.dump` (external uncommitted file; see manifest below) |
 | **Manifest File** | [`releases/snapshots/biodata_mfp_snapshot_20261014.manifest.json`](../../releases/snapshots/biodata_mfp_snapshot_20261014.manifest.json) |
 | **Format** | PostgreSQL Custom Dump (`-F c`, compressed) |
 | **File Size** | 5,031,619 bytes (~4.8 MB) |

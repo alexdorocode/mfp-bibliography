@@ -6,11 +6,11 @@
 > statistical significance claims are made or implied.
 
 Design-only document. Inputs are exclusively the packaged CSVs in
-[`releases/mfp-catalog-candidate-v0.3.0/`](../../releases/mfp-catalog-candidate-v0.2.0/);
+[`releases/mfp-catalog-candidate-v0.3.0/`](../../releases/mfp-catalog-candidate-v0.3.0/);
 grains and columns follow its
-[`DATA_DICTIONARY.md`](../../releases/mfp-catalog-candidate-v0.2.0/DATA_DICTIONARY.md).
+[`DATA_DICTIONARY.md`](../../releases/mfp-catalog-candidate-v0.3.0/DATA_DICTIONARY.md).
 Authoritative counts:
-[`MANIFEST.json`](../../releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json)
+[`MANIFEST.json`](../../releases/mfp-catalog-candidate-v0.3.0/MANIFEST.json)
 (`measured_counts`).
 
 ## Pipeline (minimal)

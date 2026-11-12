@@ -120,12 +120,3 @@ Rebuild rules and immutability: [release policy](release-policy.md).
 Candidate scope and limitations:
 [release notes](releases/mfp-catalog-candidate-v0.3.0.md) and the
 [candidate README](../releases/mfp-catalog-candidate-v0.3.0/README.md).
-
-## Clone status caveat
-
-The packaged candidate and the verifier script were working-tree files not
-yet committed at the time of writing. `git archive HEAD` therefore omits
-them, and offline verification has not been demonstrated in a literal clean
-clone. The offline command and its tests were executed in an extraction
-containing tracked plus untracked (non-ignored) files — the state a clean
-clone will have once these files are committed.

@@ -92,8 +92,8 @@ Snapshot as of 2026-09-28; counts from `data/processed/mfp_catalog_mvp/summary.j
 - **Out of scope:** bulk annotation retrieval or bibliographic metadata
   enrichment.
 - **Next action:** produce an entity-relationship model and field dictionary;
-  GO evidence-code and reference semantics are governed by the
-  [GO annotation, evidence-code and bibliography contract](../bibliography/go-annotation-evidence-contract.md).
+  GO evidence-code and reference semantics are governed by
+  [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md) (Phase D0 contract).
 
 ### Phase D — Functional assertions and bibliographic evidence graph
 
