@@ -47,7 +47,7 @@ The technical audit report (`docs/audits/2026-11-06_repository-sdd-functional-no
 
 ### 2.5 Triplet Semantics and Working Glossary Definitions
 - **Audit Proposal**: The audit's glossary proposed a formal definition of a functional triplet as $\tau = (m, b, c)$.
-- **Clarification**: Under roadmap `experiment-guio-v2.md`, the formal definition of a triplet is an **explicit open decision (DEC-22)** assigned to Decision Gate G2. Defining it in an audit glossary does not constitute biological consensus or operational approval. Contextual triplets remain strictly out of scope for the Tier A pilot.
+- **Clarification**: Under research proposal `experiment-guio-v2.md` (maintained English successor: [`docs/roadmap/core/experimental-master-proposal.md`](../../docs/roadmap/core/experimental-master-proposal.md#14-formal-register-of-open-decisions-dec-01-through-dec-29)), the formal definition of a triplet is an **explicit open decision (DEC-22)** assigned to Decision Gate G2. Defining it in an audit glossary does not constitute biological consensus or operational approval. Contextual triplets remain strictly out of scope for the Tier A pilot.
 
 ### 2.6 Downstream Normalized Protein Dossier Integration
 - **Proposal**: An IDE/VS Code inspection dossier panel displaying identity, claims, citations, and GO crosswalks.
@@ -80,22 +80,26 @@ The technical audit report (`docs/audits/2026-11-06_repository-sdd-functional-no
       Command: PYTHONPATH=src pytest -v tests/test_functional_claims_plantmp.py
       Status: PASSED (30 tests passed: 7 real rows and 9 synthetic edge cases validated; native status, BP/MF grouping without independent function assumption, record references, source GO annotations without CC, and total ordering verified)
 
-- [ ] Check 4b: Adapter Unit Tests for Remaining Sources (TASK-05 to TASK-06)
-      Command: pytest tests/test_functional_claims_*.py
-      Status: NOT RUN (implementation not authorized; awaits Decision Gate 2)
+- [x] Check 4b: Adapter Unit Tests for Authoritative Adapters (TASK-04 & TASK-05)
+      Command: PYTHONPATH=src pytest -v tests/test_functional_claims_plantmp.py tests/test_functional_claims_moonprot.py tests/test_functional_claims_multitask.py
+      Status: PASSED (82 tests passed across PlantMP [39], MoonProt [22], and MultitaskProtDB-II [21])
 
-- [ ] Check 5: Pipeline Execution Gate (TASK-07)
+- [x] Check 5: Pipeline Execution Gate (TASK-07 & TASK-08)
       Command: PYTHONPATH=src python scripts/build_functional_claims_pilot.py
-      Status: NOT RUN (implementation not authorized; awaits Decision Gate 2)
+      Status: PASSED (Extracted, validated, and reconciled 20-record empirical cohort across MultitaskProtDB-II, PlantMP, and MoonProt; 44 claims, 353 annotations, 20 coverage records)
 
-- [ ] Check 6: Catalog Baseline Invariant Verification (TASK-07 / TASK-08)
+- [x] Check 6: Catalog Baseline Invariant Verification (TASK-07 / TASK-08)
       Command 6a (Candidate release): PYTHONPATH=src python scripts/package_catalog_candidate.py --verify-package
-      Command 6b (Working catalog): python scripts/validate_catalog_integrity.py (or test equivalent)
-      Status: NOT RUN (implementation not authorized)
+      Command 6b (Working catalog): Verified referential integrity of all 20 cohort records against data/processed/mfp_catalog_mvp/mfp_source_records.csv
+      Status: PASSED (Candidate release mfp-catalog-candidate-v0.3.0 PACKAGE_VERIFY OK: inventory, hashes, row counts, primary keys and foreign keys consistent with MANIFEST.json)
 
-- [ ] Check 7: Byte-Reproducibility Verification (TASK-08)
-      Command: Compare SHA-256 of functional_claims_pilot.csv and functional_coverage_pilot.csv across PYTHONHASHSEED=0 and 42
-      Status: NOT RUN (implementation not authorized)
+- [x] Check 7: Byte-Reproducibility Verification (TASK-08)
+      Command: Compare SHA-256 of functional_claims_pilot.csv, source_go_annotations_pilot.csv, functional_coverage_pilot.csv, and manifest.json across PYTHONHASHSEED=0 and 42
+      Status: PASSED (100% byte-identical SHA-256 digests across separate execution directories under differing PYTHONHASHSEED)
+
+- [x] Check 8: Integrated Pilot Test Suite (TASK-07)
+      Command: PYTHONPATH=src pytest -v tests/test_functional_pilot_pipeline.py
+      Status: PASSED (5 passed in 1.03s: schema validation, referential integrity, preservation invariants, hashseed reproducibility, release baseline protection)
 
 - [ ] Check 8: Downstream Dossier Inspection Verification
       Command: PYTHONPATH=src python scripts/render_protein_dossier.py --protein-id MFP:U:P04406 --dry-run
@@ -126,14 +130,15 @@ The technical audit report (`docs/audits/2026-11-06_repository-sdd-functional-no
 13. **Catalog Linkage Verification**: All 6 real records resolve against `data/processed/mfp_catalog_mvp/mfp_source_records.csv` without fallback identities.
 14. **PlantMP Bounded Adapter, Identity Correction & Offline Suite (TASK-04)**: `src/mfp_bibliography/functional_claims_plantmp.py` extracts claims, structured source GO annotations (`MFPB_SOURCE_GO_ANNOTATION_V1`), and coverage adhering strictly to contracts. 39 unit tests pass offline (`tests/test_functional_claims_plantmp.py`), proving: (a) native canonical/moonlighting roles and pre-split raw fields preserved; (b) BP/MF statements grouped without assuming independent biological functions; (c) curation tiers mapped strictly per policy (`confirmed` -> `curated`, `likely` -> `unresolved` / `excluded_likely`, `predicted` -> `predicted`); (d) record-level references preserved verbatim in `record_reference_ids` without synthetic `PMID:` prefix; (e) unavailable metadata (`source_ec_number`, `term_name`, `evidence_raw`) remains `null`; (f) zero cellular component (CC) terms inferred and zero triplets constructed; (g) missing text with explicit GO annotations handled without fabricating fake text claims; (h) total tie-breaking determinism and 100% denominator coverage; (i) elimination of fabricated sentinel entity `MFP:U:0000000000000000`; (j) catalog verification and elimination of silent promotion for valid-looking accessions absent from catalog; (k) catalog linkage agreement enforcement; (l) preservation of legitimate shared entities across duplicate source records; (m) accounting of unresolved records without fake claims or annotation foreign keys; (n) focused negative tests (missing accession, malformed accession, absent from catalog, mismatched linkage, multiple unresolved not collapsed); (o) conditional nullability verification under Draft 2020-12 coverage schema (honest null for `unresolved_identity`, regex pattern for resolved statuses, rejection of non-null unresolved, null resolved, missing, empty, malformed, and uncataloged IDs).
 15. **MultitaskProtDB-II Coverage Contract Alignment**: `src/mfp_bibliography/functional_claims_multitask.py` was updated to replace the legacy sentinel `MFP:U:0000000000000000` with honest `protein_id = None` on `unresolved_identity`, and to sort coverage by `protein_id or "" ASC`. All 21 tests in `tests/test_functional_claims_multitask.py` pass without error.
+16. **MoonProt Bounded Adapter & Dynamic Function Block Verification (TASK-05)**: `src/mfp_bibliography/functional_claims_moonprot.py` extracts claims, structured source GO annotations (`MFPB_SOURCE_GO_ANNOTATION_V1`), and coverage adhering strictly to contracts. 22 unit tests pass offline (`tests/test_functional_claims_moonprot.py`), proving: (a) reuse of existing `MoonProtRecord` parser logic without creating a redundant HTML parser; (b) dynamic $K$-block function extraction without assuming a fixed 2-function structure (tested on real $K=0$ case MPID 288, $K=1$, $K=2$, and $K=3$ synthetic cases); (c) function-specific PMIDs preserved in `linked_reference_ids` with `PMID:` prefix; `record_reference_ids` remains null; (d) function cellular location text preserved in claim notes (`cellular_location: ...`) without inferring CC terms or triplets; (e) protein-level GO terms preserved in `source_go_annotations` with `claim_id = null` (never distributed across individual claims); (f) authoritative catalog linkage via `load_moonprot_catalog_lookup()` (702 records), respecting valid catalog fallback identities (`MFP:F:SRC_MOONPROT:...`); (g) honest null on unresolved identity under Draft 2020-12 coverage schema; (h) total tie-breaking determinism and 100% denominator coverage.
+17. **Integrated Three-Source Pilot Pipeline Execution (TASK-07 & TASK-08)**: `scripts/build_functional_claims_pilot.py` and `tests/test_functional_pilot_pipeline.py` successfully executed and verified an empirical 20-record cohort across MultitaskProtDB-II (6), PlantMP (8), and MoonProt (6). Delivered outcomes: (a) 100% denominator accounting (20 input records -> 20 coverage records); (b) 44 claims and 353 structured source GO annotations; (c) cross-source shared protein clustering under deterministic total ordering: `MFP:U:8272bae0e8df8149` (`Q42525`) shared across all 3 sources (8 claims), `MFP:U:d0cd1a882c7acdf3` (`P34788`) shared across PlantMP and Multitask (5 claims), `MFP:U:9023923ecdd9d57f` (`P0AFW0`) shared across MoonProt and Multitask (4 claims); (d) 100% byte-identical reproduction across repeated runs and differing `PYTHONHASHSEED` (0 vs 42); (e) candidate release package verification verified pristine (`package_catalog_candidate.py --verify-package`).
 
 ### 4.2 What Has NOT Been Demonstrated
-1. **Full-Source Dataset Extraction**: The adapters have not been run across the complete datasets (`proteins.csv` 694 rows or `PlantMP_all.csv` 112 rows) for persistent dataset publishing; only bounded fixture slices were verified.
-2. **Adapters for Remaining Sources**: MoonProt adapter implementation (TASK-05) was deferred and not implemented under this instruction. No adapter logic was written for MoonProt, MoonDB, or MultifacetedProtDB (TASK-05 and TASK-06 remain unauthorized/deferred).
-3. **Integrated Pilot Pipeline**: `scripts/build_functional_claims_pilot.py` was not created or executed (TASK-07 remains unauthorized).
-4. **Catalog Baseline Verification**: Candidate release package verification (`package_catalog_candidate.py --verify-package`) was not run because no integrated pipeline was executed.
-5. **Ontology Reconciliation**: No GO crosswalk, OBO mapping, or semantic distance calculations were performed (Tier B / Phase D0 deferred).
-6. **Biological Assertion Truth or Atomic Triplet Validation**: No claim of biological truth or verified atomic triplet generation is made.
+1. **Full-Source Dataset Extraction**: The adapters have not been run across the complete datasets (`proteins.csv` 694 rows, `PlantMP_all.csv` 112 rows, or MoonProt 702 HTML files) for persistent dataset publishing; only bounded empirical cohorts were verified.
+2. **Adapters for Remaining Sources**: No adapter logic was written for MoonDB or MultifacetedProtDB (TASK-06 remains unauthorized/deferred).
+3. **Full MoonProt Local Processing**: MoonProt full-source local extraction is distinct from bounded verification; mass processing of all 702 HTML files has not been executed.
+4. **Ontology Reconciliation**: No GO crosswalk, OBO mapping, or semantic distance calculations were performed (Tier B / Phase D0 deferred).
+5. **Biological Assertion Truth or Atomic Triplet Validation**: No claim of biological truth or verified atomic triplet generation is made. No triplets constructed.
 
 ---
 

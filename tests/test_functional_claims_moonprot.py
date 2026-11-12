@@ -62,6 +62,7 @@ SYNTHETIC_905 = FIXTURES_DIR / "synthetic_mpid_905_fallback_identity.html"
 SYNTHETIC_906 = FIXTURES_DIR / "synthetic_mpid_906_multi_pmids.html"
 SYNTHETIC_907 = FIXTURES_DIR / "synthetic_mpid_907_empty_functions_with_go.html"
 SYNTHETIC_908 = FIXTURES_DIR / "synthetic_mpid_908_known_absent.html"
+SYNTHETIC_909 = FIXTURES_DIR / "synthetic_mpid_909_malformed_markup_functions_with_go.html"
 
 # Synthetic catalog lookup backing synthetic edge cases
 SYNTHETIC_CATALOG_LOOKUP = {
@@ -70,6 +71,7 @@ SYNTHETIC_CATALOG_LOOKUP = {
     "moonprot_905": "MFP:F:SRC_MOONPROT:0000000000000905",
     "moonprot_906": make_protein_id_uniprot("P90606"),
     "moonprot_907": make_protein_id_uniprot("P90707"),
+    "moonprot_909": make_protein_id_uniprot("P90909"),
 }
 
 
@@ -261,33 +263,89 @@ def test_real_extract_mpid_7_hsp60_annotations(
         assert a["go_id"].startswith("GO:")
 
 
-def test_real_extract_mpid_288_zero_functions(
+def test_real_extract_mpid_288_parse_failure(
     coverage_validator: Draft202012Validator,
     annotations_validator: Draft202012Validator,
 ) -> None:
-    """Verify real-source zero-function case (MPID 288, Penicillin-binding protein 4).
+    """Verify real-source extraction failure case (MPID 288, Penicillin-binding protein 4).
 
-    Exercises denominator accounting where a legitimate acquired record has 0 function
-    blocks but populated GO terms.
+    Exercises denominator accounting where a legitimate acquired record contains
+    explicit function statements in raw HTML that were not recovered due to malformed
+    markup (unclosed quote attribute). Correctly classifies as parse_failure (not
+    no_discrete_functional_statements), preserves catalog identity, and preserves GO annotations.
     """
     claims, annotations, coverage = extract_moonprot_claims_from_file(REAL_MPID_288)
 
-    # Exactly 0 claims
+    # Exactly 0 claims extracted
     assert len(claims) == 0
 
-    # Coverage status must be no_discrete_functional_statements
+    # Coverage status must be parse_failure
     coverage_validator.validate(coverage)
     assert coverage["source_record_id"] == "moonprot_288"
     assert coverage["claims_extracted_count"] == 0
-    assert coverage["coverage_status"] == "no_discrete_functional_statements"
+    assert coverage["coverage_status"] == "parse_failure"
     assert coverage["protein_id"] == make_protein_id_uniprot("P24228")
-    assert "protein-level GO annotations preserved with claim_id=null" in (coverage["notes"] or "")
+    assert "malformed markup prevented functional statement extraction" in (coverage["notes"] or "")
+    assert "22 protein-level GO annotations preserved" in (coverage["notes"] or "")
 
     # GO annotations are still preserved structurally
-    assert len(annotations) > 0
+    assert len(annotations) == 22
     for a in annotations:
         annotations_validator.validate(a)
         assert a["claim_id"] is None
+        assert a["protein_id"] == make_protein_id_uniprot("P24228")
+
+
+def test_regression_distinguishes_truly_absent_vs_malformed_markup(
+    coverage_validator: Draft202012Validator,
+    annotations_validator: Draft202012Validator,
+) -> None:
+    """Regression test distinguishing truly absent function statements from malformed markup failures.
+
+    1. Truly absent: SYNTHETIC_907 has zero function statements in both parsed record and raw HTML.
+       -> Must be classified as no_discrete_functional_statements.
+    2. Malformed markup: SYNTHETIC_909 and REAL_MPID_288 contain function statements in raw HTML
+       that were unrecovered due to unclosed attribute syntax.
+       -> Must be classified as parse_failure, NEVER as no_discrete_functional_statements.
+    3. GO preservation: In both cases, protein-level GO annotations are preserved with valid schema.
+    """
+    # 1. Truly absent
+    claims_absent, ann_absent, cov_absent = extract_moonprot_claims_from_file(
+        SYNTHETIC_907, catalog_lookup=SYNTHETIC_CATALOG_LOOKUP
+    )
+    coverage_validator.validate(cov_absent)
+    assert len(claims_absent) == 0
+    assert cov_absent["coverage_status"] == "no_discrete_functional_statements"
+    assert cov_absent["claims_extracted_count"] == 0
+    assert cov_absent["protein_id"] == SYNTHETIC_CATALOG_LOOKUP["moonprot_907"]
+    assert len(ann_absent) == 2
+    for a in ann_absent:
+        annotations_validator.validate(a)
+        assert a["claim_id"] is None
+
+    # 2. Present but malformed markup (synthetic)
+    claims_malformed, ann_malformed, cov_malformed = extract_moonprot_claims_from_file(
+        SYNTHETIC_909, catalog_lookup=SYNTHETIC_CATALOG_LOOKUP
+    )
+    coverage_validator.validate(cov_malformed)
+    assert len(claims_malformed) == 0
+    assert cov_malformed["coverage_status"] == "parse_failure"
+    assert cov_malformed["claims_extracted_count"] == 0
+    assert cov_malformed["protein_id"] == SYNTHETIC_CATALOG_LOOKUP["moonprot_909"]
+    assert "malformed markup prevented functional statement extraction" in (cov_malformed["notes"] or "")
+    assert len(ann_malformed) == 2
+    for a in ann_malformed:
+        annotations_validator.validate(a)
+        assert a["claim_id"] is None
+
+    # 3. Present but malformed markup (real MPID 288)
+    claims_288, ann_288, cov_288 = extract_moonprot_claims_from_file(REAL_MPID_288)
+    coverage_validator.validate(cov_288)
+    assert len(claims_288) == 0
+    assert cov_288["coverage_status"] == "parse_failure"
+    assert cov_288["claims_extracted_count"] == 0
+    assert cov_288["protein_id"] == make_protein_id_uniprot("P24228")
+    assert len(ann_288) == 22
 
 
 # -----------------------------------------------------------------------------

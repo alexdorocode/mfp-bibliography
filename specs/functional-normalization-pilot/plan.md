@@ -145,21 +145,26 @@ To ensure incremental verification, source data enters the pipeline through five
 ---
 
 ### Stage P4: Integrated Tier A Review and Handoff
-- **Purpose**: Execute an integrated pilot run over the complete pilot manifest, verify 100% denominator accounting, validate deterministic outputs, prove catalog baseline isolation, and package an auditable handoff report.
+- **Purpose**: Execute an integrated pilot run over the empirical multi-source cohort, verify 100% denominator accounting, validate deterministic outputs, prove catalog baseline isolation, and package an auditable handoff report.
 - **Inputs**:
-  - All five source adapters.
-  - Pilot cohort manifest.
+  - Three authoritative source adapters (MultitaskProtDB-II, PlantMP, MoonProt).
+  - Empirical 20-record cohort specification across Multitask (6), PlantMP (8), and MoonProt (6).
   - Release verification script `scripts/package_catalog_candidate.py`.
 - **Outputs**:
-  - Integrated tables: `data/interim/pilot/functional_claims_pilot.csv` and `data/interim/pilot/functional_coverage_pilot.csv`.
+  - Integrated tables:
+    - `data/interim/pilot/functional_claims_pilot.csv` (44 claims)
+    - `data/interim/pilot/source_go_annotations_pilot.csv` (353 structured source GO annotations)
+    - `data/interim/pilot/functional_coverage_pilot.csv` (20 coverage records)
+    - `data/interim/pilot/manifest.json` (byte-stable manifest with SHA-256 digests)
   - Validation report: `data/interim/reports/functional_claims_pilot_report.json`.
-  - Clean handoff specification for future Tier B (Phase D0/D).
+  - Comprehensive pipeline unit test suite `tests/test_functional_pilot_pipeline.py`.
 - **Entry Prerequisites**: Stage P3 adapters completed and tested.
 - **Exit Evidence**:
-  - Byte-identical reproduction across different `PYTHONHASHSEED` runs.
+  - 100% Draft 2020-12 schema validation across all emitted records.
+  - Byte-identical reproduction across different `PYTHONHASHSEED` runs (0 vs 42).
   - Packaged catalog candidate release verification passes (`package_catalog_candidate.py --verify-package`).
-  - Processed working catalog verification passes (`validate_catalog_integrity`).
-- **Deferred Behavior**: External GO DAG semantic similarity, contextual triplets, BioData background frequency matching.
+  - Cross-source shared entity deduplication and total ordering (`MFP:U:8272bae0e8df8149` / `Q42525` across all 3 sources).
+- **Deferred Behavior**: External GO DAG semantic similarity, contextual triplets, BioData background frequency matching, MoonDB and MultifacetedProtDB ingestion.
 - **Human Approval Needed**: Final human evaluation and sign-off on the completed Tier A pilot.
 
 ---

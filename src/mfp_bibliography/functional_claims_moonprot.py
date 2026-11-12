@@ -53,6 +53,8 @@ from mfp_bibliography.normalization import (
 
 SOURCE_ID = "SRC_MOONPROT"
 SOURCE_SUFFIX = "MOONPROT"
+CLAIM_ID_SCHEME_VERSION = "MFPB_FUNCTIONAL_CLAIM_V1"
+ANNOTATION_ID_SCHEME_VERSION = "MFPB_SOURCE_GO_ANNOTATION_V1"
 EXTRACTION_METHOD = "extract_moonprot_claims_v0.1"
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -191,6 +193,8 @@ def extract_claims_from_moonprot_record(
     raw_file_path: str = "data/raw/moonprot/unknown.html",
     raw_row_or_url: str | None = None,
     return_annotations: bool = True,
+    raw_content: str | None = None,
+    extraction_failure_reason: str | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]] | tuple[list[dict[str, Any]], dict[str, Any]]:
     """Extract functional claims, coverage, and structured source GO annotations from a MoonProtRecord.
 
@@ -357,8 +361,45 @@ def extract_claims_from_moonprot_record(
         if annotations:
             cov_notes = f"{claims_count} claims extracted; {len(annotations)} protein-level GO annotations preserved with claim_id=null"
     else:
-        coverage_status = "no_discrete_functional_statements"
-        cov_notes = f"No discrete functional statements; {len(annotations)} protein-level GO annotations preserved with claim_id=null" if annotations else "No discrete functional statements"
+        # Check if function statements were present in the raw source but unrecovered due to markup issues
+        content_to_check = raw_content
+        if content_to_check is None and raw_file_path:
+            p = Path(raw_file_path)
+            if not p.is_absolute():
+                p_cand = REPO_ROOT / raw_file_path
+                if p_cand.exists() and p_cand.is_file():
+                    p = p_cand
+            if p.exists() and p.is_file():
+                try:
+                    content_to_check = p.read_text(encoding="utf-8")
+                except Exception:
+                    content_to_check = None
+
+        has_raw_functions = False
+        if content_to_check:
+            # Check for standard MoonProt function markers in raw markup
+            has_raw_functions = bool(
+                re.search(r"Function description", content_to_check, re.IGNORECASE)
+                or re.search(r">\s*Function\s+\d+\s*<", content_to_check, re.IGNORECASE)
+            )
+
+        if extraction_failure_reason:
+            coverage_status = "parse_failure"
+            failure_detail = extraction_failure_reason
+            if annotations:
+                cov_notes = f"Parse failure: {failure_detail}; {len(annotations)} protein-level GO annotations preserved with claim_id=null"
+            else:
+                cov_notes = f"Parse failure: {failure_detail}"
+        elif has_raw_functions:
+            coverage_status = "parse_failure"
+            failure_detail = "malformed markup prevented functional statement extraction despite presence in raw source"
+            if annotations:
+                cov_notes = f"Parse failure: {failure_detail}; {len(annotations)} protein-level GO annotations preserved with claim_id=null"
+            else:
+                cov_notes = f"Parse failure: {failure_detail}"
+        else:
+            coverage_status = "no_discrete_functional_statements"
+            cov_notes = f"No discrete functional statements; {len(annotations)} protein-level GO annotations preserved with claim_id=null" if annotations else "No discrete functional statements"
 
     coverage = {
         "source_record_id": srid,
@@ -392,6 +433,13 @@ def extract_moonprot_claims_from_file(
     m = re.search(r"mpid_(\d+)", path.name)
     expected_mpid = m.group(1) if m else None
     srid = source_record_id or (f"moonprot_{expected_mpid}" if expected_mpid else path.stem)
+
+    raw_html: str | None = None
+    if path.exists() and path.is_file():
+        try:
+            raw_html = path.read_text(encoding="utf-8")
+        except Exception:
+            raw_html = None
 
     try:
         record = parse_moonprot_fixture(path, expected_mpid=expected_mpid)
@@ -430,6 +478,7 @@ def extract_moonprot_claims_from_file(
         raw_file_path=str(path),
         raw_row_or_url=f"http://www.moonlightingproteins.org/protein_detail/?mpid={record.moonprot_id}",
         return_annotations=return_annotations,
+        raw_content=raw_html,
     )
 
 

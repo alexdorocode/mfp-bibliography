@@ -5,7 +5,7 @@ This directory contains test fixtures for the MultitaskProtDB-II functional clai
 ## 1. Real-Source Extract (`multitask_real_extract.csv`)
 
 - **Original Artifact Path**: `data/raw/multitaskprotdb-ii/proteins.csv`
-- **Source SHA-256 (Pinned)**: Registered in `data/raw/source_manifest.csv`
+- **Source SHA-256 (Pinned)**: Registered in `data/manifests/source_manifest.csv`
 - **Method of Acquisition**: Extracted using standard Python CSV parsing (`utf-8-sig`) from specific row locators without modifying field values.
 - **Byte-Identity Note**: This extract contains a selected 6-row slice of the 694-row parent artifact. It is **NOT** byte-identical to the parent file.
 - **Preserved Source Locators & Characteristics**:
