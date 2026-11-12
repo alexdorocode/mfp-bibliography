@@ -9,7 +9,7 @@
 | **Document Path** | [`docs/architecture/go-metrics-specification.md`](go-metrics-specification.md) |
 | **Document Status** | **Recovered analytical design — proposed, pending scientific and implementation review.**<br>*The filename does not make it an approved executable specification.* |
 | **Document Role** | Reference Mathematical Specification and Analytical Design Proposal |
-| **Source Material** | Recovered from historical dossiers [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) (§§1–16) and [`docs/roadmap/04a_asociaciones_interaspecto.md`](../roadmap/04a_asociaciones_interaspecto.md) (§§1–10), addressing recovery-map items (`MAP-04-01`, `MAP-04-02`, `MAP-04-03`, `MAP-04-04`, `MAP-04-05`, `MAP-04A-01` in [`docs/reports/documentation-recovery-map.md`](../reports/documentation-recovery-map.md)), contextualized by [`docs/architecture/scientific-background.md`](scientific-background.md) and [`docs/curation/literature-curation-manual.md`](../curation/literature-curation-manual.md). |
+| **Source Material** | Recovered from historical dossiers [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) (§§1–16) and [`docs/archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md`](../archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md) (§§1–10), addressing recovery-map items (`MAP-04-01`, `MAP-04-02`, `MAP-04-03`, `MAP-04-04`, `MAP-04-05`, `MAP-04A-01` in [`docs/reports/documentation-recovery-map.md`](../reports/documentation-recovery-map.md)), contextualized by [`docs/architecture/scientific-background.md`](scientific-background.md) and [`docs/curation/literature-curation-manual.md`](../curation/literature-curation-manual.md). |
 | **Target Increment** | `REC-INC-003-GO-METRICS-RECOVERY` (Revision: Status and Provenance Clarification Pass) |
 | **Governing Authority** | [`AGENTS.md`](../../AGENTS.md), [ADR-001](../decisions/ADR-001-repository-scope.md) through [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md), proposed [ADR-008](../decisions/ADR-008-functional-normalization-pilot-scope.md) |
 | **Date** | 2026-11-10 |
@@ -26,7 +26,7 @@
 ## 1. Purpose, Epistemic Scope, and Analytical Boundaries
 
 ### 1.1 Purpose of Metric Recovery and Epistemic Distinctions
-In historical research plans (specifically the PEC-EXP-001 framework documented in [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) and [`docs/roadmap/core/experiment_definition.md`](../roadmap/core/experiment_definition.md)), semantic dissimilarity metrics on the Gene Ontology Directed Acyclic Graph (DAG) were proposed as descriptive instruments to characterize functional annotation divergence among proteins attributed as multifunctional.
+In historical research plans (specifically the PEC-EXP-001 framework documented in [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) and [`docs/roadmap/core/experiment_definition.md`](../roadmap/core/experiment_definition.md)), semantic dissimilarity metrics on the Gene Ontology Directed Acyclic Graph (DAG) were proposed as descriptive instruments to characterize functional annotation divergence among proteins attributed as multifunctional.
 
 The purpose of this document is to recover the exact mathematical definitions, DAG traversal rules, information-theoretic estimators, and cross-aspect association formulas into an auditable English reference document, while making all analytical dependencies, edge-case conventions, and interpretation boundaries explicit.
 
@@ -81,7 +81,7 @@ To maintain architectural clarity, capabilities are categorized into four distin
 ## 2. General Metric Domain, Term Preparation, and Proposed Aggregation Conventions
 
 ### 2.1 General Domain and Input Term Sets
-All semantic similarity and dissimilarity metrics in this specification operate over structured sets of Gene Ontology terms assigned to normalized protein entities under defined experimental conditions ([`docs/roadmap/04_especificacion_metricas.md` (§3.1)](../roadmap/04_especificacion_metricas.md)).
+All semantic similarity and dissimilarity metrics in this specification operate over structured sets of Gene Ontology terms assigned to normalized protein entities under defined experimental conditions ([`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md` (§3.1)](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md)).
 
 Let:
 - $P$ be a normalized protein entity identified by its deterministic accession or identifier (`protein_id`, e.g. `MFP:U:...` per [ADR-005](../decisions/ADR-005-deterministic-protein-ids.md)).
@@ -126,7 +126,7 @@ $$\text{coverage}_X(P, c) = \frac{|V_X(P, c)|}{|C_X(P, c)|}$$
 1. **$k = 0$ (No terms)**: $|C| = 0$. Aggregation is impossible. Output: `value = null`, `available_mean = null`, `coverage = null`, `status = INSUFFICIENT_TERMS`.
 2. **$k = 1$ (Single term)**: $|C| = 0$. Dispersion is impossible. Output: `value = null`, `available_mean = null`, `coverage = null`, `status = INSUFFICIENT_TERMS`. (Having only one term does not imply a dissimilarity of zero; internal pairwise distance is undefined).
 3. **$k = 2$ (Single pair)**: $|C| = 1$. If valid, $|V| = 1$, `value = d(t_1, t_2)`, `coverage = 1.0`, `status = OK`.
-4. **Complete Coverage Rule for Primary Score (Proposed Policy)**: Historical specification [`04_especificacion_metricas.md` (§3.2)](../roadmap/04_especificacion_metricas.md) proposes a conservative reporting convention:
+4. **Complete Coverage Rule for Primary Score (Proposed Policy)**: Historical specification [`04_especificacion_metricas.md` (§3.2)](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) proposes a conservative reporting convention:
    - If $|V_X(P, c)| = |C_X(P, c)|$ (100% coverage), the primary metric is emitted: `value = \bar{d}`, `status = OK`.
    - If $|V_X(P, c)| < |C_X(P, c)|$ (partial coverage, e.g. one term lacks corpus frequency for Lin), the primary score is withheld: `value = null`, `status = PARTIAL_COVERAGE`.
    - In partial coverage cases, the diagnostic field `available_mean` preserves the average across valid units to prevent silent data loss, while clearly signaling incomplete coverage.
@@ -144,7 +144,7 @@ To maintain data integrity, metric computation engines must strictly distinguish
 
 > [!NOTE]
 > **Recovered Proposed Analytical Partitions — Not an Adopted Experiment Policy or Implemented Filter**:
-> The partition definitions in this subsection are recovered from historical research proposals ([`docs/roadmap/02_protocolo_cientifico_y_analisis.md` (§4)](../roadmap/02_protocolo_cientifico_y_analisis.md), [`docs/roadmap/core/experiment_definition.md` (§3.3)](../roadmap/core/experiment_definition.md), and decision `DEC-05`), addressing recovery map item `MAP-02-02`. They document proposed analytical input partitions ($c$) for exploratory semantic dissimilarity comparisons. They do **not** constitute an adopted experimental policy, an engineering release contract, or an active runtime filter. Documenting these historical proposals preserves scientific methodology without authorizing execution or creating a new evidence taxonomy.
+> The partition definitions in this subsection are recovered from historical research proposals ([`docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md` (§4)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md), [`docs/roadmap/core/experiment_definition.md` (§3.3)](../roadmap/core/experiment_definition.md), and decision `DEC-05`), addressing recovery map item `MAP-02-02`. They document proposed analytical input partitions ($c$) for exploratory semantic dissimilarity comparisons. They do **not** constitute an adopted experimental policy, an engineering release contract, or an active runtime filter. Documenting these historical proposals preserves scientific methodology without authorizing execution or creating a new evidence taxonomy.
 
 #### 1. Recovered Evidence Partition Specifications
 
@@ -152,9 +152,9 @@ In historical experimental plans, three primary input conditions were proposed t
 
 | Condition Label & Proposed ID | Included GO Evidence Codes (Established) | Explicitly Excluded Codes & Scope Limits | Membership Nature | Intended Analytical Purpose & Planned Comparisons | Source Provenance | Verification Status | Governance & Approval Status |
 |---|---|---|---|---|---|---|---|
-| **`ALL`** /<br>`ALL_ELIGIBLE` | **26 explicit codes in historical catalog**: `EXP`, `IDA`, `IPI`, `IMP`, `IGI`, `IEP`, `HTP`, `HDA`, `HMP`, `HGI`, `HEP`, `IBA`, `IBD`, `IKR`, `IRD`, `ISS`, `ISO`, `ISA`, `ISM`, `IGC`, `RCA`, `TAS`, `NAS`, `IC`, `ND`, `IEA`.<br>*In `experiment_definition.md`: all admissible codes following GO processing and qualifier policy.* | Unrecognized or novel evidence codes not in the controlled snapshot list are excluded (inventoried via incident report, not automatically ingested).<br>`NOT` qualifiers excluded by qualifier policy. | Exhaustive 26-code catalog in `02` §4.2; rule-governed snapshot in `experiment_definition.md` §3.3. | **Baseline coverage condition**; reference universe for term and co-occurrence background frequencies. Primary contrast baseline against experimental subsets. | [`docs/roadmap/02_protocolo_cientifico_y_analisis.md` (§4.2)](../roadmap/02_protocolo_cientifico_y_analisis.md); [`docs/roadmap/core/experiment_definition.md` (§3.3)](../roadmap/core/experiment_definition.md). | Recovered from historical proposals; code definitions documented locally; formal external sync pending. | Proposed analytical design; governed by decision `DEC-05` (pending Gate G2). |
-| **`EXP-convencional`** /<br>`EXP_CONVENTIONAL` | **6 conventional experimental codes**: `EXP`, `IDA`, `IPI`, `IMP`, `IGI`, `IEP`.<br>*(Note: `EXP_CONVENTIONAL` is the partition label; `EXP` is an individual GO evidence code [Inferred from Experiment]).* | Explicitly excludes high-throughput experimental codes (`HTP`, `HDA`, `HMP`, `HGI`, `HEP`).<br>Explicitly excludes author statements (`TAS`, `NAS`), curator statements (`IC`), computational/sequence analysis (`ISS`, `ISO`, `ISA`, `ISM`, `IGC`, `RCA`), phylogenetic inference (`IBA`, `IBD`, `IKR`, `IRD`), electronic annotations (`IEA`), and `ND`. | Exhaustive 6-code set. | **Primary experimental contrast** proposed for the evaluation pilot (`EXP_CONVENTIONAL` vs `ALL`). Evaluates pairwise dispersion supported exclusively by small-scale, conventional experimental assays. | [`docs/roadmap/02_protocolo_cientifico_y_analisis.md` (§§4.1–4.3)](../roadmap/02_protocolo_cientifico_y_analisis.md); [`docs/roadmap/core/experiment_definition.md` (§3.3)](../roadmap/core/experiment_definition.md). | Recovered from historical proposals; code meanings verified against standard GO documentation cited in source; formal verification pending external sync. | Proposed analytical design; governed by decision `DEC-05` (pending Gate G2). |
-| **`EXP-ampliada`** /<br>`EXP_EXTENDED` | **11 experimental codes**: 6 conventional (`EXP`, `IDA`, `IPI`, `IMP`, `IGI`, `IEP`) plus 5 high-throughput experimental codes (`HTP`, `HDA`, `HMP`, `HGI`, `HEP`). | Explicitly excludes author statements (`TAS`, `NAS`), curator statements (`IC`), computational/sequence analysis, phylogenetics, electronic (`IEA`), and `ND`.<br>*(High-throughput separation is methodological, not an inherent universal quality hierarchy).* | Exhaustive 11-code set. | **Secondary planned sensitivity contrast** (`EXP_EXTENDED` vs `ALL`, and `EXP_EXTENDED` vs `EXP_CONVENTIONAL`). Evaluates metric sensitivity to the addition of high-throughput experimental evidence. | [`docs/roadmap/02_protocolo_cientifico_y_analisis.md` (§§4.1–4.3)](../roadmap/02_protocolo_cientifico_y_analisis.md); [`docs/roadmap/core/experiment_definition.md` (§3.3)](../roadmap/core/experiment_definition.md). | Recovered from historical proposals; formal external sync pending. | Proposed analytical design; governed by decision `DEC-05` (pending Gate G2). |
+| **`ALL`** /<br>`ALL_ELIGIBLE` | **26 explicit codes in historical catalog**: `EXP`, `IDA`, `IPI`, `IMP`, `IGI`, `IEP`, `HTP`, `HDA`, `HMP`, `HGI`, `HEP`, `IBA`, `IBD`, `IKR`, `IRD`, `ISS`, `ISO`, `ISA`, `ISM`, `IGC`, `RCA`, `TAS`, `NAS`, `IC`, `ND`, `IEA`.<br>*In `experiment_definition.md`: all admissible codes following GO processing and qualifier policy.* | Unrecognized or novel evidence codes not in the controlled snapshot list are excluded (inventoried via incident report, not automatically ingested).<br>`NOT` qualifiers excluded by qualifier policy. | Exhaustive 26-code catalog in `02` §4.2; rule-governed snapshot in `experiment_definition.md` §3.3. | **Baseline coverage condition**; reference universe for term and co-occurrence background frequencies. Primary contrast baseline against experimental subsets. | [`docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md` (§4.2)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md); [`docs/roadmap/core/experiment_definition.md` (§3.3)](../roadmap/core/experiment_definition.md). | Recovered from historical proposals; code definitions documented locally; formal external sync pending. | Proposed analytical design; governed by decision `DEC-05` (pending Gate G2). |
+| **`EXP-convencional`** /<br>`EXP_CONVENTIONAL` | **6 conventional experimental codes**: `EXP`, `IDA`, `IPI`, `IMP`, `IGI`, `IEP`.<br>*(Note: `EXP_CONVENTIONAL` is the partition label; `EXP` is an individual GO evidence code [Inferred from Experiment]).* | Explicitly excludes high-throughput experimental codes (`HTP`, `HDA`, `HMP`, `HGI`, `HEP`).<br>Explicitly excludes author statements (`TAS`, `NAS`), curator statements (`IC`), computational/sequence analysis (`ISS`, `ISO`, `ISA`, `ISM`, `IGC`, `RCA`), phylogenetic inference (`IBA`, `IBD`, `IKR`, `IRD`), electronic annotations (`IEA`), and `ND`. | Exhaustive 6-code set. | **Primary experimental contrast** proposed for the evaluation pilot (`EXP_CONVENTIONAL` vs `ALL`). Evaluates pairwise dispersion supported exclusively by small-scale, conventional experimental assays. | [`docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md` (§§4.1–4.3)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md); [`docs/roadmap/core/experiment_definition.md` (§3.3)](../roadmap/core/experiment_definition.md). | Recovered from historical proposals; code meanings verified against standard GO documentation cited in source; formal verification pending external sync. | Proposed analytical design; governed by decision `DEC-05` (pending Gate G2). |
+| **`EXP-ampliada`** /<br>`EXP_EXTENDED` | **11 experimental codes**: 6 conventional (`EXP`, `IDA`, `IPI`, `IMP`, `IGI`, `IEP`) plus 5 high-throughput experimental codes (`HTP`, `HDA`, `HMP`, `HGI`, `HEP`). | Explicitly excludes author statements (`TAS`, `NAS`), curator statements (`IC`), computational/sequence analysis, phylogenetics, electronic (`IEA`), and `ND`.<br>*(High-throughput separation is methodological, not an inherent universal quality hierarchy).* | Exhaustive 11-code set. | **Secondary planned sensitivity contrast** (`EXP_EXTENDED` vs `ALL`, and `EXP_EXTENDED` vs `EXP_CONVENTIONAL`). Evaluates metric sensitivity to the addition of high-throughput experimental evidence. | [`docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md` (§§4.1–4.3)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md); [`docs/roadmap/core/experiment_definition.md` (§3.3)](../roadmap/core/experiment_definition.md). | Recovered from historical proposals; formal external sync pending. | Proposed analytical design; governed by decision `DEC-05` (pending Gate G2). |
 
 > [!IMPORTANT]
 > **Controlled Definition of `ALL` vs Unrestricted Ingestion**:
@@ -183,7 +183,7 @@ Evidence-code partition membership is strictly an annotation-level provenance fi
 To maintain transparency, the epistemic boundaries of this recovery are explicitly recorded:
 
 1. **Verification Limits**:
-   - *Faithful Documentary Recovery*: The historical partitions (`ALL` / `ALL_ELIGIBLE`, `EXP-convencional` / `EXP_CONVENTIONAL`, `EXP-ampliada` / `EXP_EXTENDED`) and their code memberships have been verified directly against historical source documents `docs/roadmap/02_protocolo_cientifico_y_analisis.md` (§4) and `docs/roadmap/core/experiment_definition.md` (§3.3).
+   - *Faithful Documentary Recovery*: The historical partitions (`ALL` / `ALL_ELIGIBLE`, `EXP-convencional` / `EXP_CONVENTIONAL`, `EXP-ampliada` / `EXP_EXTENDED`) and their code memberships have been verified directly against historical source documents `docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md` (§4) and `docs/roadmap/core/experiment_definition.md` (§3.3).
    - *Authoritative External Standard Sync Pending*: While code definitions correspond to established Gene Ontology Consortium standards cited in the historical dossiers, live network verification against remote ontology registries is excluded from this increment (performed offline in read-only mode).
    - *Scientific Adoption Separate from Recovery*: Recovering and documenting these proposed partitions satisfies documentation reconciliation (`MAP-02-02`). It does **not** constitute formal experimental adoption, which remains a separate governance decision.
 2. **Open Governance Decisions and Unresolved Items**:
@@ -234,7 +234,7 @@ $$\bar{d}_{\text{MBL}}(P, X, c) = \frac{1}{|C_X(P, c)|} \sum_{\{a, b\} \in C_X(P
 - **Identity Property**: For identical terms, $h^*(a, a) = h(a)$, yielding $d_{\text{MBL}}(a, a) = h(a) + h(a) - 2h(a) = 0$.
 
 #### Documentary Audit: MBL Fallback Algebraic Derivation ($d_f = -1$)
-- **Evidence Type**: **Documented static derivation** recovered from historical dossier [`docs/roadmap/04_especificacion_metricas.md` (§4.3, L153–L164)](../roadmap/04_especificacion_metricas.md).
+- **Evidence Type**: **Documented static derivation** recovered from historical dossier [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md` (§4.3, L153–L164)](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md).
 - **Documented Rationale**: In historical dossier `04`, static inspection of remote `CBBIO/GO.py` code noted that its local fallback logic defined:
   $$H_{\text{fallback}} = (\text{Anc}(a) \cap \text{Anc}(b)) \cup \{a, b\}$$
   $$h_f = \max_{u \in H_{\text{fallback}}} h(u), \qquad d_f = h(a) + h(b) - 2h_f$$
@@ -296,7 +296,7 @@ where $V_X(P, c) \subseteq T_X(P, c)$ contains all terms with valid, positive fr
 - **Intended Analytical Role**: Primary graph-based semantic dissimilarity baseline, independent of corpus frequency counts.
 
 #### Mathematical Formulation
-Formulated by Wang et al. (2007) ([`docs/roadmap/04_especificacion_metricas.md` (§6)](../roadmap/04_especificacion_metricas.md)), this metric evaluates the semantic contribution of all ancestors of a term in a sub-DAG.
+Formulated by Wang et al. (2007) ([`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md` (§6)](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md)), this metric evaluates the semantic contribution of all ancestors of a term in a sub-DAG.
 Let $D_a = (V_{D_a}, E_{D_a})$ be the sub-DAG containing term $a$ and all its ancestors under authorized relations.
 For any edge $(u, v) \in E_{D_a}$ where $u$ is a parent of child $v$, let $w(u, v)$ be the semantic contribution factor:
 - For `is_a` relationships: $w_{\text{is\_a}} = 0.8$ (proposed parameter).
@@ -345,7 +345,7 @@ $$\bar{d}_W(P, X, c) = \frac{1}{|C_X(P, c)|} \sum_{\{a, b\} \in C_X(P, c)} d_W(a
 - **Intended Analytical Role**: Information-theoretic semantic dissimilarity measure combining ontology topology with empirical corpus frequencies.
 
 #### Mathematical Formulation
-Formulated by Lin (1998) and adapted to Gene Ontology ([`docs/roadmap/04_especificacion_metricas.md` (§7)](../roadmap/04_especificacion_metricas.md)):
+Formulated by Lin (1998) and adapted to Gene Ontology ([`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md` (§7)](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md)):
 Let $H(a, b) = \text{Anc}^*(a) \cap \text{Anc}^*(b)$ be the common ancestor set of terms $a$ and $b$.
 The Most Informative Common Ancestor (MICA) is any common ancestor that maximizes Information Content:
 
@@ -398,7 +398,7 @@ $$Sim_{\text{Resnik}}(a, b) = IC(\text{MICA}(a, b)) = \max_{u \in H(a, b)} IC(u)
 - **Dissimilarity Inversion**: Converting Resnik similarity to a dissimilarity measure is non-trivial:
   - Subtracting from maximum corpus information ($d = \ln N - Sim_{\text{Resnik}}$) introduces strong corpus-size sensitivity.
   - Non-linear transforms (e.g. $e^{-Sim_{\text{Resnik}}}$) alter the metric space.
-- **Implementation Status in Repository**: In historical dossier [`04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md), Resnik was discussed as a related measure, but was **descoped from the primary intra-aspect suite** in favor of normalized dissimilarity metrics (1-Wang and 1-Lin). It remains recorded here as an unadopted research candidate.
+- **Implementation Status in Repository**: In historical dossier [`04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md), Resnik was discussed as a related measure, but was **descoped from the primary intra-aspect suite** in favor of normalized dissimilarity metrics (1-Wang and 1-Lin). It remains recorded here as an unadopted research candidate.
 
 ---
 
@@ -410,7 +410,7 @@ $$Sim_{\text{Resnik}}(a, b) = IC(\text{MICA}(a, b)) = \max_{u \in H(a, b)} IC(u)
 - **Intended Analytical Role**: Characterizes empirical co-annotation patterns between Molecular Functions, Biological Processes, and Cellular Components, preventing unjustified Cartesian triplet synthesis.
 
 #### Mathematical Formulation
-Formulated in historical annex [`docs/roadmap/04a_asociaciones_interaspecto.md`](../roadmap/04a_asociaciones_interaspecto.md):
+Formulated in historical annex [`docs/archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md`](../archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md):
 Let $X, Y \in \{\text{MF}, \text{BP}, \text{CC}\}$ with $X \ne Y$ denote two distinct ontology aspects.
 Let $R_{XY}$ be the dual reference universe: distinct reconciled protein entities annotated with at least one valid term in *both* aspects $X$ and $Y$, with size $N_{XY} = |R_{XY}| > 0$.
 For terms $x \in X$ and $y \in Y$:
@@ -435,7 +435,7 @@ $$s_{XY}(x, y) = \text{NPMI}(x, y) = \frac{\ln \left( \frac{p(x, y)}{p(x) p(y)} 
 - **Symmetry**: $s_{XY}(x, y) = s_{YX}(y, x)$. NPMI is symmetric and carries **no causal or temporal direction**.
 
 #### Proposed Support Filters and Zero-Co-Occurrence Policy
-To prevent statistical noise from rare terms, [`docs/roadmap/04a_asociaciones_interaspecto.md` (§4)](../roadmap/04a_asociaciones_interaspecto.md) proposes explicit support thresholds:
+To prevent statistical noise from rare terms, [`docs/archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md` (§4)](../archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md) proposes explicit support thresholds:
 - Minimum marginal support: $n_x \ge 5$ and $n_y \ge 5$ (`min_term_support = 5`, provisional).
 - Minimum joint support: $n_{xy} \ge 5$ (`min_pair_support = 5`, provisional).
 
@@ -459,7 +459,7 @@ Pair coverage is $\text{coverage}_{XY}(P) = |V_{XY}(P)| / |C_{XY}(P)|$.
 ---
 
 ### 3.7 Evidence, Term, and Bibliographic Descriptors
-Historical specification [`04_especificacion_metricas.md` (§9)](../roadmap/04_especificacion_metricas.md) defines a suite of 14 non-similarity descriptors to quantify annotation volume, evidence types, and curatorial coverage:
+Historical specification [`04_especificacion_metricas.md` (§9)](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) defines a suite of 14 non-similarity descriptors to quantify annotation volume, evidence types, and curatorial coverage:
 
 | Descriptor ID | Unit & Scope | Definition & Mathematical Denominator | Expected Scale |
 |---|---|---|---|
@@ -544,7 +544,7 @@ A comprehensive, direct local inspection of files in the current repository conf
 - **Repository Scope**: In accordance with [ADR-001](../decisions/ADR-001-repository-scope.md), `mfp-bibliography` is maintained strictly as an auditable source-evidence catalog. Metric calculation engines remain proposed future work.
 
 ### 5.2 External and Upstream Library Status (Documentary Evidence from Historical Audits)
-The following statements describe remote libraries that were **NOT** queried, cloned, or executed in this increment. All statements are **recovered documentary findings** from historical research dossier [`docs/roadmap/04_especificacion_metricas.md` (§2, §15)](../roadmap/04_especificacion_metricas.md):
+The following statements describe remote libraries that were **NOT** queried, cloned, or executed in this increment. All statements are **recovered documentary findings** from historical research dossier [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md` (§2, §15)](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md):
 
 #### 1. `CBBIO/BioData` (`CBBIO/GO.py`, remote commit `ed073bd4df680a3b45ee69943916e196d28b63b6`)
 Historical dossier `04` recorded static inspection of remote commit `ed073bd4`:
@@ -564,7 +564,7 @@ Historical dossier `04` recorded static inspection of tree revision `5b88eefc`:
 
 ## 6. Proposed Long-Format Output Schema
 
-When a metric computation engine is implemented, it is proposed to emit results in a standardized long-format structure ([`docs/roadmap/04_especificacion_metricas.md` (§11)](../roadmap/04_especificacion_metricas.md)):
+When a metric computation engine is implemented, it is proposed to emit results in a standardized long-format structure ([`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md` (§11)](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md)):
 
 ```
 [Long-Format Output Row]
@@ -645,15 +645,15 @@ The table below documents the full traceability of recovered content to historic
 
 | Recovery Map Item ID | Historical Source Path & Heading | Recovered Section in this Document | Epistemic Classification | Recovery Notes & Qualifications |
 |---|---|---|---|---|
-| **`MAP-04-01`** | [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) <br> `## 3. Contrato común de métricas` (L78–L118) | **§2. General Metric Domain & Proposed Aggregation Conventions** | Proposed Analytical Design | Intra-aspect domain, single-pair arithmetic mean, complete coverage proposal, and degenerate cardinality rules recovered. |
-| **`MAP-04-02`** | [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) <br> `## 4. Ficha MBL clásica` (L119–L176) | **§3.1 Minimum Branch Length (MBL)** | Proposed Analytical Design | Mathematical DCA formulation recovered; CBBIO negative fallback derivation documented from historical audit; proposed DCA policy established. |
-| **`MAP-04-03`** | [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) <br> `## 5. Ficha Contenido Informativo` (L177–L223) | **§3.2 Information Content (IC)** | Proposed Analytical Design | Term-level natural log (nats) IC formula recovered; proposed uncovered term null policy documented. |
-| **`MAP-04-04`** | [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) <br> `## 6. Ficha 1−Wang` (L224–L276) | **§3.3 Wang Semantic Dissimilarity** | Proposed Analytical Design | S-value recurrence and Jaccard-like dissimilarity recovered; proposed edge weights ($w_{\text{is\_a}}=0.8, w_{\text{part\_of}}=0.6$) specified. |
-| **`MAP-04-05`** | [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) <br> `## 7. Ficha 1−Lin` (L277–L326) | **§3.4 Lin Semantic Dissimilarity** | Proposed Analytical Design | MICA Information-theoretic formula recovered; proposed `ZERO_IC_DENOMINATOR` null policy documented. |
-| **`MAP-04A-01`** | [`docs/roadmap/04a_asociaciones_interaspecto.md`](../roadmap/04a_asociaciones_interaspecto.md) <br> `## 2–5. Fichas NPMI` (L25–L138) | **§3.6 Cross-Aspect Associations (NPMI)** | Proposed Analytical Design | Dual-aspect NPMI formulas, provisional support thresholds ($\ge 5$), unobserved pair null convention, and provisional coverage threshold ($0.80$) recovered. |
+| **`MAP-04-01`** | [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) <br> `## 3. Contrato común de métricas` (L78–L118) | **§2. General Metric Domain & Proposed Aggregation Conventions** | Proposed Analytical Design | Intra-aspect domain, single-pair arithmetic mean, complete coverage proposal, and degenerate cardinality rules recovered. |
+| **`MAP-04-02`** | [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) <br> `## 4. Ficha MBL clásica` (L119–L176) | **§3.1 Minimum Branch Length (MBL)** | Proposed Analytical Design | Mathematical DCA formulation recovered; CBBIO negative fallback derivation documented from historical audit; proposed DCA policy established. |
+| **`MAP-04-03`** | [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) <br> `## 5. Ficha Contenido Informativo` (L177–L223) | **§3.2 Information Content (IC)** | Proposed Analytical Design | Term-level natural log (nats) IC formula recovered; proposed uncovered term null policy documented. |
+| **`MAP-04-04`** | [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) <br> `## 6. Ficha 1−Wang` (L224–L276) | **§3.3 Wang Semantic Dissimilarity** | Proposed Analytical Design | S-value recurrence and Jaccard-like dissimilarity recovered; proposed edge weights ($w_{\text{is\_a}}=0.8, w_{\text{part\_of}}=0.6$) specified. |
+| **`MAP-04-05`** | [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) <br> `## 7. Ficha 1−Lin` (L277–L326) | **§3.4 Lin Semantic Dissimilarity** | Proposed Analytical Design | MICA Information-theoretic formula recovered; proposed `ZERO_IC_DENOMINATOR` null policy documented. |
+| **`MAP-04A-01`** | [`docs/archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md`](../archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md) <br> `## 2–5. Fichas NPMI` (L25–L138) | **§3.6 Cross-Aspect Associations (NPMI)** | Proposed Analytical Design | Dual-aspect NPMI formulas, provisional support thresholds ($\ge 5$), unobserved pair null convention, and provisional coverage threshold ($0.80$) recovered. |
 | *(Research Context)* | [`docs/roadmap/core/experiment_definition.md`](../roadmap/core/experiment_definition.md) (§3.3) | **§3.5 Resnik Semantic Similarity** | Unadopted Research Proposal | Contextual inventory of Resnik similarity; noted as unnormalized and descoped from primary dissimilarity suite. |
-| *(Descriptor Suite)* | [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) <br> `## 9. Descriptores` (L341–L379) | **§3.7 Evidence & Bibliographic Descriptors** | Proposed Analytical Design | 14 non-similarity count and coverage descriptors recovered. |
-| *(Schema Design)* | [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) <br> `## 11. Esquema largo` (L406–L439) | **§6. Long-Format Output Schema** | Proposed Analytical Design | Output schema structure recovered as a proposed design layout. |
+| *(Descriptor Suite)* | [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) <br> `## 9. Descriptores` (L341–L379) | **§3.7 Evidence & Bibliographic Descriptors** | Proposed Analytical Design | 14 non-similarity count and coverage descriptors recovered. |
+| *(Schema Design)* | [`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) <br> `## 11. Esquema largo` (L406–L439) | **§6. Long-Format Output Schema** | Proposed Analytical Design | Output schema structure recovered as a proposed design layout. |
 
 ### 8.2 Register of Open Decisions
 Before any metric calculation engine can be implemented or approved, repository maintainers and scientific reviewers must resolve the following six open decisions:
@@ -692,6 +692,179 @@ Before any metric calculation engine can be implemented or approved, repository 
    - *Question*: In light of [ADR-001](../decisions/ADR-001-repository-scope.md) dedicating `mfp-bibliography` to source-evidence infrastructure, should metric computation engines be implemented in a downstream analysis repository (e.g. `mfp-analysis`) or within a dedicated sub-package of `mfp-bibliography`?
    - *Status*: Open Question.
    - *Authority*: Maintainers.
+
+---
+
+## Appendix: Recovered Proposed Sensitivity Procedures (MAP-02-03)
+
+> [!NOTE]
+> **Recovered proposed sensitivity procedures — not an adopted experimental policy or implemented pipeline.**
+> The computational stress and sensitivity procedures documented in this appendix are faithfully recovered in English from historical research proposals ([`docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md` (§§7–8)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md)), addressing recovery item `MAP-02-03` from [`docs/reports/documentation-recovery-map.md`](../reports/documentation-recovery-map.md). They represent proposed analytical controls designed to evaluate (1) whether intra-protein functional semantic dissimilarity is confounded by annotation volume (term density bias) and (2) whether functional claims depend fragilely on individual literature citations. In accordance with [ADR-001](../decisions/ADR-001-repository-scope.md), [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md), and [AGENTS.md](../../AGENTS.md), these procedures are documented for methodology preservation only; they do **not** constitute an adopted experimental policy, an engineering release contract, or an authorized pipeline execution within the `mfp-bibliography` baseline catalog.
+
+---
+
+### A. Random Term Reduction Procedure (Perturbations E03 and E05)
+
+#### A.1 Sampling Unit, Eligible Term Sets, and Target Frame
+- **Target Frame**: For a given protein entity $p$ and Gene Ontology aspect $X \in \{\text{MF}, \text{BP}, \text{CC}\}$, the sampling universe is defined as the set of unique valid GO terms $T_{\text{ALL}}(p, X)$ present under the baseline coverage condition `ALL` (Layer A), following common dataset preparation (contract 03 / syntax normalization) and **before adding derived graph ancestors**.
+- **Sampling Unit**: Individual, unique Gene Ontology terms.
+- **Sampling Method**: Uniform pseudo-random sampling without replacement within $T_{\text{ALL}}(p, X)$.
+- **Explicit Invariant**: Sampling operates strictly on unique terms. It does **not** sample annotation rows, GAF evidence instances, or literature references. (As established in dossier `02` §7.4, row reduction constitutes an independent intervention that modifies evidence support while potentially leaving the biological term intact; if evaluated, row reduction requires a distinct intervention identifier and must not substitute for term reduction `E03`).
+
+#### A.2 Paired Term-Count Matching Control (Perturbation `E03`)
+- **Scientific Objective**: Disentangle annotation volume confounding from curatorial evidence filtering (Hypothesis H2 / RQ-04). Tests whether observed shifts in semantic dissimilarity under an experimental evidence filter (`EXP_CONVENTIONAL` or `EXP_EXTENDED`) reflect genuine biological specificity rather than reduced term counts.
+- **Target Sample Size ($k$)**: For each protein $p$ and aspect $X$, the target sample size $k$ is set to exactly the number of unique terms retained by that protein under the corresponding experimental condition:
+  $$k = |T_{\text{EXP}}(p, X)|$$
+  This produces a paired term-count control matched to the same protein entity.
+- **Boundary and Edge Cases**:
+  - *Identity / Unreduced Case*: If $|T_{\text{EXP}}(p, X)| = |T_{\text{ALL}}(p, X)|$, the reduction is deterministic; the original term set is evaluated without stochastic sampling.
+  - *Zero Retention*: If $|T_{\text{EXP}}(p, X)| = 0$, total loss of estimability is recorded; no synthetic or imputed metric is manufactured.
+  - *Small Combinatorial Space*: When the number of possible combinations $\binom{|T_{\text{ALL}}|}{k}$ is very small, the historical protocol permits exhaustive combinatorial enumeration of all distinct subsets rather than repeated pseudo-random draws, with the enumeration explicitly logged.
+
+#### A.3 Gradual Term Degradation Grid (Perturbation `E05`)
+- **Scientific Objective**: Characterize the functional response curve and estimability degradation under progressive loss of annotation density.
+- **Retention Fractions ($f$)**: Proposed retention fractions are:
+  $$f \in \{1.00, 0.75, 0.50, 0.25\}$$
+- **Target Size Derivation**:
+  $$k_f = \max(1, \lfloor f \cdot |T_{\text{ALL}}(p, X)| \rfloor) \quad \text{if } |T_{\text{ALL}}(p, X)| > 0$$
+  - The floor function $\lfloor \cdot \rfloor$ yields an integer term count.
+  - If $|T_{\text{ALL}}(p, X)| > 0$, a minimum of 1 term is enforced. (If $|T_{\text{ALL}}(p, X)| = 0$, the set is empty and total loss is documented).
+- **Epistemic Qualification**: The retention levels $100\%, 75\%, 50\%, 25\%$ are computational stress-testing tiers, **not biological thresholds or validated sample-size recommendations**.
+- **Redundant Levels Handling**: If rounding produces identical integer sizes across different fractions (e.g. for small sets where $\lfloor 0.75 \cdot 3 \rfloor = 2$ and $\lfloor 0.50 \cdot 3 \rfloor = 1$), duplicate sizes are identified and not treated as independent degradation tiers. The unreduced case ($f = 1.00$) is explicitly flagged.
+
+#### A.4 Replicate Schedule, Shared Replicate Banks, and Seed Schedule
+- **Replicate Budget**: Dossier `02` (§7.2) proposed $N = 200$ replicates per non-deterministic size for the empirical pilot. (Note: Master Proposal §7.3 specifies the general minimum $N \ge 100$, with which this pilot proposal is fully compatible).
+- **Stopping Rule**: Convergence of summary distributions and computational cost must be monitored without selecting the sample count to achieve statistical significance. The replicate count must be frozen prior to post-pilot evaluation.
+- **Shared Replicate Bank Across Metrics**: To ensure that observed differences between metric families (Wang vs Lin vs MBL) reflect algorithmic properties rather than stochastic input variation:
+  - A pre-computed bank of sampled term subsets must be generated per $(p, X, k, r)$, where $r \in \{1, \dots, N\}$.
+  - All metric calculators evaluate the **exact same drawn subsets**.
+  - If two distinct experimental conditions (e.g. `EXP_CONVENTIONAL` and `EXP_EXTENDED`) yield identical term counts $k$ for a protein, they reuse the same replicate bank.
+- **Deterministic Seed Management**:
+  - The effective master seed must be pinned in configuration prior to execution.
+  - Stable, deterministic sub-streams must be derived per stage, protein, aspect, target size, and replicate index.
+  - The pseudo-random number generator (PRNG) algorithm and version must be formally recorded.
+  - Session-dependent non-deterministic hashes and "seed hunting" (rerunning until a preferred pattern emerges) are strictly prohibited.
+
+#### A.5 Extension to Cross-Aspect Associations (NPMI / Block A)
+- **Simultaneous Size Vector Matching**: When evaluating cross-aspect associations (e.g. MF–CC or BP–CC):
+  - The size vector across both interacting aspects $(k_{X_1}, k_{X_2})$ must be equalized simultaneously.
+  - Sampling is conducted independently within the unique term vocabulary of each aspect.
+  - **Prohibited Cartesian Draw**: Never sample term pairs directly from the Cartesian product $T(X_1) \times T(X_2)$.
+  - **Reuse Across Associations**: Drawn subsets for an aspect must be reused across all association pairs involving that aspect.
+  - **No Artificial NPMI Support Preservation**: Loss of co-occurrence or marginal support during downsampling is part of the observed response curve and must not be artificially padded.
+
+#### A.6 Comparative Metrics, Descriptive Quantiles, and Estimability Censoring Guardrails
+- **Comparative Baseline**: For each protein $p$ and metric $M$, the observed value $M_{\text{EXP}}(p)$ is contrasted against the empirical distribution $\{M_{\text{ALL}, k, r}(p)\}_{r=1}^N$ obtained from the matched `ALL` downsampled subsets.
+- **Reported Summaries**:
+  1. *Median Shift*: $\Delta M = M_{\text{EXP}}(p) - \text{median}(\{M_{\text{ALL}, k, r}(p)\}_{r=1}^N)$.
+  2. *Descriptive Quantile Position*: The empirical percentile rank of $M_{\text{EXP}}(p)$ within the distribution of computable replicates.
+  3. *Calculability Mass*: The fraction of replicates that yielded a valid, computable score.
+- **Strict Epistemic Guardrails**:
+  - *Not an Exact p-Value*: The descriptive quantile position must **never** be labeled or interpreted as an exact p-value. Evidence code assignment in biological databases is an observational curatorial process, not an experimental random assignment.
+  - *Conditionality on Estimability*: Quantiles computed over calculable replicates are strictly conditional on estimability ($k \ge 2$, DAG connectivity, non-zero denominator).
+  - *Reporting Non-Estimable Mass*: The proportion of non-estimable replicates must always be reported alongside quantile metrics. It is strictly prohibited to compare $M_{\text{EXP}}$ against a distribution that silently discards incalculable replicates.
+
+---
+
+### B. Leave-One-Publication-Out Sensitivity Procedure (Perturbation E06)
+
+#### B.1 Bibliographic / Reference Unit Definition
+- **Target Unit**: One identified, normalized primary literature reference per protein at a time (e.g. `PMID:12345678`), drawn from the protein's supporting reference set $P(p)$.
+- **Normalization and Reconciliation**:
+  - PubMed IDs (`PMID`) and Digital Object Identifiers (`DOI`) referring to the same publication must be unified only if a validated crosswalk exists in curation data (contract 03).
+  - Internal database references and Gene Ontology references (e.g. `GO_REF:0000033`) are not necessarily publications; their removal represents a distinct "reference-withdrawal" intervention to be evaluated separately.
+  - Missing/null reference values do **not** constitute a shared "unknown publication" and must not be pooled or withdrawn as a single unit.
+- **Frozen Support Graph**: A bipartite or multipartite provenance graph linking annotations, references, and source claims must be frozen prior to executing withdrawals.
+
+#### B.2 Support Preservation Rules (Independent vs Joint Support)
+When reference $p_i$ is removed from protein $p$, the following rules govern annotation survival:
+1. *Alternative Independent Support*: If a functional claim or annotation row is corroborated by multiple distinct references ($|P(a)| > 1$), removing $p_i$ severs only the link $(p_i, a)$. The annotation remains active if supported by at least one other admissible reference.
+2. *Joint Bibliographic Support*: If an annotation explicitly requires multiple references jointly to sustain its claim (a documented conjunction), withdrawing one reference breaks the entire joint support tuple. The annotation survives only if an alternative, independent complete support tuple exists.
+3. *Term-Level Survival*: If a GO term $t$ is linked to multiple annotations for protein $p$, the term survives in the active set $T(p, X)$ as long as at least one admissible supporting annotation remains active after the withdrawal.
+4. *Unresolved Reference Handling*: Annotations lacking a resolvable bibliographic reference are retained as observed data in the baseline, but cannot be treated as independent literature corroboration. A strict documentary sensitivity analysis may evaluate a restricted subset containing only resolvable publications, reporting its explicit denominator.
+
+#### B.3 Handling Ambiguous Conjunction Semantics (AND vs OR)
+- **Source Ambiguity Identified**: In raw multi-source databases, multi-reference fields are frequently recorded as semicolon- or comma-delimited strings without formal logical syntax. It is often ambiguous whether multiple references represent independent alternative verifications (disjunction, logical OR) or complementary co-dependent experiments (conjunction, logical AND).
+- **Governing Rule**: In the presence of ambiguous grouping semantics, **do NOT arbitrarily force either an OR or an AND interpretation**.
+- **Operational Protocol**:
+  - Flag the affected assertion as having *ambiguous documentary support*.
+  - Exclude the ambiguous assertion from the primary documentary analysis.
+  - Bounds under both interpretations may be reported as a sensitivity analysis (evaluating outcomes under pure-OR maximum survival versus pure-AND maximum fragility assumptions).
+
+#### B.4 Query-Level Recalculation vs Fixed Background Reference
+- **Recalculation Scope**: Following withdrawal of publication $p_i$ from query protein $p$:
+  1. Reconstruct the survivor annotation set $A_{P \setminus \{p_i\}}(p)$.
+  2. Re-apply the selected evidence partition condition (`ALL`, `EXP_CONVENTIONAL`, etc.).
+  3. Re-extract the surviving unique term set $T_{P \setminus \{p_i\}}(p, X)$.
+  4. Recalculate semantic dissimilarity metrics against the **fixed, unperturbed background reference population** $F_0$.
+- **Local vs Global Invariant**: Publication withdrawal in `E06` is strictly a **query-level perturbation**. The publication $p_i$ is **NOT** removed from the global reference corpus $R_0$. (A global reference withdrawal would represent a distinct intervention altering background frequencies, requiring a dedicated protocol).
+
+#### B.5 Sensitivity Summaries, State Transitions, and Reference-Count Stratification
+- **Reported Statistics per Publication Withdrawal**:
+  1. *Term Loss*: $\Delta |T(p, X)| = |T(p, X)| - |T_{P \setminus \{p_i\}}(p, X)|$.
+  2. *Metric Score Delta*: $\Delta M_i(p) = M(T_{P \setminus \{p_i\}}(p)) - M(T(p))$.
+  3. *Coverage Shift*: Changes in graph coverage or annotational density.
+  4. *Estimability Transition*: Explicit state transition logging (e.g. $\text{CALCULABLE} \to \text{INSUFFICIENT\_TERMS}$ if surviving $|T| < 2$).
+- **Protein-Level Summary Metrics**:
+  - *Median Metric Delta*: $\text{median}(\{\Delta M_i(p)\}_{i=1}^{|P(p)|})$.
+  - *Maximum Absolute Delta*: $\max_i |\Delta M_i(p)|$.
+- **Interpretation Safeguard (Reference-Count Stratification)**: The maximum absolute shift $\max_i |\Delta M_i|$ is a documentary sensitivity metric whose expected value naturally increases with the number of publications examined ($|P(p)|$). It must be evaluated **strictly within strata of comparable publication counts**, never used as a universal fragility score or alarm.
+- **Exhaustive Iteration**: Because the number of publications per protein is typically finite and small ($1 \le |P(p)| \le 30$), `E06` evaluates all eligible publications exhaustively without stochastic sampling.
+
+#### B.6 Evidence-Collapse Definition and Scientific Safeguards
+- **Definition of Evidence Collapse**: If withdrawing a single publication $p_i$ causes all annotations for an aspect to vanish, or reduces the term set such that intra-protein dissimilarity can no longer be evaluated, the entity exhibits *documentary evidence collapse*.
+- **Crucial Scientific Safeguard (Absence of Support $\ne$ Absence of Function)**:
+  - Evidence collapse demonstrates **high reliance on a single recorded bibliographic source and loss of empirical calculability**.
+  - It does **NOT** yield a metric score of zero.
+  - It does **NOT** prove or imply that the attributed biological function is absent, false, or erroneous.
+  - In accordance with repository rules ([`AGENTS.md`](../../AGENTS.md) Section 5), absence of documented evidence in a curated repository is an annotation gap, never evidence of absence of function.
+
+---
+
+### C. Scientific Safeguards & Separation of Orthogonal Dimensions
+
+To prevent scientific and curatorial misinterpretation, the recovered sensitivity procedures strictly respect the separation of orthogonal dimensions established in [§2.5.2](#2-separation-of-orthogonal-filtering-dimensions):
+
+| Dimension | Role in Sensitivity Testing | What It Does NOT Govern |
+|---|---|---|
+| **Evidence-Code Partition** (`ALL` vs `EXP`) | Defines the initial candidate annotation pool for downsampling or withdrawal. | Does not determine polarity (`NOT`), reference identity, or literature quality. |
+| **Annotation Polarity** (`NOT`) | Negative annotations (`NOT`) are filtered out prior to dissimilarity calculation. | Never converted to positive assertions or downsampled as functional terms. |
+| **Reference Identity** (`PMID` / `DOI`) | The discrete atomic unit of perturbation in publication withdrawal (`E06`). | Does not alter evidence codes; removal of one paper does not remove terms supported elsewhere. |
+| **Annotation Identity** (GAF row) | Linking node between entity, term, evidence code, and reference. | Distinct from the term itself; multiple annotations may support the same GO term. |
+| **Local Literature Review** | Independent adjudication of claim veracity (Product C / Block B6). | Not required for executing automated documentary sensitivity tests on Layer 2 callsets. |
+| **Metric-Specific Eligibility** | Requires $k \ge 2$ unique terms and connected DAG ancestors for pairwise scoring. | Inability to compute a metric due to $k < 2$ is an estimability boundary, not a zero score or disproof. |
+
+---
+
+### D. Traceability Matrix, Historical Parameters, and Register of Ambiguities
+
+#### D.1 Source-to-Specification Traceability Matrix
+| Historical Source Path & Heading | Recovered Section in this Appendix | Epistemic Classification | Recovery Notes & Qualifications |
+|---|---|---|---|
+| [`02` (§7.1)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) `Unidad y marco del sorteo` | **§A.1, §A.2** | Proposed Protocol (E03) | Frame defined as unique valid terms under ALL before ancestor expansion; uniform sampling without replacement; paired matching to EXP term counts. |
+| [`02` (§7.2)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) `Niveles y réplicas propuestos` | **§A.3, §A.4** | Proposed Protocol (E05) | 100%, 75%, 50%, 25% computational stress levels; 200 replicates proposed for pilot; shared replicate bank and deterministic PRNG seeds specified. |
+| [`02` (§7.3)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) `Asociaciones entre aspectos` | **§A.5** | Proposed Protocol (Block A) | Simultaneous size-vector matching; independent aspect draws; no Cartesian pair sampling; NPMI loss unpadded. |
+| [`02` (§7.4)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) `Comparación y cobertura` | **§A.6** | Proposed Protocol (Analysis) | Contrast against simulated ALL distribution; median delta and descriptive quantiles; strict rule prohibiting labeling quantiles as p-values; non-estimable mass reporting. |
+| [`02` (§8.1)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) `Unidad documental` | **§B.1** | Proposed Protocol (E06) | Normalized publication unit; PMID/DOI unification only with validated crosswalk; exclusion of GO_REF; nulls not shared. |
+| [`02` (§8.2)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) `Regla experimental propuesta de preservación` | **§B.2, §B.3** | Proposed Protocol (Support Rules) | Alternative vs joint support; handling ambiguous AND/OR semantics; term survival; uncorroborated unresolved references. |
+| [`02` (§8.3)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) `Recalcular la consulta, no la referencia` | **§B.4, §B.5, §B.6** | Proposed Protocol (Recalculation) | Query-level recalculation with fixed reference $F_0$; metric delta reporting; reference-count stratification; evidence collapse definition and non-falsehood invariant. |
+
+#### D.2 Historical Proposed Parameters vs Unresolved Scientific Ambiguities
+The parameters recovered in this appendix are historical proposals. They must be clearly distinguished from calibrated defaults, and their ambiguities must be explicitly recorded:
+
+1. **Replicate Count Settings (Dossier `02` and Master Proposal)**:
+   - *Source Parameter*: Dossier `02` (§7.2) proposed $N = 200$ replicates per non-deterministic size for its empirical pilot.
+   - *Master Proposal Parameter*: [`experimental-master-proposal.md` (§7.3)](../roadmap/core/experimental-master-proposal.md) specifies the general minimum $N \ge 100$.
+   - *Compatibility*: These settings are compatible rather than contradictory ($200 \ge 100$), with the pilot proposal instantiating a concrete sample count that satisfies the master proposal's general lower bound. Both statements remain traceable and explicitly proposed historical research parameters.
+2. **Ambiguous Conjunction Semantics (AND vs OR)**:
+   - *Source State*: Historical sources acknowledge that raw datasets frequently record multiple references without formal boolean conjunction semantics.
+   - *Proposed Handling*: Dossier `02` explicitly proposes marking ambiguous rows and excluding them from the primary documentary analysis, while bounds under both interpretations may optionally be reported as a sensitivity analysis.
+3. **Pseudo-Random Number Generator and Seed Schedule**:
+   - *Source State*: Dossier `02` mandates a pinned master seed and deterministic sub-streams per $(p, X, k, r)$, but does not pin a specific PRNG algorithm (e.g. PCG64, MT19937, Philox).
+   - *Status*: Unresolved implementation parameter awaiting software design specification.
+4. **Metric Calculation Engine Scope (`DEC-MET-06`)**:
+   - *Source State*: Whether metric calculation engines and sensitivity test suites execute in `mfp-bibliography` or in downstream repositories (e.g. `mfp-analysis`) remains undecided under [ADR-001](../decisions/ADR-001-repository-scope.md).
+   - *Status*: Open governance decision.
 
 ---
 

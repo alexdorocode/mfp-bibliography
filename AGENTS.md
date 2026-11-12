@@ -54,12 +54,14 @@ When navigating documentation, agents must observe the following precedence hier
   └─ specs/<increment>/spec.md, plan.md, tasks.md
        │
 [Level 6: Draft Proposals, Research Plans, and Audit Reports]
-  └─ docs/audits/*.md, docs/roadmap/core/experiment-guio-v2.md,
-     docs/roadmap/01-07 (advisory/evidence only; NOT approval to implement)
+  └─ docs/audits/*.md,
+     docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md,
+     docs/archive/proposals-2026-10-spanish/01-07 (historical originals; advisory/evidence only);
+     docs/roadmap/core/experimental-master-proposal.md (maintained English proposal; NOT approval to implement)
 ```
 
 **Key Authority Rules**:
-1. **Draft vs Approved**: Documents marked "Draft", "Borrador", or "Proposta de revisió" (including `experiment-guio-v2.md` and `01_dossier_experimento.md`) are proposals for human review. They do NOT authorize implementation or architectural changes.
+1. **Draft vs Approved**: Documents marked "Draft", "Borrador", or "Proposta de revisió" (including maintained proposals like `docs/roadmap/core/experimental-master-proposal.md` and archived historical drafts like `experiment-guio-v2.md` and `01_dossier_experimento.md`) are proposals for human review. Archival relocation preserves provenance but does not confer approval; they remain advisory proposals and do NOT authorize implementation or architectural changes.
 2. **Audit Status**: Audit reports (such as `docs/audits/2026-11-06_repository-sdd-functional-normalization-audit.md`) contain evidence and recommendations. They are NOT approved specifications and must not be treated as implementation mandates.
 3. **No Silent Supersession**: A newer file or higher version number never overrides an accepted ADR without a formally accepted superseding ADR.
 

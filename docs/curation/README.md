@@ -16,7 +16,7 @@ This directory contains literature curation protocols, operational review proced
 ### 1. Literature Curation Manual
 - **Path**: [`literature-curation-manual.md`](literature-curation-manual.md)
 - **Status**: Proposed procedure pending approval (Level 6).
-- **Purpose**: Recovers and updates the primary literature curation methodology formulated in historical dossier `docs/roadmap/06_manual_revision_bibliografica.md`:
+- **Purpose**: Recovers and updates the primary literature curation methodology formulated in historical dossier `docs/archive/proposals-2026-10-spanish/06_manual_revision_bibliografica.md`:
   - **The Non-Blocking Preservation Principle** ([§1.2](literature-curation-manual.md#12-the-non-blocking-preservation-principle)): Manual curation is an evaluative and quality-enhancement activity for downstream curated subsets (Product C); it is **never an ingestion gate** for source preservation (Product A) or exploratory views (Product B).
   - **Seven Linked Evidentiary Units** ([§2.1](literature-curation-manual.md#21-the-seven-linked-evidentiary-units)): Decouples protein entity, working claim, GO annotation, source attribution, bibliographic reference, evidence unit, and review decision.
   - **Documentary Availability vs Inspection** ([§4.1](literature-curation-manual.md#41-separating-availability-inspection-and-assessment-scope)): Curators must explicitly document what text/sections were examined.

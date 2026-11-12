@@ -15,9 +15,9 @@
 
 > [!NOTE]
 > **Document Status & Current Role (Historical Literature Curation Manual)**:
-> This document is a historical literature curation manual. It does **not** describe current repository implementation; initial assumptions regarding curation as an ingestion gate have been superseded by the Non-Blocking Preservation Principle, and formal operational approval remains pending under Gate G2.
-> - **Recovered Content**: The literature review workflow (the seven linked evidentiary units, non-destructive curation, reference resolution, blinding protocol, and evidence adjudication rules) has been recovered as a proposed procedure in [`docs/curation/literature-curation-manual.md`](../curation/literature-curation-manual.md) (proposed procedure pending approval).
-> - **Traceability**: The original Spanish text is retained intact for curatorial methodology traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+> This document is an archived historical literature curation manual. It does **not** describe current repository implementation; initial assumptions regarding curation as an ingestion gate have been superseded by the Non-Blocking Preservation Principle, and formal operational approval remains pending under Gate G2.
+> - **Recovered Content**: The literature review workflow (the seven linked evidentiary units, non-destructive curation, reference resolution, blinding protocol, and evidence adjudication rules) has been recovered as a proposed procedure in [`docs/curation/literature-curation-manual.md`](../../curation/literature-curation-manual.md) (proposed procedure pending approval).
+> - **Traceability**: The original Spanish text is retained intact for curatorial methodology traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
 
 Este manual propone un procedimiento replicable de contraste bibliográfico. No ejecuta una revisión completa, no valida proteínas reales ni convierte scores GO en decisiones biológicas. No se han consultado artículos individuales del corpus para adjudicar funciones, ejecutado experimentos, pruebas, consultas a la base del usuario o notebooks. No se han modificado repositorios ni creado commits, issues o pull requests.
 

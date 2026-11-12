@@ -8,7 +8,7 @@
 | **Document ID** | `DOC-ARCH-SCIENTIFIC-BACKGROUND-V1` |
 | **Document Path** | [`docs/architecture/scientific-background.md`](scientific-background.md) |
 | **Document Role** | Canonical Explanatory Reference Document |
-| **Document Status** | **Explanatory Scientific Background Only**. This document synthesizes recovered scientific concepts, biological distinctions, and methodological rationale from historical research dossiers ([`docs/roadmap/01_dossier_experimento.md`](../roadmap/01_dossier_experimento.md), [`docs/roadmap/02_protocolo_cientifico_y_analisis.md`](../roadmap/02_protocolo_cientifico_y_analisis.md), [`docs/roadmap/core/experiment_definition.md`](../roadmap/core/experiment_definition.md)). **It is NOT an approved experimental protocol, implementation specification, binding data contract, or operational curation policy.** |
+| **Document Status** | **Explanatory Scientific Background Only**. This document synthesizes recovered scientific concepts, biological distinctions, and methodological rationale from historical research dossiers ([`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md`](../archive/proposals-2026-10-spanish/01_dossier_experimento.md), [`docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md`](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md), [`docs/roadmap/core/experiment_definition.md`](../roadmap/core/experiment_definition.md)). **It is NOT an approved experimental protocol, implementation specification, binding data contract, or operational curation policy.** |
 | **Review Authority** | Senior Scientific-Software Architect & Bioinformatics Data-Provenance Reviewer |
 | **Date** | 2026-11-10 |
 | **Governing Governance** | [`AGENTS.md`](../../AGENTS.md), [ADR-001](../decisions/ADR-001-repository-scope.md) through [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md), proposed [ADR-008](../decisions/ADR-008-functional-normalization-pilot-scope.md) |
@@ -26,7 +26,7 @@ A foundational principle of this repository is the strict separation between **s
 - **Source Attribution**: When an external source (such as MoonProt, MoonDB, MultitaskProtDB-II, or PlantMP) lists a protein entity as a "moonlighting protein" or "multifunctional protein", this statement is recorded, cataloged, and preserved verbatim as an **attributed claim with full cryptographic provenance** ([ADR-002](../decisions/ADR-002-raw-data-immutability.md), [ADR-003](../decisions/ADR-003-provenance-and-transformations.md)).
 - **Locally Established Conclusions**: Recording a source assertion does **NOT** constitute a scientific endorsement, empirical verification, or biological certification by `mfp-bibliography`. An "attributed positive" in this repository means an entity claimed as multifunctional by one or more upstream databases, not a confirmed biological ground truth established by independent laboratory testing.
 
-As formulated in historical dossier [`docs/roadmap/01_dossier_experimento.md` (§1, L40–L51)](../roadmap/01_dossier_experimento.md):
+As formulated in historical dossier [`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md` (§1, L40–L51)](../archive/proposals-2026-10-spanish/01_dossier_experimento.md):
 > *"«Positivo» significa aquí atribuido como tal por una fuente, no verdad biológica confirmada por este experimento."*
 
 This repository preserves the exact chain of evidence without collapsing divergent source semantics into a single flattened label:
@@ -45,7 +45,7 @@ Biological knowledge represented in the Gene Ontology (GO) operates under the **
 
 ## 2. Core Conceptual Distinctions
 
-Historical dossiers ([`docs/roadmap/01_dossier_experimento.md` (§3.2, L103–L110)](../roadmap/01_dossier_experimento.md) and [`docs/roadmap/core/experiment_definition.md` (§Terminology, L126–L146)](../roadmap/core/experiment_definition.md)) emphasize that three frequently conflated concepts must be treated as distinct:
+Historical dossiers ([`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md` (§3.2, L103–L110)](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) and [`docs/roadmap/core/experiment_definition.md` (§Terminology, L126–L146)](../roadmap/core/experiment_definition.md)) emphasize that three frequently conflated concepts must be treated as distinct:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
@@ -116,7 +116,7 @@ $$\{\text{MF}_1, \text{MF}_2\} \times \{\text{CC}_1, \text{CC}_2\} = \{(\text{MF
 synthesizes false assertions (e.g. asserting that cytokine signaling takes place in the cytoplasm, or that glycolysis isomerization occurs extracellularly) that lack primary experimental literature support.
 
 ### 3.3 Statistical Association versus Biological Mechanism
-Historical proposals ([`docs/roadmap/04a_asociaciones_interaspecto.md`](../roadmap/04a_asociaciones_interaspecto.md)) explore statistical co-occurrence metrics, such as Normalized Pointwise Mutual Information (NPMI), to measure the background co-occurrence frequency of MF–CC or MF–BP term pairs:
+Historical proposals ([`docs/roadmap/04a_asociaciones_interaspecto.md`](../archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md)) explore statistical co-occurrence metrics, such as Normalized Pointwise Mutual Information (NPMI), to measure the background co-occurrence frequency of MF–CC or MF–BP term pairs:
 
 $$\text{NPMI}(m, c) = \frac{\ln\left(\frac{P(m, c)}{P(m)P(c)}\right)}{-\ln P(m, c)}$$
 
@@ -130,7 +130,7 @@ Methodological safeguards recovered from historical specifications include:
 ## 4. Evidence Layers and Repository Data Products
 
 ### 4.1 The Three Conceptual Layers of Evidence
-Historical dossier [`docs/roadmap/01_dossier_experimento.md` (§3.3, L111–L120)](../roadmap/01_dossier_experimento.md) establishes three distinct conceptual layers of evidence:
+Historical dossier [`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md` (§3.3, L111–L120)](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) establishes three distinct conceptual layers of evidence:
 
 | Evidence Layer | Core Scientific Question | Nature of Information | Evidentiary Relationship |
 |---|---|---|---|
@@ -195,14 +195,14 @@ Secondary moonlighting functions documented in biochemical literature often expe
 ## 6. Limits and Methodological Interpretation of Computational Scores
 
 ### 6.1 What Semantic Distance and Association Metrics Measure
-Computational metrics defined in historical proposals ([`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md)) quantify mathematical properties on structured graphs or corpus frequency distributions:
+Computational metrics defined in historical proposals ([`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md)) quantify mathematical properties on structured graphs or corpus frequency distributions:
 - **Topological Graph Distances (e.g. 1 − Wang)**: Measure the ancestral graph overlap and edge weighting between terms on the directed acyclic graph (DAG).
 - **Information-Theoretic Dissimilarities (e.g. 1 − Lin)**: Measure the ratio of shared ancestral information content (MICA) against the individual term information contents within an annotation corpus.
 - **Structural Path Distances (e.g. Minimum Branch Length, MBL)**: Measure the shortest path length between term nodes in the ontology hierarchy.
 - **Statistical Associations (e.g. NPMI)**: Measure normalized co-occurrence deviations from independent marginal probabilities across a defined database snapshot.
 
 ### 6.2 Explicit Negative Boundaries: What Computational Scores Cannot Demonstrate
-To protect scientific integrity, historical dossier [`docs/roadmap/01_dossier_experimento.md` (§10, L299–L313)](../roadmap/01_dossier_experimento.md) establishes ten explicit methodological limits that must be observed across all research activities:
+To protect scientific integrity, historical dossier [`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md` (§10, L299–L313)](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) establishes ten explicit methodological limits that must be observed across all research activities:
 
 1. **Scores Do Not Prove Biological Reality**: A high semantic dissimilarity score (e.g. $1 - \text{Wang} \approx 0.95$) describes topological divergence between annotated terms; it does **not** prove physiological multifunctionality or moonlighting mechanism.
 2. **Missing Scores Do Not Prove Monofunctionality**: An uncalculated metric, low annotation density, or lack of accessible literature does **not** prove that a protein is monofunctional.
@@ -220,7 +220,7 @@ To protect scientific integrity, historical dossier [`docs/roadmap/01_dossier_ex
 ## 7. Role and Methodological Limitations of the BioData Reference Population
 
 ### 7.1 Study-Specific Role of the Available Reference Population
-In the historical experimental framework ([`docs/roadmap/02_protocolo_cientifico_y_analisis.md` (§3, L94–L109)](../roadmap/02_protocolo_cientifico_y_analisis.md) and [`docs/roadmap/core/experiment_definition.md` (§Resource Baseline, L147–L178)](../roadmap/core/experiment_definition.md)), an external dataset/database referred to as **`BioData`** (derived from UniProtKB and QuickGO extracts) was utilized to provide an empirical background population.
+In the historical experimental framework ([`docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md` (§3, L94–L109)](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) and [`docs/roadmap/core/experiment_definition.md` (§Resource Baseline, L147–L178)](../roadmap/core/experiment_definition.md)), an external dataset/database referred to as **`BioData`** (derived from UniProtKB and QuickGO extracts) was utilized to provide an empirical background population.
 
 In this context, the reference population serves specific, bounded computational roles:
 - Providing background term frequencies $n(t)$ and corpus size $N$ to calculate term Information Content ($IC(t) = -\ln(n(t)/N)$).
@@ -286,16 +286,16 @@ The following table records the precise documentary origins of the concepts synt
 
 | Section in this Document | Synthesized Scientific Topic | Primary Source Document & Exact Heading | Snapshot Line Range | Epistemic Classification | Claims / Definitions Needing Subsequent Primary-Source Verification |
 |---|---|---|---|---|---|
-| **§1.1** | Source attribution vs locally confirmed truth | [`docs/roadmap/01_dossier_experimento.md`](../roadmap/01_dossier_experimento.md) <br> `## 1. Resumen y continuidad` | L40–L51 | Recovered Methodological Explanation | None (Core epistemic governance rule). |
-| **§1.2** | Open-world assumption & `NOT` qualifiers vs experimental null results | [`docs/roadmap/01_dossier_experimento.md`](../roadmap/01_dossier_experimento.md) <br> `## 3. Contexto y modelo conceptual` | L109–L110 | Recovered Methodological Explanation | Adjudication criteria for converting literature negative results into curatorial statements. |
-| **§2.1** | Breadth vs multifunctionality vs moonlighting (diverse mechanisms) | [`docs/roadmap/01_dossier_experimento.md`](../roadmap/01_dossier_experimento.md) <br> `### 3.2. Tres conceptos...` | L103–L110 | Recovered Methodological Explanation | Operational biological criteria distinguishing moonlighting from other classes of multifunctionality require primary literature validation in Phase D0. |
-| **§3.1–3.2** | Independent annotations & Cartesian triplet ban; explicit context in extensions / GO-CAM | [`docs/roadmap/02_protocolo_cientifico_y_analisis.md`](../roadmap/02_protocolo_cientifico_y_analisis.md) <br> `## 1. Responsabilidad documental...` | L43–L64 | Established Invariant (AGENTS.md) | None (Codified bioinformatic invariant). |
-| **§3.3** | Cross-aspect NPMI associations & limits | [`docs/roadmap/04a_asociaciones_interaspecto.md`](../roadmap/04a_asociaciones_interaspecto.md) <br> `## 2–3. Fichas de las tres métricas` | L25–L85 | Historical Proposal | Statistical significance thresholds for NPMI co-occurrence rarity require empirical evaluation. |
-| **§4.1** | Three layers of evidence | [`docs/roadmap/01_dossier_experimento.md`](../roadmap/01_dossier_experimento.md) <br> `### 3.3. Tres capas de evidencia` | L111–L120 | Recovered Methodological Explanation | None (Conceptual evidence framework). |
+| **§1.1** | Source attribution vs locally confirmed truth | [`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md`](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) <br> `## 1. Resumen y continuidad` | L40–L51 | Recovered Methodological Explanation | None (Core epistemic governance rule). |
+| **§1.2** | Open-world assumption & `NOT` qualifiers vs experimental null results | [`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md`](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) <br> `## 3. Contexto y modelo conceptual` | L109–L110 | Recovered Methodological Explanation | Adjudication criteria for converting literature negative results into curatorial statements. |
+| **§2.1** | Breadth vs multifunctionality vs moonlighting (diverse mechanisms) | [`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md`](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) <br> `### 3.2. Tres conceptos...` | L103–L110 | Recovered Methodological Explanation | Operational biological criteria distinguishing moonlighting from other classes of multifunctionality require primary literature validation in Phase D0. |
+| **§3.1–3.2** | Independent annotations & Cartesian triplet ban; explicit context in extensions / GO-CAM | [`docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md`](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) <br> `## 1. Responsabilidad documental...` | L43–L64 | Established Invariant (AGENTS.md) | None (Codified bioinformatic invariant). |
+| **§3.3** | Cross-aspect NPMI associations & limits | [`docs/roadmap/04a_asociaciones_interaspecto.md`](../archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md) <br> `## 2–3. Fichas de las tres métricas` | L25–L85 | Historical Proposal | Statistical significance thresholds for NPMI co-occurrence rarity require empirical evaluation. |
+| **§4.1** | Three layers of evidence | [`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md`](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) <br> `### 3.3. Tres capas de evidencia` | L111–L120 | Recovered Methodological Explanation | None (Conceptual evidence framework). |
 | **§4.2** | Decoupling evidence layers from data products | [`docs/roadmap/bounded-evolution-proposal-documentation-and-bibliographic-evidence.md`](../roadmap/bounded-evolution-proposal-documentation-and-bibliographic-evidence.md) <br> `## Section D` | L215–L311 | Established Architecture (Amended Proposal) | None (Architectural model ratified in amendment). |
 | **§5.1–5.2** | Sequence similarity and qualified functional transfer | [`docs/roadmap/core/experiment_definition.md`](../roadmap/core/experiment_definition.md) <br> `## Research Framework` | L66–L95 | Recovered Methodological Explanation | Structural mechanisms of non-homologous functional divergence require experimental verification per protein family. |
-| **§6.1–6.2** | 10 explicit negative limits on computational scores | [`docs/roadmap/01_dossier_experimento.md`](../roadmap/01_dossier_experimento.md) <br> `## 10. Qué este estudio no puede demostrar` | L299–L313 | Recovered Methodological Explanation | Mathematical equivalence of specific third-party library implementations (CBBIO, GOSemSim) requires code verification. |
-| **§7.1–7.2** | BioData reference population role & study-specific limitations | [`docs/roadmap/02_protocolo_cientifico_y_analisis.md`](../roadmap/02_protocolo_cientifico_y_analisis.md) <br> `## 3. Poblaciones, conjuntos e independencia` | L94–L109 | Study-Specific Limitation (AGENTS.md) | Verification of exact background frequency distributions across UniProt releases. |
+| **§6.1–6.2** | 10 explicit negative limits on computational scores | [`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md`](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) <br> `## 10. Qué este estudio no puede demostrar` | L299–L313 | Recovered Methodological Explanation | Mathematical equivalence of specific third-party library implementations (CBBIO, GOSemSim) requires code verification. |
+| **§7.1–7.2** | BioData reference population role & study-specific limitations | [`docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md`](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) <br> `## 3. Poblaciones, conjuntos e independencia` | L94–L109 | Study-Specific Limitation (AGENTS.md) | Verification of exact background frequency distributions across UniProt releases. |
 | **§8** | Epistemic inventory & named category separation | [`docs/roadmap/core/experiment_definition.md`](../roadmap/core/experiment_definition.md) <br> `### Working Hypotheses` | L83–L95 | Historical Working Hypotheses | Formal testing of hypotheses H1–H6 depends on Gate G0 scientific authorization. |
 
 ---

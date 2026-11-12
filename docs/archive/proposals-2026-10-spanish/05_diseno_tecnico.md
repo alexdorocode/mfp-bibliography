@@ -16,9 +16,9 @@
 
 > [!NOTE]
 > **Document Status & Current Role (Historical Technical Design Proposal)**:
-> This document is a historical technical architecture proposal. It does **not** describe current repository implementation; the proposed server-daemon architecture (PostgreSQL, Redis, RabbitMQ) was superseded in favor of an offline, pure-Python architecture.
-> - **Active Architecture**: Core data integrity principles (checkpointing, atomic file writes, deterministic entity hashing under [ADR-005](../decisions/ADR-005-deterministic-protein-ids.md), and cryptographic manifest verification) are codified in accepted Level 3 architecture in [`docs/architecture/data-flow.md`](../architecture/data-flow.md) and [`docs/architecture/requirements-traceability.md`](../architecture/requirements-traceability.md).
-> - **Traceability**: The original Spanish text is retained intact for technical architecture traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+> This document is an archived historical technical architecture proposal. It does **not** describe current repository implementation; the proposed server-daemon architecture (PostgreSQL, Redis, RabbitMQ) was superseded in favor of an offline, pure-Python architecture.
+> - **Active Architecture**: Core data integrity principles (checkpointing, atomic file writes, deterministic entity hashing under [ADR-005](../../decisions/ADR-005-deterministic-protein-ids.md), and cryptographic manifest verification) are codified in accepted Level 3 architecture in [`docs/architecture/data-flow.md`](../../architecture/data-flow.md) and [`docs/architecture/requirements-traceability.md`](../../architecture/requirements-traceability.md).
+> - **Traceability**: The original Spanish text is retained intact for technical architecture traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
 
 Este documento traduce los borradores 02–04 en componentes implementables. Su responsabilidad es la arquitectura y la operación técnica; no redefine hipótesis, políticas de datos, fórmulas o categorías curatoriales. No es una implementación, una migración de producción ni un informe de resultados.
 

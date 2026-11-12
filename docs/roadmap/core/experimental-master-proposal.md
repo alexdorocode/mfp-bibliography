@@ -11,7 +11,7 @@
 | **Status** | **Active Research Proposal Under Review — Not Approved for Full Experimental Execution**<br>*This proposal does not describe current repository implementation or authorize pipeline execution.* |
 | **Document Role** | Governing Scientific Architecture and Research Proposal for the Multifunctional Protein Bibliographic Framework |
 | **Proposed Executor** | `mfp-bibliography` (in coordination with PIS and CBBIO; consumer: PEC) |
-| **Historical Lineage** | Maintained English successor to Catalan master proposal [`docs/roadmap/core/experiment-guio-v2.md`](experiment-guio-v2.md) (v0.2.1), integrating historical predecessors [`experiment_definition.md`](experiment_definition.md) and [`Pla de recerca de l'experiment sobre MFPData.md`](Pla%20de%20recerca%20de%20l'experiment%20sobre%20MFPData.md). |
+| **Historical Lineage** | Maintained English successor to Catalan master proposal [`docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md`](../../archive/proposals-2026-11-catalan/experiment-guio-v2.md) (v0.2.1), integrating historical predecessors [`experiment_definition.md`](experiment_definition.md) and [`Pla de recerca de l'experiment sobre MFPData.md`](../../archive/proposals-2026-11-catalan/Pla%20de%20recerca%20de%20l%27experiment%20sobre%20MFPData.md). |
 | **Target Data Product** | `MFP_CuratedData` (comprehensive curated evidence package) with strict benchmark view `MFP_GroundTruthData`. |
 | **Governing Rules** | [`AGENTS.md`](../../../AGENTS.md), [ADR-001](../../decisions/ADR-001-repository-scope.md) through [ADR-007](../../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md), proposed [ADR-008](../../decisions/ADR-008-functional-normalization-pilot-scope.md). |
 
@@ -811,7 +811,7 @@ To communicate the research design effectively to scientific reviewers, the prop
 | **`0.1.0`** | 2026-10-27 | Bilingual (Spanish / English) | Historical predecessor draft (`docs/roadmap/core/experiment_definition.md`). |
 | **`0.1`** | 2026-10-27 | Catalan | Early exploratory research plan (`Pla de recerca de l'experiment sobre MFPData.md`). |
 | **`0.2.0`** | 2026-11-06 | Catalan | Intermediate working consolidation (temporary file). |
-| **`0.2.1`** | 2026-11-06 | Catalan | Downloadable master proposal (`docs/roadmap/core/experiment-guio-v2.md`) with RCA correction and embedded annexes. |
+| **`0.2.1`** | 2026-11-06 | Catalan | Downloadable master proposal (`docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md`) with RCA correction and embedded annexes. |
 | **`0.2.1-eng`** | 2026-11-12 | English | **Maintained English Successor Proposal** (this document; `experimental-master-proposal.md`), faithful translation of scientific Edition 0.2.1 with modularized annex pointers; no scientific version change. |
 
 ### 18.2 Master Fusion Traceability Matrix
@@ -851,7 +851,7 @@ The table below documents how foundational elements from historical predecessors
 
 ## 19. Provenance and Migration Appendix (Coverage Record)
 
-This appendix records the exact mapping of all 36 active Catalan main-body sections from source document `docs/roadmap/core/experiment-guio-v2.md` to this maintained English successor:
+This appendix records the exact mapping of all 36 active Catalan main-body sections from source document `docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md` to this maintained English successor:
 
 | Source Section Heading (`experiment-guio-v2.md`) | Source Lines | English Destination Heading in this Proposal | Delegated Detail in Canonical Documents | Status & Discrepancies |
 |---|---|---|---|---|
@@ -889,7 +889,7 @@ This appendix records the exact mapping of all 36 active Catalan main-body secti
 
 ### 19.1 Disposition of Historical Annexes
 - **Annex A (`experiment_definition.md` / `experiment_guio_v1.md`, L926–L1803)**: Contains the historical bilingual/Spanish predecessor proposal (878 lines). Substantive research questions (RQ1.1 through RQ6.3) have been incorporated directly into Sections 7.1–7.7. The historical text is retained intact at [`docs/roadmap/core/experiment_definition.md`](experiment_definition.md) for archival provenance and is decoupled from this document to prevent duplicate maintenance overhead.
-- **Annex B (`Pla de recerca de l'experiment sobre MFPData.md`, L1804–L2154)**: Contains the early Catalan exploratory research plan (351 lines). Core biological context and plan questions (Q1–Q6) have been incorporated into Section 2, and diagnostic SQL queries are codified in Section 16. The historical text is retained intact at [`docs/roadmap/core/Pla de recerca de l'experiment sobre MFPData.md`](Pla%20de%20recerca%20de%20l'experiment%20sobre%20MFPData.md) for provenance.
+- **Annex B (`Pla de recerca de l'experiment sobre MFPData.md`, L1804–L2154)**: Contains the early Catalan exploratory research plan (351 lines). Core biological context and plan questions (Q1–Q6) have been incorporated into Section 2, and diagnostic SQL queries are codified in Section 16. The historical text is retained intact at [`docs/archive/proposals-2026-11-catalan/Pla de recerca de l'experiment sobre MFPData.md`](../../archive/proposals-2026-11-catalan/Pla%20de%20recerca%20de%20l%27experiment%20sobre%20MFPData.md) for provenance.
 
 ---
 

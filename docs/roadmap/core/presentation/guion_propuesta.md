@@ -1,5 +1,9 @@
 # Propuesta experimental — Presentation Storyboard
 
+> [!NOTE]
+> **Document Status & Current Role (Historical Spanish Presentation Script)**:
+> This document is a historical presentation storyboard and speaker notes script (v0.4, 2026-10-28) companion to the presentation slide decks in this directory (`propuesta_investigacion.pdf` / `.pptx`). It is **not** an actively maintained English proposal. The canonical research proposal is maintained in English in [`docs/roadmap/core/experimental-master-proposal.md`](../experimental-master-proposal.md).
+
 **Documento:** guion editable para preparar una presentación científica.  
 **Versión:** 0.4 — revisión de B3 y B4.  
 **Fecha:** 28 de octubre de 2026.  

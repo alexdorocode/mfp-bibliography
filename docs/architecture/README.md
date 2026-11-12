@@ -19,7 +19,7 @@ This directory contains technical architecture documentation, canonical scientif
 ### 1. Scientific Background and Methodological Foundations
 - **Path**: [`scientific-background.md`](scientific-background.md)
 - **Status**: Explanatory Reference (Level 6).
-- **Purpose**: Synthesizes the core epistemic principles recovered from historical research dossiers (`docs/roadmap/01_dossier_experimento.md`, `02_protocolo_cientifico_y_analisis.md`, `experiment_definition.md`):
+- **Purpose**: Synthesizes the core epistemic principles recovered from historical research dossiers (`docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md`, `02_protocolo_cientifico_y_analisis.md`, `docs/roadmap/core/experiment_definition.md`):
   - Strict separation between external source attribution and locally established biological truth ([§1.1](scientific-background.md#11-source-attribution-versus-locally-established-conclusions)).
   - Open-World Assumption (OWA) in Gene Ontology and distinction between GO `NOT` qualifiers and experimental null findings ([§1.2](scientific-background.md#12-open-world-assumption-and-negative-evidence-in-gene-ontology)).
   - Clear boundaries separating annotation breadth, broad multifunctionality, and protein moonlighting ([§2](scientific-background.md#2-core-conceptual-distinctions)).
@@ -32,7 +32,7 @@ This directory contains technical architecture documentation, canonical scientif
 ### 2. Gene Ontology Metrics and Semantic Dissimilarity Specification
 - **Path**: [`go-metrics-specification.md`](go-metrics-specification.md)
 - **Status**: Recovered Proposed Analytical Design (Level 6).
-- **Purpose**: Recovers the mathematical formulations, DAG traversal rules, and edge-case handling proposed in historical dossiers (`docs/roadmap/04_especificacion_metricas.md`, `04a_asociaciones_interaspecto.md`):
+- **Purpose**: Recovers the mathematical formulations, DAG traversal rules, and edge-case handling proposed in historical dossiers (`docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md`, `04a_asociaciones_interaspecto.md`):
   - General intra-aspect pairwise domain and unweighted pair arithmetic mean aggregation contract ([§2](go-metrics-specification.md#2-general-metric-domain-term-preparation-and-proposed-aggregation-conventions)).
   - Detailed formulations for Minimum Branch Length ([§3.1](go-metrics-specification.md#31-minimum-branch-length-mbl)), Information Content in nats ([§3.2](go-metrics-specification.md#32-information-content-ic-and-protein-mean)), Wang semantic dissimilarity ([§3.3](go-metrics-specification.md#33-wang-semantic-dissimilarity)), and Lin dissimilarity ([§3.4](go-metrics-specification.md#34-lin-semantic-dissimilarity)).
   - Cross-aspect statistical associations using Normalized Pointwise Mutual Information (NPMI, [§3.6](go-metrics-specification.md#36-cross-aspect-associations-npmi)).
@@ -52,7 +52,7 @@ This directory contains technical architecture documentation, canonical scientif
 ### 5. Experimental Master Proposal (Research Framework PEC-EXP-001)
 - **Path**: [`docs/roadmap/core/experimental-master-proposal.md`](../roadmap/core/experimental-master-proposal.md)
 - **Status**: Maintained English research proposal — under review; not an implemented pipeline or approved experimental policy (Level 6).
-- **Purpose**: Maintained English successor to Catalan master proposal [`experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md), governing the conceptual research framework `PEC-EXP-001`:
+- **Purpose**: Maintained English successor to Catalan master proposal [`experiment-guio-v2.md`](../archive/proposals-2026-11-catalan/experiment-guio-v2.md), governing the conceptual research framework `PEC-EXP-001`:
   - Reading conventions and four epistemic statement categories ([§1](../roadmap/core/experimental-master-proposal.md#1-document-reading-conventions-and-epistemic-governance)).
   - Eleven core research questions (O1–O11) and ten hypotheses (H1–H10) ([§2](../roadmap/core/experimental-master-proposal.md#2-scientific-framework-epistemic-foundations)).
   - Seven experimental blocks (B0 through B6) covering raw parsing, cohort harmonization, sensitivity stratification, intra-protein dissimilarity, cross-aspect associations, reference contrasts, and manual literature adjudication ([§7](../roadmap/core/experimental-master-proposal.md#7-experimental-block-specifications-b0-through-b6)).

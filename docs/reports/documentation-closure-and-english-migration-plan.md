@@ -9,7 +9,8 @@
 | **Document Role** | Governance Audit, Language Compliance Inventory, and Phased English Migration Specification |
 | **Governing Authority** | [`AGENTS.md`](../../AGENTS.md) Section 3, [ADR-001](../decisions/ADR-001-repository-scope.md) through [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md), proposed [ADR-008](../decisions/ADR-008-functional-normalization-pilot-scope.md) |
 | **Date** | 2026-11-12 |
-| **Closure Verdict** | **NOT READY FOR DOCUMENTATION CLOSURE** (Blocker: Active Master Research Proposal in Catalan) |
+| **Historical Baseline Finding** | **NOT READY FOR DOCUMENTATION CLOSURE** (At plan inception: Active Master Research Proposal in Catalan) |
+| **Current Operational Status** | **DOCUMENTATION CLOSURE PREREQUISITES SATISFIED** (Master proposal migrated in `ENG-MIG-003`; sensitivity procedures recovered in `DOC-SENSITIVITY-RECOVERY-001`; historical documentation separation executed in `DOC-ARCHIVE-001`) |
 
 ---
 
@@ -47,7 +48,7 @@ To balance linguistic accessibility with scientific auditability, the repository
 
 1. **Category A: Active Documentation (Mandatory English)**:
    - Every document that defines current architecture, guides repository operations, specifies data contracts, or articulates actively maintained future research proposals must be in English.
-   - **Active Proposals Included**: A proposal currently under review (such as [`docs/roadmap/core/experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md)) is actively maintained research documentation. Its lack of formal experimental approval does **not** exempt it from English compliance.
+   - **Active Proposals Included**: A proposal currently under review (such as [`docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md`](../archive/proposals-2026-11-catalan/experiment-guio-v2.md)) is actively maintained research documentation. Its lack of formal experimental approval does **not** exempt it from English compliance.
    - **Banner Inadequacy**: An English status notice (such as those inserted under `DOC-BANNERS-001`) serves as a transparency alert; it does **not** convert a non-English text into a compliant active document.
    - **No Artificial Reclassification**: An active proposal must never be reclassified as historical solely to avoid the effort of producing an English version.
 2. **Category B: Historical Originals (Source Language Retained for Provenance)**:
@@ -57,8 +58,8 @@ To balance linguistic accessibility with scientific auditability, the repository
    - Source-native strings, category names (e.g. `confirmed`, `predicted`), database identifiers (`MPID00001`, `Q9Y3E5`), field names (`protein_id`, `aspect`), and exact quoted passages must remain unaltered in their original language and syntax.
 
 ### 1.3 Formal Closure Verdict
-- **Verdict**: **NOT READY FOR FINAL DOCUMENTATION CLOSURE**.
-- **Identified Blocker**: The active master research proposal ([`docs/roadmap/core/experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md), v0.2.1, 2026-11-06) is written in Catalan. Because it remains an active proposal under review governing the experimental roadmap (PEC-EXP-001), repository rules mandate that an authoritative English successor be established before closure can be declared.
+- **Historical Baseline Finding (At Plan Inception)**: **NOT READY FOR FINAL DOCUMENTATION CLOSURE** (Blocked at plan inception by active Catalan master proposal).
+- **Current Operational Status (Post-Execution)**: **DOCUMENTATION CLOSURE PREREQUISITES SATISFIED**. The blocker was resolved under increment `ENG-MIG-003` with the publication of the canonical English master research proposal ([`docs/roadmap/core/experimental-master-proposal.md`](../roadmap/core/experimental-master-proposal.md)), the procedural sensitivity gap `MAP-02-03` was recovered under `DOC-SENSITIVITY-RECOVERY-001` in [`docs/architecture/go-metrics-specification.md`](../architecture/go-metrics-specification.md), and physical archival separation was executed under `DOC-ARCHIVE-001`.
 
 ---
 
@@ -73,7 +74,7 @@ In accordance with Section 3 of `AGENTS.md`, this review was conducted in strict
   - *Documentation Entry Points & Batches*: [`README.md`](../../README.md), [`data/curated/README.md`](../../data/curated/README.md), [`scripts/README.md`](../../scripts/README.md), [`docs/source-profiles/`](../source-profiles/) (`moondb.md`, `multifacetedprotdb.md`, `multitaskprotdb-ii.md`, `plantmp.md`), [`docs/acquisition-protocols/moonprot.md`](../acquisition-protocols/moonprot.md).
   - *Maintenance & Analysis Drafts*: [`docs/canonical-schema.md`](../canonical-schema.md), [`docs/getting-started.md`](../getting-started.md), [`docs/analysis/five-source-descriptive-study-plan.md`](../analysis/five-source-descriptive-study-plan.md), [`docs/maintenance/`](../maintenance/) (`biodata-snapshot-and-restore-guide.md`, `technical-maintenance-guide.md`), [`docs/releases/mfp-catalog-v1-contract-draft.md`](../releases/mfp-catalog-v1-contract-draft.md).
   - *Governing Roadmaps*: [`docs/roadmap/mfp-catalog-implementation-plan.md`](../roadmap/mfp-catalog-implementation-plan.md), [`docs/roadmap/bounded-evolution-proposal-documentation-and-bibliographic-evidence.md`](../roadmap/bounded-evolution-proposal-documentation-and-bibliographic-evidence.md).
-  - *Historical Roadmaps & Proposals (English Banners Inserted)*: [`docs/roadmap/01_dossier_experimento.md`](../roadmap/01_dossier_experimento.md) through [`07_plan_implementacion_y_validacion.md`](../roadmap/07_plan_implementacion_y_validacion.md), [`docs/roadmap/04a_asociaciones_interaspecto.md`](../roadmap/04a_asociaciones_interaspecto.md), [`docs/roadmap/core/experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md), [`docs/roadmap/core/Pla de recerca de l'experiment sobre MFPData.md`](../roadmap/core/Pla%20de%20recerca%20de%20l'experiment%20sobre%20MFPData.md).
+  - *Historical Roadmaps & Proposals (English Banners Inserted)*: [`docs/roadmap/01_dossier_experimento.md`](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) through [`07_plan_implementacion_y_validacion.md`](../archive/proposals-2026-10-spanish/07_plan_implementacion_y_validacion.md), [`docs/roadmap/04a_asociaciones_interaspecto.md`](../archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md), [`docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md`](../archive/proposals-2026-11-catalan/experiment-guio-v2.md), [`docs/roadmap/core/Pla de recerca de l'experiment sobre MFPData.md`](../archive/proposals-2026-11-catalan/Pla%20de%20recerca%20de%20l'experiment%20sobre%20MFPData.md).
   - *Functional Normalization Pilot Slices (Code, Tests, Specs)*: [`specs/functional-normalization-pilot/`](../../specs/functional-normalization-pilot/) (`plan.md`, `tasks.md`, `verification.md`), [`src/mfp_bibliography/functional_claims_moonprot.py`](../../src/mfp_bibliography/functional_claims_moonprot.py), [`tests/test_functional_claims_moonprot.py`](../../tests/test_functional_claims_moonprot.py), [`tests/fixtures/functional_claims_multitask/README.md`](../../tests/fixtures/functional_claims_multitask/README.md).
 - **Untracked Artifacts (9 files)**:
   - *Recovered English Canonical Documentation*: [`docs/architecture/scientific-background.md`](../architecture/scientific-background.md), [`docs/curation/literature-curation-manual.md`](../curation/literature-curation-manual.md), [`docs/architecture/go-metrics-specification.md`](../architecture/go-metrics-specification.md).
@@ -123,20 +124,20 @@ An exhaustive scan across all 79 authored Markdown files in the repository (excl
 | [`docs/reports/amendment-report-*.md`](amendment-report-documentation-and-bibliographic-evolution.md) | Governance Audit (Level 6) | Active / Maintained | English | Compliant | No change required. |
 | [`docs/roadmap/mfp-catalog-implementation-plan.md`](../roadmap/mfp-catalog-implementation-plan.md) | Approved Plan (Level 4) | Active / Maintained | English | Compliant | No change required. |
 | [`docs/roadmap/bounded-evolution-proposal-*.md`](../roadmap/bounded-evolution-proposal-documentation-and-bibliographic-evidence.md) | Evolution Proposal (Level 6) | Active / Maintained | English | Compliant | No change required. |
-| [`docs/roadmap/01_dossier_experimento.md`](../roadmap/01_dossier_experimento.md) | Historical Dossier (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
-| [`docs/roadmap/02_protocolo_cientifico_y_analisis.md`](../roadmap/02_protocolo_cientifico_y_analisis.md) | Historical Protocol (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
-| [`docs/roadmap/03_contrato_datos_y_recursos.md`](../roadmap/03_contrato_datos_y_recursos.md) | Historical Contract (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
-| [`docs/roadmap/04_especificacion_metricas.md`](../roadmap/04_especificacion_metricas.md) | Historical Specification (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
-| [`docs/roadmap/04a_asociaciones_interaspecto.md`](../roadmap/04a_asociaciones_interaspecto.md) | Historical Annex (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
-| [`docs/roadmap/05_diseno_tecnico.md`](../roadmap/05_diseno_tecnico.md) | Historical Technical Plan (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
-| [`docs/roadmap/06_manual_revision_bibliografica.md`](../roadmap/06_manual_revision_bibliografica.md) | Historical Manual (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
-| [`docs/roadmap/07_plan_implementacion_y_validacion.md`](../roadmap/07_plan_implementacion_y_validacion.md) | Historical Plan (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
-| [`docs/roadmap/core/Pla de recerca...md`](../roadmap/core/Pla%20de%20recerca%20de%20l'experiment%20sobre%20MFPData.md) | Historical Plan v0.1 (Level 6) | Historical Original | Catalan | Compliant Historical | Retain intact; candidate for later archival. |
+| [`docs/roadmap/01_dossier_experimento.md`](../archive/proposals-2026-10-spanish/01_dossier_experimento.md) | Historical Dossier (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
+| [`docs/roadmap/02_protocolo_cientifico_y_analisis.md`](../archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md) | Historical Protocol (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
+| [`docs/roadmap/03_contrato_datos_y_recursos.md`](../archive/proposals-2026-10-spanish/03_contrato_datos_y_recursos.md) | Historical Contract (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
+| [`docs/roadmap/04_especificacion_metricas.md`](../archive/proposals-2026-10-spanish/04_especificacion_metricas.md) | Historical Specification (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
+| [`docs/roadmap/04a_asociaciones_interaspecto.md`](../archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md) | Historical Annex (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
+| [`docs/roadmap/05_diseno_tecnico.md`](../archive/proposals-2026-10-spanish/05_diseno_tecnico.md) | Historical Technical Plan (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
+| [`docs/roadmap/06_manual_revision_bibliografica.md`](../archive/proposals-2026-10-spanish/06_manual_revision_bibliografica.md) | Historical Manual (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
+| [`docs/roadmap/07_plan_implementacion_y_validacion.md`](../archive/proposals-2026-10-spanish/07_plan_implementacion_y_validacion.md) | Historical Plan (Level 6) | Historical Original | Spanish | Compliant Historical | Retain intact; candidate for later archival. |
+| [`docs/roadmap/core/Pla de recerca...md`](../archive/proposals-2026-11-catalan/Pla%20de%20recerca%20de%20l'experiment%20sobre%20MFPData.md) | Historical Plan v0.1 (Level 6) | Historical Original | Catalan | Compliant Historical | Retain intact; candidate for later archival. |
 | [`docs/roadmap/core/experiment_definition.md`](../roadmap/core/experiment_definition.md) | Historical Predecessor (Level 6) | Historical Original | Spanish / English | Compliant Historical | Retain intact; clean historical baseline. |
 | [`docs/roadmap/core/experiment_guio_v1.md`](../roadmap/core/experiment_guio_v1.md) | Defective Duplicate (Level 6) | Defective Duplicate | English / Mojibake | Quarantined Duplicate | Relocate to quarantine under Gate G4. |
-| [`docs/roadmap/core/guion_propuesta.md`](../roadmap/core/guion_propuesta.md) | Slide Storyboard (Level 6) | Historical Original | Spanish | Compliant Historical | Consolidate in presentation folder. |
+| [`docs/roadmap/core/guion_propuesta.md`](../roadmap/core/presentation/guion_propuesta.md) | Slide Storyboard (Level 6) | Historical Original | Spanish | Compliant Historical | Consolidate in presentation folder. |
 | [`docs/roadmap/core/presentation/decisiones_abiertas.md`](../roadmap/core/presentation/decisiones_abiertas.md) | Rehearsal Notes (Level 6) | Historical Original | Spanish | Compliant Historical | Retain in presentation folder. |
-| **[`docs/roadmap/core/experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md)** | **Master Research Proposal (Level 6)** | **Active Proposal Under Review** | **Catalan** | **NON-COMPLIANT ACTIVE DOCUMENT** | **Produce English Successor (`ENG-MIG-001`).** |
+| **[`docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md`](../archive/proposals-2026-11-catalan/experiment-guio-v2.md)** | **Master Research Proposal (Level 6)** | **Active Proposal Under Review** | **Catalan** | **NON-COMPLIANT ACTIVE DOCUMENT** | **Produce English Successor (`ENG-MIG-001`).** |
 | [`docs/audits/MFP_DATA_AUDITABILITY_MATRIX.md`](../audits/MFP_DATA_AUDITABILITY_MATRIX.md) | Legacy Audit (Level 6) | Historical Evidence | Catalan | Historical Evidence | Retain intact as snapshot collateral. |
 | [`docs/audits/MFP_EXTRACTION_UNIFICATION_AUDIT.md`](../audits/MFP_EXTRACTION_UNIFICATION_AUDIT.md) | Legacy Audit (Level 6) | Historical Evidence | Catalan | Historical Evidence | Retain intact as snapshot collateral. |
 | [`docs/experiments/MFP_BIBLIOGRAPHIC_MVP_ROADMAP.md`](../experiments/MFP_BIBLIOGRAPHIC_MVP_ROADMAP.md) | Early MVP Roadmap (Level 6) | Historical Original | Catalan | Historical Original | Retain intact as snapshot collateral. |
@@ -151,7 +152,7 @@ An exhaustive scan across all 79 authored Markdown files in the repository (excl
 ## 4. Special Case Analysis: The Active Experimental Master Proposal
 
 ### 4.1 Epistemic Character of `experiment-guio-v2.md`
-[`docs/roadmap/core/experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md) (Edition 0.2.1, 2026-11-06) is the central master proposal defining the overarching research framework (`PEC-EXP-001`). 
+[`docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md`](../archive/proposals-2026-11-catalan/experiment-guio-v2.md) (Edition 0.2.1, 2026-11-06) is the central master proposal defining the overarching research framework (`PEC-EXP-001`). 
 
 It spans 2,154 lines and organizes the investigation into:
 - 1 central research question, 11 secondary questions, and 4 working hypotheses (H1–H4).
@@ -228,7 +229,7 @@ A major discovery of this audit is that **1,235 lines (57.3%) of `experiment-gui
 
 ### 5.4 Historical Dependencies
 - A critical audit check was performed: *Does any active English document depend on an untranslated historical text for an essential definition, algorithm, or operational procedure?*
-- **Finding**: No active operational instructions depend on Spanish/Catalan texts. However, the overarching experimental research programme (`PEC-EXP-001`) as an integrated, multi-block research design currently exists in full detail only in Catalan ([`experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md)). This constitutes the primary remaining substantive dependency blocking documentation closure.
+- **Finding**: No active operational instructions depend on Spanish/Catalan texts. However, the overarching experimental research programme (`PEC-EXP-001`) as an integrated, multi-block research design currently exists in full detail only in Catalan ([`experiment-guio-v2.md`](../archive/proposals-2026-11-catalan/experiment-guio-v2.md)). This constitutes the primary remaining substantive dependency blocking documentation closure.
 
 ### 5.5 Verification Statements & Pre-Existing Manifest Limitation
 - Candidate catalog packaging verification (`package_catalog_candidate.py --verify-package`) executes offline and passes 100% for candidate `v0.3.0` and `v0.2.0`.
@@ -266,7 +267,7 @@ To achieve full documentation closure without disruptive or monolithic PRs, the 
 
 ### 6.1 Increment ENG-MIG-001: Active Master Proposal English Successor
 - **Target File to Create**: `docs/roadmap/core/experimental-master-proposal.md` [Proposed]
-- **Target File to Edit**: [`docs/roadmap/core/experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md) (update status banner to cite English successor).
+- **Target File to Edit**: [`docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md`](../archive/proposals-2026-11-catalan/experiment-guio-v2.md) (update status banner to cite English successor).
 - **Scope & Method**:
   - Full faithful English translation of lines 1–919 of `experiment-guio-v2.md` (the core research design).
   - Decouple Annexes A and B: replace 1,235 lines of embedded duplicate text with traceable links to `experiment_definition.md` and `Pla de recerca...md`.
@@ -292,9 +293,9 @@ To achieve full documentation closure without disruptive or monolithic PRs, the 
 
 ---
 
-## 7. Optional Archival Relocation Plan (Deferred Execution)
+## 7. Archival Relocation Execution (Executed under `DOC-ARCHIVE-001`)
 
-When repository maintainers formally authorize physical archival of historical drafts, the following relocations should be executed under a dedicated increment (`DOC-ARCHIVE-EXEC-001`):
+In accordance with maintainer authorization, physical archival of historical drafts was executed under increment `DOC-ARCHIVE-001`. The table below records the completed relocations:
 
 | Current Repository Path | Proposed Archival Destination | Inbound Links to Update | Relative Internal Links Requiring Adjustment |
 |---|---|---|---|
@@ -307,12 +308,12 @@ When repository maintainers formally authorize physical archival of historical d
 | `docs/roadmap/06_manual_revision_bibliografica.md` | `docs/archive/proposals-2026-10-spanish/06_manual_revision_bibliografica.md` | `documentation-recovery-map.md`, `literature-curation-manual.md` | `../curation/` $\to$ `../../curation/`, `../reports/` $\to$ `../../reports/` |
 | `docs/roadmap/07_plan_implementacion_y_validacion.md` | `docs/archive/proposals-2026-10-spanish/07_plan_implementacion_y_validacion.md` | `documentation-recovery-map.md`, `specs/.../plan.md` | `../../specs/` $\to$ `../../../specs/`, `../reports/` $\to$ `../../reports/` |
 | `docs/roadmap/core/Pla de recerca...md` | `docs/archive/proposals-2026-10-catalan/Pla_de_recerca_MFPData.md` | `documentation-recovery-map.md`, `experiment-guio-v2.md` | `../../architecture/` $\to$ `../../../architecture/` |
-| `docs/roadmap/core/experiment-guio-v2.md` | `docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md` *(post-migration)* | `documentation-recovery-map.md`, `experimental-master-proposal.md` | `../../architecture/` $\to$ `../../../architecture/` |
+| `docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md` | `docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md` *(post-migration)* | `documentation-recovery-map.md`, `experimental-master-proposal.md` | `../../architecture/` $\to$ `../../../architecture/` |
 | `docs/roadmap/core/experiment_guio_v1.md` | `docs/archive/quarantine/experiment_guio_v1.md` *(Gate G4)* | `documentation-recovery-map.md`, `bounded-evolution-proposal-*.md` | Isolate duplicate; zero outbound links needed. |
 
-> [!IMPORTANT]
-> **Archival Execution Prohibited in this Increment**:
-> The table above is a preparatory planning mapping. In accordance with task constraints, **no files have been moved, renamed, deleted, or quarantined**.
+> [!NOTE]
+> **Archival Execution Completed**:
+> The relocations listed in the table above have been executed under increment `DOC-ARCHIVE-001`. Historical originals are preserved in `docs/archive/` and presentation directories with updated relative links, while entry-point indices and canonical architecture remain purely in English.
 
 ---
 
@@ -347,7 +348,7 @@ The working tree currently contains 42 modified or untracked files accumulated a
   - `docs/roadmap/01_dossier_experimento.md` through `07_plan_implementacion_y_validacion.md`
   - `docs/roadmap/04a_asociaciones_interaspecto.md`
   - `docs/roadmap/core/Pla de recerca de l'experiment sobre MFPData.md`
-  - `docs/roadmap/core/experiment-guio-v2.md`
+  - `docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md`
 - **Scope**: Insertion of document-specific English status banners.
 
 ### Commit Group 5: Functional Normalization Pilot Code, Tests & Specifications
@@ -371,7 +372,7 @@ The working tree currently contains 42 modified or untracked files accumulated a
 The criteria for declaring final documentation closure for the repository are summarized below:
 
 - [x] All general explanatory and operational documentation is in English.
-- [ ] **All active proposals are in English** *(Blocked by `experiment-guio-v2.md`; will be resolved by `ENG-MIG-001`)*.
+- [x] **All active proposals are in English** *(Resolved by `ENG-MIG-003` with `docs/roadmap/core/experimental-master-proposal.md`)*.
 - [x] Historical non-English originals are clearly identified with English status notices.
 - [x] Technical literals and verbatim source strings remain faithfully preserved.
 - [x] Current implementation, experimental pilots, and proposed designs are strictly distinguished.
@@ -391,7 +392,7 @@ The criteria for declaring final documentation closure for the repository are su
 - **Framework Identifier**: `PEC-EXP-001` (`DOC-PROPOSAL-PEC-EXP-001-ENG`)
 - **Documentary Role**: **Maintained English research proposal under review** (Level 6 Proposal Under Review).
 - **Epistemic Invariant**: This document is an active scientific research proposal, **not** an implemented pipeline, binding release contract, or approved experimental policy.
-- **Source Preservation**: The Catalan source [`docs/roadmap/core/experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md) is preserved in place for historical provenance, with its English status notice explicitly linking to this maintained English successor.
+- **Source Preservation**: The Catalan source [`docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md`](../archive/proposals-2026-11-catalan/experiment-guio-v2.md) is preserved in place for historical provenance, with its English status notice explicitly linking to this maintained English successor.
 
 ### 10.2 Navigation Updates Completed
 Entry-point indices have been updated to make the maintained English research proposal discoverable while maintaining clear epistemic boundaries:
@@ -432,7 +433,7 @@ Documentation closure is strictly confined to the agreed documentation and langu
 1. **Scientific Approval**: The master research proposal `PEC-EXP-001` remains an unapproved proposal under review; Gate G0 has not been granted.
 2. **Pipeline Implementation**: Metric engines, semantic dissimilarity calculations, cross-aspect associations, and embedding manifolds remain unexecuted and descoped from the catalog baseline.
 3. **Pre-Existing Manifest Issue**: The pre-existing mismatch regarding `PlantMP MySQL.xlsx` in `file_checksums.sha256` remains untouched in accordance with raw data immutability rules.
-4. **Archival and Git Consolidation**: Physical moving of historical dossiers to `docs/archive/` and Git commit staging/consolidation remain optional operational tasks deferred to maintainer discretion under separate authorizations.
+4. **Archival Separation Executed**: Physical moving of historical dossiers to `docs/archive/` has been executed under `DOC-ARCHIVE-001`. (Git commit staging and remote push remain separate operations pending authorization).
 
 ### 10.6 Formal Closure Verdict
 

@@ -1,7 +1,7 @@
 # Decisiones que siguen abiertas — Resumen
 
 Companion de `propuesta_investigacion.pptx` / `.pdf`.
-Fuente: `guion_propuesta.md` (v0.4) — Decision Register, backlog de apoyo y preguntas de revisión por slide.
+Fuente: [`guion_propuesta.md`](guion_propuesta.md) (v0.4) — Decision Register, backlog de apoyo y preguntas de revisión por slide.
 Estado: propuesta de trabajo; nada de lo listado está aprobado todavía.
 
 ## Decisiones metodológicas (Decision Register del guion)

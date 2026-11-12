@@ -14,9 +14,9 @@
 
 > [!NOTE]
 > **Document Status & Current Role (Historical Cross-Aspect Association Proposal)**:
-> This document is a historical cross-aspect association design dossier. It does **not** describe current repository implementation; cross-aspect metric calculations remain unimplemented and unapproved.
-> - **Recovered Content**: Mathematical formulations for cross-aspect association using Normalized Pointwise Mutual Information (NPMI), provisional support/coverage thresholds, and safeguards against unwarranted Cartesian functional triplets have been recovered as proposed designs in [`docs/architecture/go-metrics-specification.md`](../architecture/go-metrics-specification.md) (§3.6, recovered proposed analytical design).
-> - **Traceability**: The original Spanish text and exploratory co-occurrence notes are retained intact for statistical traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+> This document is an archived historical cross-aspect association design dossier. It does **not** describe current repository implementation; cross-aspect metric calculations remain unimplemented and unapproved.
+> - **Recovered Content**: Mathematical formulations for cross-aspect association using Normalized Pointwise Mutual Information (NPMI), provisional support/coverage thresholds, and safeguards against unwarranted Cartesian functional triplets have been recovered as proposed designs in [`docs/architecture/go-metrics-specification.md`](../../architecture/go-metrics-specification.md) (§3.6, recovered proposed analytical design).
+> - **Traceability**: The original Spanish text and exploratory co-occurrence notes are retained intact for statistical traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
 
 ## 1. Procedencia, alcance de recuperación y autoridad
 
