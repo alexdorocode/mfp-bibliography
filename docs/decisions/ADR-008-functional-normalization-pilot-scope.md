@@ -18,7 +18,7 @@ ADR-007 also specified explicit prerequisite conditions under which a post-v1 ve
 3. Availability of required identifiers from sources without invention.
 4. Byte-stable reproduction and offline validation gates.
 
-The research proposal `docs/roadmap/core/experiment-guio-v2.md` outlines an extensive scientific study spanning seven experimental blocks (B0–B6), 11 objectives, and 29 open decisions. Simultaneously, experimental code on `feature/functional-normalization` (`functional_normalization.py`) attempted an unverified normalization across all 2,322 catalog entities, but suffered from severe architectural flaws: a rigid 2-facet binary structure, unvalidated keyword regexes, arbitrary cellular component assignments, and external database coupling (documented in `docs/audits/2026-11-06_repository-sdd-functional-normalization-audit.md`).
+The research proposal [`docs/roadmap/core/experiment-guio-v2.md`](../roadmap/core/experiment-guio-v2.md) (maintained English successor: [`docs/roadmap/core/experimental-master-proposal.md`](../roadmap/core/experimental-master-proposal.md)) outlines an extensive scientific study spanning seven experimental blocks (B0–B6), 11 objectives, and 29 open decisions. Simultaneously, experimental code on `feature/functional-normalization` (`functional_normalization.py`) attempted an unverified normalization across all 2,322 catalog entities, but suffered from severe architectural flaws: a rigid 2-facet binary structure, unvalidated keyword regexes, arbitrary cellular component assignments, and external database coupling (documented in `docs/audits/2026-11-06_repository-sdd-functional-normalization-audit.md`).
 
 A clear scope boundary is required to allow progressive, specification-driven research without prematurely committing the repository to the full experimental study or invalidating the catalog baseline.
 
@@ -57,7 +57,7 @@ By restricting the initial functional-normalization work to an isolated pilot sp
 
 ## Alternatives Considered
 
-1. **Full Adoption of `experiment-guio-v2.md` (Blocks B0–B6)**: Rejected as premature. The roadmap contains 29 open decisions and unverified metric engines. Implementing the entire proposal at once invites architectural drift and untestable scope bloat.
+1. **Full Adoption of `experiment-guio-v2.md` / `experimental-master-proposal.md` (Blocks B0–B6)**: Rejected as premature. The roadmap contains 29 open decisions and unverified metric engines. Implementing the entire proposal at once invites architectural drift and untestable scope bloat.
 2. **Strict Adherence to Catalog-Only Scope (Rejecting All Normalization)**: Rejected. Source databases contain valuable functional statements and citations that require structured normalization to support downstream research.
 3. **Continuing with the Existing `functional_normalization.py` Code**: Rejected. The existing implementation violates core repository rules (regex heuristics, arbitrary CC assignments, unhandled mono-source cases).
 

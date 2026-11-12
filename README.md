@@ -2,7 +2,7 @@
 
 Multifunctional Protein Bibliography and Evidence Registry.
 
-Aquest repositori prioritza traçabilitat i reproductibilitat.
+This repository prioritizes traceability and reproducibility.
 
 ## Scope
 
@@ -20,7 +20,7 @@ Python package version: `0.1.0` (PEP 440 compliant). Current repository mileston
 
 ## Start here: the candidate
 
-New to the data? Read [docs/getting-started.md](docs/getting-started.md), then open the candidate directory: [`releases/mfp-catalog-candidate-v0.2.0/`](releases/mfp-catalog-candidate-v0.3.0/).
+New to the data? Read [docs/getting-started.md](docs/getting-started.md), then open the candidate directory: [`releases/mfp-catalog-candidate-v0.3.0/`](releases/mfp-catalog-candidate-v0.3.0/).
 
 - **Primary table — [`mfp_proteins.csv`](releases/mfp-catalog-candidate-v0.3.0/mfp_proteins.csv)**: one row per protein entity (one per normalized UniProt accession).
 - The other packaged tables provide interpretation and provenance for those proteins:
@@ -34,9 +34,9 @@ Cross-source merging is only by exact normalized UniProt accession equality; abs
 
 ## Included sources (five)
 
-Measured counts are defined by the candidate manifest — [`releases/mfp-catalog-candidate-v0.2.0/MANIFEST.json`](releases/mfp-catalog-candidate-v0.3.0/MANIFEST.json) (`measured_counts`) — not by this README or any historical note. As packaged in v0.3.0 (identical to v0.2.0 for all catalog tables): 2,962 source records, 2,322 protein entities, 463 shared-accession merges.
+Measured counts are defined by the candidate manifest — [`releases/mfp-catalog-candidate-v0.3.0/MANIFEST.json`](releases/mfp-catalog-candidate-v0.3.0/MANIFEST.json) (`measured_counts`) — not by this README or any historical note. As packaged in v0.3.0 (identical to v0.2.0 for all catalog tables): 2,962 source records, 2,322 protein entities, 463 shared-accession merges.
 
-| Source | Source records (v0.2.0 manifest) | Documentation |
+| Source | Source records (v0.3.0 manifest) | Documentation |
 |---|---|---|
 | MoonDB | 351 | [source profile](docs/source-profiles/moondb.md) |
 | MoonProt | 702 | [acquisition protocol](docs/acquisition-protocols/moonprot.md) |
@@ -61,7 +61,7 @@ MoonProt coverage within its local snapshot is 702 acquired / 1 known absent / 3
 
 ## Known limitations (candidate v0.3.0)
 
-Full statement: [candidate README](releases/mfp-catalog-candidate-v0.3.0/README.md) and [release notes](docs/releases/mfp-catalog-candidate-v0.2.0.md).
+Full statement: [candidate README](releases/mfp-catalog-candidate-v0.3.0/README.md) and [release notes](docs/releases/mfp-catalog-candidate-v0.3.0.md).
 
 - MoonProt snapshot gaps: MPID 103 is known absent; MPIDs 542, 543 and 626 are unresolved. Coverage-only; no complete MoonProt coverage and no complete bibliography is claimed.
 - Three unverified MultitaskProtDB-II reference anomalies (rows `multitaskprotdb_ii_row_239/349/422`) remain raw; they are not PMIDs/DOIs.
@@ -88,14 +88,24 @@ Note: `.gitignore` ignores `data/*`; only files tracked before that rule remain 
 - `benchmark_role` exists for downstream compatibility only; records remain `unassigned` unless a separately approved benchmark protocol assigns a role.
 - Transformations must be script-based and reproducible.
 
-Architecture and data flow: [docs/architecture/data-flow.md](docs/architecture/data-flow.md). Release rules: [docs/release-policy.md](docs/release-policy.md). Surgical maintenance: [docs/maintenance/technical-maintenance-guide.md](docs/maintenance/technical-maintenance-guide.md).
+## Documentation and Specifications
+
+- **Technical Architecture** ([`docs/architecture/`](docs/architecture/README.md)):
+  - [Scientific Background](docs/architecture/scientific-background.md): explanatory reference on epistemic decoupling, evidence layers, and open-world GO limits.
+  - [Data Flow](docs/architecture/data-flow.md): accepted technical architecture for candidate catalog assembly.
+  - [Requirements Traceability](docs/architecture/requirements-traceability.md): matrix tracing catalog invariants (R1–R12) to code.
+  - [GO Metrics Specification](docs/architecture/go-metrics-specification.md): recovered proposed analytical design for semantic dissimilarity.
+- **Evidence Curation** ([`docs/curation/`](docs/curation/README.md)):
+  - [Literature Curation Manual](docs/curation/literature-curation-manual.md): proposed procedure pending approval for primary literature adjudication.
+  - [PTRH2 Case Dossier](docs/curation/Q9Y3E5_contextual_adjudication_dossier.md): reference contextual review profile.
+- **Research Proposals & Planning**:
+  - [Experimental Master Proposal](docs/roadmap/core/experimental-master-proposal.md): Maintained English research proposal — under review; not an implemented pipeline or approved experimental policy.
+  - [Catalog Implementation Plan](docs/roadmap/mfp-catalog-implementation-plan.md): approved baseline roadmap for candidate catalog releases.
+- **Governance & Operations**:
+  - [Release Policy](docs/release-policy.md) | [Source Claims Contract](docs/source-claims-contract.md) | [Maintenance Guide](docs/maintenance/technical-maintenance-guide.md)
 
 ## Licensing
 
 - Project-authored code and documentation: **GNU AGPL v3.0 only** (SPDX `AGPL-3.0-only`) — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
 - AGPL does **not** apply to third-party source datasets, raw files, copied tables or derived outputs whose source terms are unknown: they retain their applicable upstream terms, recorded as `terms_not_recorded`, which is not a grant of redistribution permission.
 - This repository does not claim redistribution permission for any third-party source dataset. Attribution and provenance are preserved (see [NOTICE](NOTICE) and `data/manifests/source_manifest.csv`).
-
-## Repository status caveat
-
-At the time of writing, the packaged candidate and the verifier script are working-tree files not yet committed. `git archive HEAD` therefore does not include them, and offline verification has not been demonstrated in a literal clean clone of this repository. The offline command was tested in an extraction containing tracked plus untracked (non-ignored) files — the state a clean clone will have once these files are committed.
