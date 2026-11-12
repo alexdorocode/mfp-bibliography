@@ -2,6 +2,12 @@
 
 **Estat:** esborrany per a validació (v0.1). Cap decisió d'aquest document s'ha d'implementar fins que sigui revisada.
 
+> [!NOTE]
+> **Document Status & Current Role (Historical Research Plan)**:
+> This document is an early historical research plan (v0.1). It does **not** describe current repository implementation, and no decisions from this draft may be implemented without formal review.
+> - **Successor & Integration**: The research questions, biological context, and exploratory inquiries from this draft have been fully incorporated into the active master research proposal [`docs/roadmap/core/experiment-guio-v2.md`](experiment-guio-v2.md) (Annex B), and foundational concepts have been synthesized in [`docs/architecture/scientific-background.md`](../../architecture/scientific-background.md) (explanatory reference).
+> - **Traceability**: The original Catalan text is retained intact for scientific provenance and historical continuity. Section-level mappings are detailed in the [Documentation Recovery Map](../../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+
 
 
 

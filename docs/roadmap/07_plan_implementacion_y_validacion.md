@@ -13,6 +13,12 @@
 | Repositorio inspeccionado | `CBBIO/BioData`, commit `ed073bd4df680a3b45ee69943916e196d28b63b6` |
 | Dependencias normativas | 01 alcance; 02 protocolo/análisis; 03 datos/recursos; 04 y 04a cálculos; 05 arquitectura; 06 revisión bibliográfica |
 
+> [!NOTE]
+> **Document Status & Current Role (Historical Implementation Plan)**:
+> This document is a historical implementation plan and validation roadmap. It does **not** describe current repository implementation; its preliminary 20-task waterfall schedule was superseded by incremental Specification-Driven Development (SDD) packages under [`specs/`](../../specs/).
+> - **Active Planning**: Project risk tiers, verification standards, and incremental development lifecycles are actively governed by [`AGENTS.md`](../../AGENTS.md) and implemented in the [Functional Normalization Pilot Plan](../../specs/functional-normalization-pilot/plan.md).
+> - **Traceability**: The original Spanish text is retained intact for project planning traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+
 Este documento convierte los contratos anteriores en tareas, pruebas y puertas para una ejecución futura. No es un informe de trabajo realizado ni una solicitud de modificar GitHub. No se han ejecutado experimentos, tests, consultas a la base del usuario, exportaciones o notebooks. No se han creado ni modificado repositorios, commits, issues o pull requests. La única actividad computacional de redacción es generar este archivo.
 
 Los seis documentos previos y el anexo permanecen como borradores en el historial accesible; su existencia no equivale a aprobación. Las reglas operativas de este plan son PROPOSTA hasta revisión. No se inventan tamaños de muestra, potencia, snapshots, checksums, PMID, resultados ni duración de tareas.

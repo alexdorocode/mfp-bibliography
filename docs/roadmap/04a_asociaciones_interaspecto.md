@@ -12,6 +12,12 @@
 | Antecedente | Contenido textual de `Especificacion_metricas_asociacion_GO_BioData_v1.1.md`, generado en conversación PEC el 2026-10-26 tras solicitud de 13:49 CET |
 | Dependencias | 02 protocolo, 03 datos/perfiles, 04 resultados/estados comunes, 05 implementación, 06 revisión y 07 pruebas |
 
+> [!NOTE]
+> **Document Status & Current Role (Historical Cross-Aspect Association Proposal)**:
+> This document is a historical cross-aspect association design dossier. It does **not** describe current repository implementation; cross-aspect metric calculations remain unimplemented and unapproved.
+> - **Recovered Content**: Mathematical formulations for cross-aspect association using Normalized Pointwise Mutual Information (NPMI), provisional support/coverage thresholds, and safeguards against unwarranted Cartesian functional triplets have been recovered as proposed designs in [`docs/architecture/go-metrics-specification.md`](../architecture/go-metrics-specification.md) (§3.6, recovered proposed analytical design).
+> - **Traceability**: The original Spanish text and exploratory co-occurrence notes are retained intact for statistical traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+
 ## 1. Procedencia, alcance de recuperación y autoridad
 
 El texto v1.1 es accesible en el historial de esta conversación, incluida su definición matemática y sus parámetros propuestos. El archivo físico anterior no se ha recuperado como entrada independiente ni está localizado en el inventario actual. Este anexo reutiliza su núcleo de cálculo; no afirma identidad byte a byte ni aprobación previa. No se inventa una fórmula bajo el nombre v1.1.

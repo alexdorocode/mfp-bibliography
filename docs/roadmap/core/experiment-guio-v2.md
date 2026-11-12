@@ -12,6 +12,14 @@
 | Fonts | `experiment_guio_v1.md` i `Pla-de-recerca-de-l-experiment-sobre-MFPData.md` |
 | Producte | `MFP_CuratedData`, amb vista estricta `MFP_GroundTruthData` |
 
+> [!NOTE]
+> **Document Status & Preserved Historical Source Version**:
+> This document is the **preserved Catalan source version** (`Estat: Proposta de revisió`, Edition 0.2.1, 2026-11-06) of the research proposal `PEC-EXP-001`.
+> - **Maintained English Successor**: The actively maintained research proposal is now the English successor [`experimental-master-proposal.md`](experimental-master-proposal.md).
+> - **Availability for Provenance**: This source document remains preserved in place for historical provenance, auditability, and comparative verification. It is neither a rejected research design nor physically archived.
+> - **Proposal Status**: Both this source document and its English successor remain **proposals under review**. Language migration establishes active English documentation compliance under [`AGENTS.md`](../../../AGENTS.md) Section 3; it does **not** constitute scientific approval of the experimental design. Execution of blocks B0–B6 remains blocked pending Gate G0 authorization.
+> - **Traceability**: Section-level mappings and the disposition of embedded Annexes A and B are detailed in the [Documentation Recovery Map](../../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix) and the English successor's [Migration Appendix](experimental-master-proposal.md#19-provenance-and-migration-appendix-coverage-record).
+
 **Nota de recuperació:** aquesta edició s’ha reconstruït perquè el fitxer temporal enllaçat anteriorment no estava disponible. No és una còpia byte a byte de l’edició 0.2.0: recupera i organitza el plantejament integrat i incorpora íntegrament els dos documents originals en annexos per evitar pèrdua de contingut. Inclou la rectificació sobre RCA indicada a la resposta anterior. Els annexos són testimonis documentals, no decisions aprovades; davant d’una contradicció s’aplica el cos integrat i es resol el registre de decisions abans d’executar.
 
 La integració conserva els blocs B1–B6, els lliurables D0–D7, les extensions E1/E2, els gates G0–G5 i les decisions DEC-01–DEC-17 del primer guió. S’hi afegeix B0 per a RAW, claims, concordança i ground truth inicial, i s’amplien els blocs amb les preguntes del pla de recerca. [file:1][file:2]

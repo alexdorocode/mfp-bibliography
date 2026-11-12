@@ -12,6 +12,12 @@
 | BioData consultado | `CBBIO/BioData`, commit `ed073bd4df680a3b45ee69943916e196d28b63b6` |
 | Dependencia comparativa consultada | `tanghaibao/goatools`, árbol observado `5b88eefcd8284f5d146d36728b4925785b563125`; no identifica la versión instalada por el usuario |
 
+> [!NOTE]
+> **Document Status & Current Role (Historical Metric Specification)**:
+> This document is a historical metric specification and analytical design dossier. It does **not** describe current repository implementation; metric calculation engines are descoped from the baseline catalog release under [ADR-001](../decisions/ADR-001-repository-scope.md) and [ADR-007](../decisions/ADR-007-v1-scope-descope-bibliographic-relations.md), and formal scientific and implementation approval remains pending under Gate G1.
+> - **Recovered Content**: Mathematical formulations for Minimum Branch Length (MBL), Information Content (IC), Wang dissimilarity, Lin dissimilarity, pairwise aggregation rules, coverage guardrails, and long-format schemas have been recovered as proposed designs in [`docs/architecture/go-metrics-specification.md`](../architecture/go-metrics-specification.md) (recovered proposed analytical design).
+> - **Traceability**: The original Spanish text and preliminary algorithm notes are retained intact for mathematical traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+
 Este catálogo define cálculos propuestos y contrasta sus requisitos con el código leído. No acredita operación de una base, entorno o notebook. No se han ejecutado experimentos, tests ni benchmarks; los ejemplos son deducciones matemáticas, no resultados de ejecución. No se han modificado repositorios.
 
 ## Índice

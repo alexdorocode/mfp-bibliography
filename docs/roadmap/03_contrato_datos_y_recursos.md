@@ -13,6 +13,12 @@
 | Repositorio inspeccionado | `CBBIO/BioData` |
 | Commit consultado | `ed073bd4df680a3b45ee69943916e196d28b63b6` |
 
+> [!NOTE]
+> **Document Status & Current Role (Historical Data Contract Proposal)**:
+> This document is a historical data contract and schema proposal. It does **not** describe current repository implementation, and formal scientific and implementation approval remains pending.
+> - **Replaced & Active Successors**: Entity identification principles have been superseded by accepted architecture in [ADR-005](../decisions/ADR-005-deterministic-protein-ids.md) and the [Source Claims Contract](../source-claims-contract.md). The multi-claim relational model superseding rigid two-facet schemas is governed by proposed [ADR-008](../decisions/ADR-008-functional-normalization-pilot-scope.md) and specified in the active [Functional Normalization Pilot Specification](../../specs/functional-normalization-pilot/spec.md).
+> - **Traceability**: The original Spanish text is retained intact for data contract evolution traceability. Section-level mappings are detailed in the [Documentation Recovery Map](../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+
 Este contrato propone cómo reconstruir inputs idénticos desde una misma exportación y recursos congelados, sin decisiones implícitas. No es una migración SQL, una certificación de la base desplegada ni una implementación ya disponible. Los nombres de tablas canónicas y artefactos que siguen son propuestas de intercambio, no tablas existentes en PostgreSQL.
 
 No se han ejecutado consultas a la base del usuario, experimentos, tests ni notebooks. Se ha realizado lectura remota y documental y se ha generado este archivo. No se han creado ni modificado repositorios, commits, issues o pull requests.

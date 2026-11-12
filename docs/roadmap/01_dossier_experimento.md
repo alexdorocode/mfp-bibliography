@@ -15,6 +15,13 @@
 | Dependencias documentales | Documentos 02–07 y candidato a anexo 04a, descritos en §12 |
 | Fuentes | Inventario y localizadores en §14; código, documentación de proyecto y conversación diferenciados |
 
+> [!NOTE]
+> **Document Status & Current Role (Historical Research Dossier)**:
+> This document is a historical research proposal and foundational design dossier. It does **not** describe current repository implementation, and formal scientific and implementation approval remains pending.
+> - **Recovered Content**: Selected conceptual foundations (epistemic distinctions between source claims and biological truth, the three evidence layers, and the ten explicit negative methodological boundaries) have been recovered into canonical English documentation in [`docs/architecture/scientific-background.md`](../architecture/scientific-background.md) (explanatory reference).
+> - **Retained Proposals**: Secondary research questions (RQ-01 through RQ-07) and phased experimental block concepts are preserved in this text as future research proposals.
+> - **Traceability**: The original Spanish text is retained intact for scientific provenance and auditability. Section-level mappings are detailed in the [Documentation Recovery Map](../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+
 Este documento actualiza y delimita el dossier inicial; no abre una línea experimental paralela. Su responsabilidad es explicar el objetivo, alcance, preguntas, límites y articulación del estudio. No sustituye los contratos especializados de protocolo, datos, métricas, arquitectura, revisión bibliográfica o aceptación de software.
 
 No se ha ejecutado ningún experimento, prueba, consulta a la base de datos del usuario ni notebook. La actividad realizada para redactar este dossier se limita a lectura de fuentes accesibles, inspección estática remota mediante el connector GitHub y generación de este documento. No se han modificado repositorios ni creado commits, incidencias o solicitudes de cambio.

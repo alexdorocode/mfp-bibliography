@@ -13,6 +13,13 @@
 | Fuentes | Inventario de §19: documentos de proyecto, conversación, lectura remota de BioData y documentación oficial GO |
 | Revisión BioData inspeccionada | `ed073bd4df680a3b45ee69943916e196d28b63b6` |
 
+> [!NOTE]
+> **Document Status & Current Role (Historical Experimental Protocol)**:
+> This document is a historical experimental protocol and statistical analysis design proposal. It does **not** describe current repository implementation, and formal scientific and implementation approval remains pending.
+> - **Recovered Content**: Epistemological rules for reference populations (establishing that BioData is a statistical frequency baseline and never a validated negative control class) have been recovered in [`docs/architecture/scientific-background.md`](../architecture/scientific-background.md) (§7.2, explanatory reference). Proposed Gene Ontology evidence code partitions (`ALL`, `EXP-convencional`, `EXP-ampliada`) have been recovered as proposed analytical designs in [`docs/architecture/go-metrics-specification.md`](../architecture/go-metrics-specification.md) (§2.5, recovered proposed analytical design).
+> - **Retained Proposals**: Procedural protocols for random term reduction and publication retraction are preserved in this text as future research proposals.
+> - **Traceability**: The original Spanish text is retained intact for scientific provenance and auditability. Section-level mappings are detailed in the [Documentation Recovery Map](../reports/documentation-recovery-map.md#81-reconciled-section-level-recovery-matrix).
+
 Este protocolo desarrolla comparaciones, controles e interpretación antes de un futuro piloto. No autoriza por sí mismo su ejecución. No se ha conectado a la base del usuario ni se han ejecutado experimentos, tests, remuestreos o notebooks. Solo se han leído fuentes y código remoto y se ha generado este documento. No se ha modificado ningún repositorio.
 
 Las decisiones metodológicas nuevas son PROPOSTA hasta su revisión. No se presenta este borrador como preregistro, ni se atribuye a las decisiones una aprobación inexistente. Los valores efectivos vivirán en `configs/pilot.yaml` y el manifiesto; aquí se definen reglas y recomendaciones, sin inventar tamaños de cohortes, potencia, snapshots, checksums, PMID ni resultados.
