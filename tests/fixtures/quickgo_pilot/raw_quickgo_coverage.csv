@@ -1,0 +1,9 @@
+accession,database_protein_id,quickgo_coverage_status,identity_review_status,stored_annotation_rows,distinct_go_terms,notes
+A0A0H3CDS3,A0A0H3CDS3_CAUVN,zero_annotations_found,no_discrepancy_noted,0,0,Linked protein found in protein table but zero annotations stored in protein_go_term_annotation
+E6KMA1,,unlinked_in_database,no_discrepancy_noted,0,0,Accession present in accession table but unlinked (protein_id IS NULL)
+P0AFW0,RFAH_ECOLI,annotations_available,no_discrepancy_noted,17,11,
+P24228,DACB_ECOLI,annotations_available,no_discrepancy_noted,21,13,
+P34788,RS18_ARATH,annotations_available,flagged_taxonomic_discrepancy,28,21,PlantMP/Multitask cite Spinacia oleracea; UniProt/QuickGO indexes RS18_ARATH from Arabidopsis thaliana; technical accession join succeeds but biological identity remains an unresolved upstream issue
+P78007,LDH_MYCPN,annotations_available,no_discrepancy_noted,10,9,
+Q42525,HXK1_ARATH,annotations_available,no_discrepancy_noted,56,32,
+Q9Y3E5,PTH2_HUMAN,annotations_available,no_discrepancy_noted,24,9,

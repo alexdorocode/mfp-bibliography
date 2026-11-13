@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/raw_quickgo_coverage.schema.json",
+  "title": "Raw QuickGO Coverage Denominator",
+  "description": "Validation contract for raw denominator coverage accounting of cohort accessions queried against local database MFP_QuickV1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "accession",
+    "database_protein_id",
+    "quickgo_coverage_status",
+    "identity_review_status",
+    "stored_annotation_rows",
+    "distinct_go_terms",
+    "notes"
+  ],
+  "properties": {
+    "accession": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{6,10}$",
+      "description": "Queried cohort UniProtKB accession code."
+    },
+    "database_protein_id": {
+      "type": ["string", "null"],
+      "description": "Linked protein identifier from protein.id, or null if unlinked/absent."
+    },
+    "quickgo_coverage_status": {
+      "type": "string",
+      "enum": [
+        "annotations_available",
+        "zero_annotations_found",
+        "unlinked_in_database",
+        "absent_from_database",
+        "ambiguous_identity"
+      ],
+      "description": "Technical database linkage and annotation presence status. Note: ambiguous_identity is reserved for potential split/multiple-entity mappings; it is unsupported and unused in the current 8-accession cohort."
+    },
+    "identity_review_status": {
+      "type": "string",
+      "enum": [
+        "no_discrepancy_noted",
+        "flagged_taxonomic_discrepancy"
+      ],
+      "description": "Biological identity review classification orthogonal to database coverage."
+    },
+    "stored_annotation_rows": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of actual annotation rows in protein_go_term_annotation."
+    },
+    "distinct_go_terms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of distinct Gene Ontology term identifiers."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Diagnostic and provenance notes explaining missingness or identity discrepancy."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "quickgo_coverage_status": {
+            "enum": ["unlinked_in_database", "absent_from_database"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "database_protein_id": {
+            "type": "null"
+          },
+          "stored_annotation_rows": {
+            "const": 0
+          },
+          "distinct_go_terms": {
+            "const": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "quickgo_coverage_status": {
+            "const": "zero_annotations_found"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "database_protein_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "stored_annotation_rows": {
+            "const": 0
+          },
+          "distinct_go_terms": {
+            "const": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "quickgo_coverage_status": {
+            "const": "annotations_available"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "database_protein_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "stored_annotation_rows": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "distinct_go_terms": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  ]
+}

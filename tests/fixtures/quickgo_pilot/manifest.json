@@ -1,0 +1,145 @@
+{
+  "manifest_schema_version": "1.0",
+  "fixture_name": "quickgo_pilot_raw_inputs",
+  "export_timestamp_utc": "2026-11-12T16:46:13.059711+00:00",
+  "database_provenance": {
+    "database_name": "MFP_QuickV1",
+    "host": "localhost",
+    "port": 5432,
+    "user": "usuario",
+    "transaction_isolation": "REPEATABLE READ READ ONLY",
+    "export_query_sha256": "7e949fbeab5514cc3ec535d76affe9f0b5281b1db8fdae72e3f1b9338a175cab"
+  },
+  "repository_context": {
+    "git_commit": "1c7f0ed7a0de2fd48d9c902c9e273ae3562d0c72",
+    "working_tree_clean": false,
+    "modified_files": [
+      "M  AGENTS.md",
+      "M  docs/architecture/README.md",
+      "M  docs/architecture/go-metrics-specification.md",
+      "M  docs/architecture/scientific-background.md",
+      "A  docs/archive/README.md",
+      "R  docs/roadmap/01_dossier_experimento.md -> docs/archive/proposals-2026-10-spanish/01_dossier_experimento.md",
+      "R  docs/roadmap/02_protocolo_cientifico_y_analisis.md -> docs/archive/proposals-2026-10-spanish/02_protocolo_cientifico_y_analisis.md",
+      "R  docs/roadmap/03_contrato_datos_y_recursos.md -> docs/archive/proposals-2026-10-spanish/03_contrato_datos_y_recursos.md",
+      "R  docs/roadmap/04_especificacion_metricas.md -> docs/archive/proposals-2026-10-spanish/04_especificacion_metricas.md",
+      "R  docs/roadmap/04a_asociaciones_interaspecto.md -> docs/archive/proposals-2026-10-spanish/04a_asociaciones_interaspecto.md",
+      "R  docs/roadmap/05_diseno_tecnico.md -> docs/archive/proposals-2026-10-spanish/05_diseno_tecnico.md",
+      "R  docs/roadmap/06_manual_revision_bibliografica.md -> docs/archive/proposals-2026-10-spanish/06_manual_revision_bibliografica.md",
+      "R  docs/roadmap/07_plan_implementacion_y_validacion.md -> docs/archive/proposals-2026-10-spanish/07_plan_implementacion_y_validacion.md",
+      "R  \"docs/roadmap/core/Pla de recerca de l'experiment sobre MFPData.md\" -> \"docs/archive/proposals-2026-11-catalan/Pla de recerca de l'experiment sobre MFPData.md\"",
+      "R  docs/roadmap/core/experiment-guio-v2.md -> docs/archive/proposals-2026-11-catalan/experiment-guio-v2.md",
+      "M  docs/curation/README.md",
+      "M  docs/curation/literature-curation-manual.md",
+      "M  docs/reports/documentation-closure-and-english-migration-plan.md",
+      "M  docs/reports/documentation-recovery-map.md",
+      "M  docs/roadmap/bounded-evolution-proposal-documentation-and-bibliographic-evidence.md",
+      "M  docs/roadmap/core/experimental-master-proposal.md",
+      "M  docs/roadmap/core/presentation/decisiones_abiertas.md",
+      "R  docs/roadmap/core/guion_propuesta.md -> docs/roadmap/core/presentation/guion_propuesta.md",
+      "?? data/curated/raw_quickgo_annotations.schema.json",
+      "?? data/curated/raw_quickgo_coverage.schema.json",
+      "?? docs/reports/pending-work-triage-2026-11-12.md",
+      "?? docs/roadmap/draft-proposal-mfp-quickv1-evidence-integration-pilot.md",
+      "?? scripts/export_quickgo_pilot_fixtures.py",
+      "?? src/mfp_bibliography/quickgo_raw_validator.py",
+      "?? tests/fixtures/quickgo_pilot/",
+      "?? tests/test_quickgo_raw_contracts.py"
+    ]
+  },
+  "cohort": [
+    "Q42525",
+    "Q9Y3E5",
+    "P0AFW0",
+    "P34788",
+    "P78007",
+    "P24228",
+    "A0A0H3CDS3",
+    "E6KMA1"
+  ],
+  "files": {
+    "raw_quickgo_annotations.csv": {
+      "path": "tests/fixtures/quickgo_pilot/raw_quickgo_annotations.csv",
+      "sha256": "b8d508f6f980fb3aed676dae7c4d3275b188dcbe58438372280920e6cf704f6a",
+      "total_rows": 156,
+      "pmid_rows": 93,
+      "go_ref_rows": 63,
+      "null_ref_rows": 0
+    },
+    "raw_quickgo_coverage.csv": {
+      "path": "tests/fixtures/quickgo_pilot/raw_quickgo_coverage.csv",
+      "sha256": "249a4cd91117fec229cdaf9c579803dcb89d011e41ec2e5bf0eb0fb35eb8aef1",
+      "total_rows": 8,
+      "status_counts": {
+        "zero_annotations_found": 1,
+        "unlinked_in_database": 1,
+        "annotations_available": 6
+      }
+    }
+  },
+  "reconciliation_summary": {
+    "A0A0H3CDS3": {
+      "quickgo_coverage_status": "zero_annotations_found",
+      "identity_review_status": "no_discrepancy_noted",
+      "annotation_rows": 0,
+      "distinct_go_terms": 0
+    },
+    "E6KMA1": {
+      "quickgo_coverage_status": "unlinked_in_database",
+      "identity_review_status": "no_discrepancy_noted",
+      "annotation_rows": 0,
+      "distinct_go_terms": 0
+    },
+    "P0AFW0": {
+      "quickgo_coverage_status": "annotations_available",
+      "identity_review_status": "no_discrepancy_noted",
+      "annotation_rows": 17,
+      "distinct_go_terms": 11
+    },
+    "P24228": {
+      "quickgo_coverage_status": "annotations_available",
+      "identity_review_status": "no_discrepancy_noted",
+      "annotation_rows": 21,
+      "distinct_go_terms": 13
+    },
+    "P34788": {
+      "quickgo_coverage_status": "annotations_available",
+      "identity_review_status": "flagged_taxonomic_discrepancy",
+      "annotation_rows": 28,
+      "distinct_go_terms": 21
+    },
+    "P78007": {
+      "quickgo_coverage_status": "annotations_available",
+      "identity_review_status": "no_discrepancy_noted",
+      "annotation_rows": 10,
+      "distinct_go_terms": 9
+    },
+    "Q42525": {
+      "quickgo_coverage_status": "annotations_available",
+      "identity_review_status": "no_discrepancy_noted",
+      "annotation_rows": 56,
+      "distinct_go_terms": 32
+    },
+    "Q9Y3E5": {
+      "quickgo_coverage_status": "annotations_available",
+      "identity_review_status": "no_discrepancy_noted",
+      "annotation_rows": 24,
+      "distinct_go_terms": 9
+    }
+  },
+  "known_capture_limitations": {
+    "qualifiers_captured": false,
+    "qualifier_status_policy": "not_captured",
+    "eco_codes_captured": false,
+    "assigned_by_captured": false,
+    "annotation_dates_captured": false,
+    "extensions_captured": false,
+    "biological_identity_warnings": [
+      {
+        "accession": "P34788",
+        "status": "flagged_taxonomic_discrepancy",
+        "issue": "Source databases cite Spinacia oleracea; UniProt/QuickGO indexes RS18_ARATH from Arabidopsis thaliana. Technical join succeeds; biological identity remains unreviewed upstream issue."
+      }
+    ]
+  }
+}

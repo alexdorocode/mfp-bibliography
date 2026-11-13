@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/raw_quickgo_annotations.schema.json",
+  "title": "Raw QuickGO Annotations Export",
+  "description": "Validation contract for raw Gene Ontology annotations exported directly from local database MFP_QuickV1 under REPEATABLE READ transaction. Represents supported reference syntax for this specific bounded database capture, not universal QuickGO format specifications or verified scientific evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "database_annotation_id",
+    "accession",
+    "database_protein_id",
+    "go_id",
+    "raw_category",
+    "evidence_code",
+    "publication_id"
+  ],
+  "properties": {
+    "database_annotation_id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Database primary key from protein_go_term_annotation.id for tracing."
+    },
+    "accession": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{6,10}$",
+      "description": "UniProtKB accession queried from cohort."
+    },
+    "database_protein_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Protein entity identifier from database table protein.id."
+    },
+    "go_id": {
+      "type": "string",
+      "pattern": "^GO:[0-9]{7}$",
+      "description": "Canonical 7-digit Gene Ontology identifier."
+    },
+    "raw_category": {
+      "type": "string",
+      "enum": [
+        "P",
+        "F",
+        "C",
+        "biological_process",
+        "molecular_function",
+        "cellular_component"
+      ],
+      "description": "Raw aspect or category string stored in go_terms.category."
+    },
+    "evidence_code": {
+      "type": "string",
+      "pattern": "^[A-Z]{2,3}$",
+      "description": "Standard 2-letter or 3-letter Gene Ontology evidence code."
+    },
+    "publication_id": {
+      "type": ["string", "null"],
+      "pattern": "^([0-9]+|GO_REF:[0-9]{7})$",
+      "description": "Supported reference formats for the MFP_QuickV1 pilot capture: bare numeric PubMed ID or canonical GO_REF CURIE string, or JSON null (representing an unreferenced annotation converted from an empty CSV field by the reader). Does not imply scientific evidence validation, identifier existence, or universal QuickGO format support."
+    }
+  }
+}
