@@ -1,0 +1,64 @@
+format-version: 1.2
+data-version: releases/2026-test-snapshot
+ontology: go-test
+
+[Term]
+id: GO:0003674
+name: molecular_function
+namespace: molecular_function
+def: "A molecular process that can be carried out by the action of a single macromolecular machine." [GOC:pdt]
+
+[Term]
+id: GO:0003824
+name: catalytic activity
+namespace: molecular_function
+def: "Catalysis of a biochemical reaction." [GOC:vw]
+
+[Term]
+id: GO:0005575
+name: cellular_component
+namespace: cellular_component
+def: "A location relative to cellular compartments." [GOC:cjm]
+
+[Term]
+id: GO:0008150
+name: biological_process
+namespace: biological_process
+def: "A biological process." [GOC:pdt]
+
+[Term]
+id: GO:0016020
+name: membrane
+namespace: cellular_component
+alt_id: GO:0016021
+def: "A lipid bilayer." [GOC:mah]
+
+[Term]
+id: GO:0044003
+name: modification of symbiont morphology or physiology
+namespace: biological_process
+def: "The process in which an organism effects a change in the structure or functioning of its symbiont organism." [GOC:bf]
+
+[Term]
+id: GO:0019048
+name: obsolete modulation by virus of host morphology or physiology
+namespace: biological_process
+def: "OBSOLETE. The process in which a virus effects a change in the structure or functioning of its host organism." [GOC:bf]
+is_obsolete: true
+replaced_by: GO:0044003
+
+[Term]
+id: GO:0000988
+name: obsolete transcription factor activity, protein binding
+namespace: molecular_function
+def: "OBSOLETE. Binding to a protein and modulating transcription." [GOC:vw]
+is_obsolete: true
+consider: GO:0005515
+consider: GO:0140110
+
+[Term]
+id: GO:0010033
+name: obsolete response to organic substance
+namespace: biological_process
+def: "OBSOLETE. Any process that results in a change in state or activity of a cell or an organism as a result of an organic substance stimulus." [GOC:mah]
+is_obsolete: true

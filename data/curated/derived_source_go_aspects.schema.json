@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/derived_source_go_aspects.schema.json",
+  "title": "Derived Source GO Aspects",
+  "description": "Validation contract for ontology-derived Gene Ontology aspects and namespaces under scheme MFPB_DERIVED_SOURCE_GO_ASPECTS_V1 (Task PIL-04.1A). Preserves 1:1 row bijection with source_go_annotations_pilot.csv, retains verbatim source values, and maps standardized aspects deterministically from a pinned ontology snapshot.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "annotation_id",
+    "protein_id",
+    "source_id",
+    "source_record_id",
+    "claim_id",
+    "annotation_index",
+    "raw_annotation_text",
+    "source_go_id",
+    "source_declared_aspect",
+    "resolved_go_id",
+    "derived_aspect",
+    "mapping_status",
+    "replaced_by_go_id",
+    "consider_go_ids",
+    "term_name_resolved",
+    "ontology_version",
+    "ontology_sha256",
+    "notes"
+  ],
+  "properties": {
+    "annotation_id": {
+      "type": "string",
+      "pattern": "^MFP:SGA:[A-Za-z0-9_]+:[0-9a-f]{16}$",
+      "description": "Foreign key to source_go_annotations_pilot.csv under scheme MFPB_SOURCE_GO_ANNOTATION_V1."
+    },
+    "protein_id": {
+      "type": "string",
+      "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$",
+      "description": "Catalog entity identifier under scheme MFPB_PROTEIN_ID_V1."
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^SRC_[A-Z0-9_]+$",
+      "description": "Canonical source identifier from source catalog."
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-local record identifier linking to mfp_source_records.csv."
+    },
+    "claim_id": {
+      "type": ["string", "null"],
+      "pattern": "^MFP:FC:[A-Za-z0-9_]+:[0-9a-f]{16}$",
+      "description": "Optional foreign key linking to a discrete claim in functional_claims.schema.json, or null if unlinked."
+    },
+    "annotation_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Zero-based occurrence index of this annotation within the source field/record."
+    },
+    "raw_annotation_text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Verbatim raw annotation text from source record."
+    },
+    "source_go_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Verbatim cited GO identifier from source without alteration."
+    },
+    "source_declared_aspect": {
+      "type": ["string", "null"],
+      "enum": ["BP", "CC", "MF", "unassigned", null],
+      "description": "Verbatim source-declared aspect string, or null if undeclared."
+    },
+    "resolved_go_id": {
+      "type": ["string", "null"],
+      "pattern": "^GO:[0-9]{7}$",
+      "description": "Resolved canonical primary GO identifier in the ontology snapshot. Null for obsolete, unknown, or malformed terms."
+    },
+    "derived_aspect": {
+      "type": ["string", "null"],
+      "enum": ["BP", "CC", "MF", null],
+      "description": "Standardized derived Gene Ontology aspect: BP (biological_process), CC (cellular_component), MF (molecular_function), or null if unresolved, obsolete, or conflicting."
+    },
+    "mapping_status": {
+      "type": "string",
+      "enum": [
+        "resolved_primary",
+        "resolved_secondary_alt_id",
+        "obsolete_replaced_by",
+        "obsolete_unreplaced",
+        "unresolved_unknown_id",
+        "unresolved_malformed_id",
+        "conflict_source_ontology_aspect_mismatch"
+      ],
+      "description": "Deterministic status code reflecting lookup and compatibility state."
+    },
+    "replaced_by_go_id": {
+      "type": ["string", "null"],
+      "pattern": "^GO:[0-9]{7}$",
+      "description": "Official replacement GO ID for obsolete terms having a replaced_by tag; null otherwise. Not automatically substituted as resolved_go_id."
+    },
+    "consider_go_ids": {
+      "type": ["string", "null"],
+      "description": "Semicolon-separated list of advisory consider GO IDs for obsolete terms; null otherwise. Never treated as automated equivalents."
+    },
+    "term_name_resolved": {
+      "type": ["string", "null"],
+      "description": "Official primary term name from ontology snapshot; null if unresolved."
+    },
+    "ontology_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Data-version string of the ontology snapshot used for lookup."
+    },
+    "ontology_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Cryptographic SHA-256 digest of the ontology snapshot file."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Diagnostic and provenance notes."
+    }
+  }
+}
