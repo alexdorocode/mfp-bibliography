@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/quickgo_reference_concordance.schema.json",
+  "title": "Normalized QuickGO Reference Concordance",
+  "description": "Validation contract for descriptive citation inventory overlap between source claims and external QuickGO captures under Option A (protein entity / source record level). Preserves namespace integrity (PMID: vs GO_REF:) without external lookups, distinguishing comparable canonical CURIEs from uninterpretable raw tokens.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reference_concordance_id",
+    "accession",
+    "protein_id",
+    "source_id",
+    "source_references_count",
+    "source_unresolved_references_count",
+    "quickgo_references_count",
+    "shared_references_count",
+    "source_only_references_count",
+    "quickgo_only_references_count",
+    "jaccard_similarity",
+    "reference_concordance_status",
+    "comparison_completeness",
+    "primary_non_evaluable_reason",
+    "secondary_non_evaluable_reasons",
+    "shared_reference_ids",
+    "unresolved_reference_ids",
+    "identity_review_status"
+  ],
+  "properties": {
+    "reference_concordance_id": {
+      "type": "string",
+      "pattern": "^MFP:REFCONC:[A-Z0-9]+:MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16}):SRC_[A-Z0-9_]+$",
+      "description": "Deterministic unique reference comparison identifier: MFP:REFCONC:<accession>:<protein_id>:<source_id>."
+    },
+    "accession": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{6,10}$",
+      "description": "Queried cohort UniProtKB accession code."
+    },
+    "protein_id": {
+      "type": "string",
+      "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$",
+      "description": "Resolved catalog entity identifier from candidate v0.3.0 mfp_proteins.csv."
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^SRC_[A-Z0-9_]+$",
+      "description": "Canonical source catalog identifier (e.g. SRC_MOONPROT, SRC_MULTITASKPROTDB_II, SRC_PLANTMP)."
+    },
+    "source_references_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Count of distinct comparable canonical reference CURIEs (e.g. PMID:<digits>) associated with the source record, or null if outside slice or extraction incomplete."
+    },
+    "source_unresolved_references_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Count of raw source citation tokens that could not be interpreted as canonical publication CURIEs, or null if outside slice or extraction incomplete."
+    },
+    "quickgo_references_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Count of distinct canonical reference CURIEs associated with QuickGO annotations for this accession, or null if unlinked/absent."
+    },
+    "shared_references_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Exact citation set intersection count |R_src ∩ R_qgo| over comparable CURIEs, or null if either side is unavailable/indeterminate."
+    },
+    "source_only_references_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Source-only citation count |R_src \\ R_qgo|, or null if either side is unavailable/indeterminate."
+    },
+    "quickgo_only_references_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "QuickGO-only citation count |R_qgo \\ R_src|, or null if either side is unavailable/indeterminate."
+    },
+    "jaccard_similarity": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Citation Jaccard coefficient |R_src ∩ R_qgo| / |R_src ∪ R_qgo| over comparable CURIEs, or null if non-evaluable."
+    },
+    "reference_concordance_status": {
+      "type": "string",
+      "enum": [
+        "evaluable",
+        "not_evaluable"
+      ],
+      "description": "Binary evaluability flag enforcing non-empty citation sets and biological identity prerequisites."
+    },
+    "comparison_completeness": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "partial",
+        "uninterpretable",
+        "empty",
+        "indeterminate"
+      ],
+      "description": "Completeness status of reference inventory interpretation: complete (100% tokens resolved to CURIEs), partial (some unresolved tokens present), uninterpretable (all tokens unresolved), empty (observed record with 0 citations), indeterminate (outside slice or extraction incomplete)."
+    },
+    "primary_non_evaluable_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "unresolved_biological_identity",
+        "source_record_outside_slice",
+        "source_extraction_incomplete",
+        "accession_unlinked_in_capture",
+        "accession_absent_from_capture",
+        "source_record_zero_references",
+        "external_zero_references"
+      ],
+      "description": "Governing reason code when reference comparison is not evaluable, or null."
+    },
+    "secondary_non_evaluable_reasons": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Semicolon-delimited list of all simultaneous observed reference comparison limitations, or null."
+    },
+    "shared_reference_ids": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Semicolon-delimited list of shared canonical CURIEs (sorted deterministically), or null."
+    },
+    "unresolved_reference_ids": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Semicolon-delimited list of raw source reference tokens that could not be interpreted as canonical CURIEs, or null."
+    },
+    "identity_review_status": {
+      "type": "string",
+      "enum": [
+        "no_discrepancy_noted",
+        "flagged_taxonomic_discrepancy"
+      ],
+      "description": "Propagated identity comparability flag from coverage."
+    }
+  }
+}

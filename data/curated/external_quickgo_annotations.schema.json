@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/external_quickgo_annotations.schema.json",
+  "title": "Normalized QuickGO Annotations",
+  "description": "Validation contract for normalized Gene Ontology annotations exported from MFP_QuickV1 under scheme MFPB_QUICKGO_ANNOTATION_V1. Preserves 1:1 row bijection with raw annotations while standardizing aspect vocabulary, binding entity protein_id, and assigning neutral qualifier status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "annotation_id",
+    "protein_id",
+    "uniprot_accession",
+    "database_protein_id",
+    "database_annotation_id",
+    "capture_id",
+    "go_id",
+    "go_aspect",
+    "evidence_code",
+    "reference_type",
+    "reference_id",
+    "qualifier_status",
+    "assigned_by",
+    "source_database"
+  ],
+  "properties": {
+    "annotation_id": {
+      "type": "string",
+      "pattern": "^MFP:QGA:[A-Za-z0-9_]+:[0-9]+$",
+      "description": "Deterministic unique annotation identifier binding capture scope to database row PK."
+    },
+    "protein_id": {
+      "type": "string",
+      "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$",
+      "description": "Catalog entity identifier resolved from candidate v0.3.0 mfp_proteins.csv."
+    },
+    "uniprot_accession": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{6,10}$",
+      "description": "Canonical UniProtKB accession matching cohort input."
+    },
+    "database_protein_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Retained database protein identifier from raw table protein.id."
+    },
+    "database_annotation_id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Retained database primary key from protein_go_term_annotation.id."
+    },
+    "capture_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Constant database capture identifier (e.g. 'MFP_QuickV1_20261112')."
+    },
+    "go_id": {
+      "type": "string",
+      "pattern": "^GO:[0-9]{7}$",
+      "description": "Canonical 7-digit Gene Ontology identifier."
+    },
+    "go_aspect": {
+      "type": "string",
+      "enum": [
+        "BP",
+        "MF",
+        "CC"
+      ],
+      "description": "Normalized controlled vocabulary for GO aspect (BP, MF, CC)."
+    },
+    "evidence_code": {
+      "type": "string",
+      "pattern": "^[A-Z]{2,3}$",
+      "description": "Standard 2-letter or 3-letter Gene Ontology evidence code."
+    },
+    "reference_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "pmid",
+        "go_ref",
+        null
+      ],
+      "description": "Classified citation reference namespace or null if unreferenced."
+    },
+    "reference_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^([0-9]+|GO_REF:[0-9]{7})$",
+      "description": "Bare numeric PubMed ID or canonical GO_REF CURIE string, or null."
+    },
+    "qualifier_status": {
+      "type": "string",
+      "enum": [
+        "not_captured"
+      ],
+      "description": "Fixed neutral qualifier status reflecting uncaptured qualifier column in MFP_QuickV1."
+    },
+    "assigned_by": {
+      "type": "null",
+      "description": "Explicit schema null representing uncaptured assigned_by attribute."
+    },
+    "source_database": {
+      "type": "string",
+      "enum": [
+        "MFP_QuickV1"
+      ],
+      "description": "Origin database constant."
+    }
+  }
+}

@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/quickgo_concordance.schema.json",
+  "title": "Normalized QuickGO Concordance Matrix",
+  "description": "Validation contract for comparative concordance analytics between source-native GO annotations and external QuickGO captures under scheme MFPB_QUICKGO_CONCORDANCE_V1. Enforces strict comparison unit (accession, source, aspect, policy), empty-set null conventions, deterministic diagnostic precedence, and non-double-counted Policy C exclusion metrics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "concordance_id",
+    "accession",
+    "protein_id",
+    "source_id",
+    "aspect",
+    "policy_id",
+    "source_inventory_status",
+    "quickgo_inventory_status",
+    "source_terms_count",
+    "quickgo_terms_count",
+    "exact_overlap_count",
+    "union_terms_count",
+    "source_only_count",
+    "quickgo_only_count",
+    "jaccard_similarity",
+    "concordance_status",
+    "primary_non_evaluable_reason",
+    "secondary_non_evaluable_reasons",
+    "identity_review_status",
+    "nd_matching_rows_count",
+    "root_matching_rows_count",
+    "nd_root_overlap_rows_count",
+    "net_excluded_rows_count",
+    "terms_lost_after_filtering_count",
+    "terms_retained_via_other_rows_count",
+    "unassessed_evidence_rows_count"
+  ],
+  "properties": {
+    "concordance_id": {
+      "type": "string",
+      "pattern": "^MFP:CONC:[A-Z0-9]+:MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16}):SRC_[A-Z0-9_]+:(BP|MF|CC):[a-z_]+$",
+      "description": "Deterministic unique comparison identifier: MFP:CONC:<accession>:<protein_id>:<source_id>:<aspect>:<policy_id>."
+    },
+    "accession": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{6,10}$",
+      "description": "Queried cohort UniProtKB accession code."
+    },
+    "protein_id": {
+      "type": "string",
+      "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$",
+      "description": "Resolved catalog entity identifier from candidate v0.3.0 mfp_proteins.csv."
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^SRC_[A-Z0-9_]+$",
+      "description": "Canonical source catalog identifier (e.g. SRC_MOONPROT, SRC_MULTITASKPROTDB_II, SRC_PLANTMP)."
+    },
+    "aspect": {
+      "type": "string",
+      "enum": [
+        "BP",
+        "MF",
+        "CC"
+      ],
+      "description": "Evaluated Gene Ontology aspect."
+    },
+    "policy_id": {
+      "type": "string",
+      "enum": [
+        "captured_inventory_overlap",
+        "filtered_descriptive_overlap"
+      ],
+      "description": "Concordance policy identifier (Policy B unfiltered inventory or Policy C filtered descriptive overlap)."
+    },
+    "source_inventory_status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "empty",
+        "indeterminate",
+        "outside_slice",
+        "unavailable"
+      ],
+      "description": "Availability and completeness classification of source term inventory for this aspect."
+    },
+    "quickgo_inventory_status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "empty",
+        "zero_annotations",
+        "unlinked",
+        "absent",
+        "unavailable"
+      ],
+      "description": "Availability and completeness classification of external QuickGO term inventory for this aspect."
+    },
+    "source_terms_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Count of distinct source GO terms for this aspect, or null if inventory is indeterminate or unavailable."
+    },
+    "quickgo_terms_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Count of distinct QuickGO terms for this aspect, or null if unlinked/absent/unavailable."
+    },
+    "exact_overlap_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Exact set intersection count |S ∩ Q|, or null if either side is indeterminate/unavailable."
+    },
+    "union_terms_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Exact set union count |S ∪ Q|, or null if either side is indeterminate/unavailable."
+    },
+    "source_only_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Source-only set difference count |S \\ Q|, or null if either side is indeterminate/unavailable."
+    },
+    "quickgo_only_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "QuickGO-only set difference count |Q \\ S|, or null if either side is indeterminate/unavailable."
+    },
+    "jaccard_similarity": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Jaccard similarity coefficient |S ∩ Q| / |S ∪ Q|, or null if non-evaluable."
+    },
+    "concordance_status": {
+      "type": "string",
+      "enum": [
+        "evaluable",
+        "not_evaluable"
+      ],
+      "description": "Binary evaluability flag enforcing non-empty set and biological identity prerequisites."
+    },
+    "primary_non_evaluable_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "unresolved_biological_identity",
+        "source_record_outside_slice",
+        "source_input_unavailable",
+        "source_aspect_indeterminate",
+        "source_record_no_terms_aspect",
+        "accession_absent_from_capture",
+        "accession_unlinked_in_capture",
+        "ambiguous_entity_mapping",
+        "external_zero_annotations_overall",
+        "external_zero_annotations_aspect",
+        "empty_after_filtering"
+      ],
+      "description": "Governing diagnostic assigned by strict deterministic precedence, or null when evaluable."
+    },
+    "secondary_non_evaluable_reasons": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Semicolon-delimited list preserving all simultaneously observed diagnostic conditions, or null."
+    },
+    "identity_review_status": {
+      "type": "string",
+      "enum": [
+        "no_discrepancy_noted",
+        "flagged_taxonomic_discrepancy"
+      ],
+      "description": "Propagated identity comparability flag from coverage."
+    },
+    "nd_matching_rows_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Count of QuickGO rows matching evidence code 'ND' for this aspect under Policy C, or null under Policy B."
+    },
+    "root_matching_rows_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Count of annotation rows matching GO root terms for this aspect under Policy C, or null under Policy B."
+    },
+    "nd_root_overlap_rows_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Count of annotation rows matching both ND and root term for this aspect, or null under Policy B."
+    },
+    "net_excluded_rows_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Net unique excluded annotation rows (ND + root - overlap) under Policy C, or null under Policy B."
+    },
+    "terms_lost_after_filtering_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Distinct GO terms present in Policy B but completely eliminated under Policy C, or null under Policy B."
+    },
+    "terms_retained_via_other_rows_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Distinct non-root GO terms supported by at least one ND row that survived due to co-occurring eligible rows."
+    },
+    "unassessed_evidence_rows_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Count of source annotation rows for this aspect lacking explicit evidence codes (not classified as ND/non-ND)."
+    }
+  }
+}
