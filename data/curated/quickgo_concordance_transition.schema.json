@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexdorocode/mfp-bibliography/blob/main/data/curated/quickgo_concordance_transition.schema.json",
+  "title": "Normalized QuickGO Concordance Transition Matrix",
+  "description": "Validation contract for comparative transition analytics between baseline Stage P3 concordance and PIL-04.1B ontology-enriched recomparison concordance under scheme MFPB_QUICKGO_CONCORDANCE_TRANSITION_V1. Enforces row-level constraints on categorical transitions, null-safe four-decimal Jaccard ranges, integer count types, and foreign key patterns. Relational accounting and delta arithmetic are enforced programmatically by Python validators.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "transition_id",
+    "accession",
+    "protein_id",
+    "source_id",
+    "aspect",
+    "policy_id",
+    "baseline_concordance_status",
+    "recomparison_concordance_status",
+    "evaluability_transition",
+    "baseline_primary_reason",
+    "recomparison_primary_reason",
+    "primary_reason_transition",
+    "baseline_source_terms_count",
+    "recomparison_source_terms_count",
+    "delta_source_terms_count",
+    "baseline_quickgo_terms_count",
+    "recomparison_quickgo_terms_count",
+    "delta_quickgo_terms_count",
+    "baseline_exact_overlap_count",
+    "recomparison_exact_overlap_count",
+    "delta_exact_overlap_count",
+    "baseline_union_terms_count",
+    "recomparison_union_terms_count",
+    "delta_union_terms_count",
+    "source_set_content_changed",
+    "baseline_jaccard_similarity",
+    "recomparison_jaccard_similarity",
+    "delta_jaccard_similarity",
+    "metric_transition",
+    "overall_transition_classification",
+    "notes"
+  ],
+  "properties": {
+    "transition_id": {
+      "type": "string",
+      "pattern": "^MFP:TRNS:[A-Z0-9]+:MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16}):SRC_[A-Z0-9_]+:(BP|MF|CC):[a-z_]+$",
+      "description": "Deterministic unique comparison transition identifier: MFP:TRNS:<accession>:<protein_id>:<source_id>:<aspect>:<policy_id>."
+    },
+    "accession": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{6,10}$",
+      "description": "Queried cohort UniProtKB accession code."
+    },
+    "protein_id": {
+      "type": "string",
+      "pattern": "^MFP:(U:[0-9a-f]{16}|F:[A-Za-z0-9_]+:[0-9a-f]{16})$",
+      "description": "Resolved catalog entity identifier from candidate v0.3.0 mfp_proteins.csv."
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^SRC_[A-Z0-9_]+$",
+      "description": "Canonical source catalog identifier (e.g. SRC_MOONPROT, SRC_MULTITASKPROTDB_II, SRC_PLANTMP)."
+    },
+    "aspect": {
+      "type": "string",
+      "enum": ["BP", "MF", "CC"],
+      "description": "Evaluated Gene Ontology aspect."
+    },
+    "policy_id": {
+      "type": "string",
+      "enum": [
+        "captured_inventory_overlap",
+        "filtered_descriptive_overlap"
+      ],
+      "description": "Concordance policy identifier (Policy B unfiltered inventory or Policy C filtered descriptive overlap)."
+    },
+    "baseline_concordance_status": {
+      "type": "string",
+      "enum": ["evaluable", "not_evaluable"],
+      "description": "Binary evaluability flag in the frozen Stage P3 baseline."
+    },
+    "recomparison_concordance_status": {
+      "type": "string",
+      "enum": ["evaluable", "not_evaluable"],
+      "description": "Binary evaluability flag in the PIL-04.1B ontology-enriched recomparison."
+    },
+    "evaluability_transition": {
+      "type": "string",
+      "enum": [
+        "remains_evaluable",
+        "newly_evaluable",
+        "becomes_non_evaluable",
+        "remains_non_evaluable"
+      ],
+      "description": "Categorical transition state between baseline and recomparison evaluability."
+    },
+    "baseline_primary_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        null,
+        "unresolved_biological_identity",
+        "source_record_outside_slice",
+        "source_input_unavailable",
+        "source_aspect_indeterminate",
+        "source_record_no_terms_aspect",
+        "accession_absent_from_capture",
+        "accession_unlinked_in_capture",
+        "ambiguous_entity_mapping",
+        "external_zero_annotations_overall",
+        "external_zero_annotations_aspect",
+        "empty_after_filtering"
+      ],
+      "description": "Governing non-evaluable reason in baseline concordance matrix, or null if evaluable."
+    },
+    "recomparison_primary_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        null,
+        "unresolved_biological_identity",
+        "source_record_outside_slice",
+        "source_input_unavailable",
+        "source_aspect_indeterminate",
+        "source_record_no_terms_aspect",
+        "accession_absent_from_capture",
+        "accession_unlinked_in_capture",
+        "ambiguous_entity_mapping",
+        "external_zero_annotations_overall",
+        "external_zero_annotations_aspect",
+        "empty_after_filtering"
+      ],
+      "description": "Governing non-evaluable reason in recomparison concordance matrix, or null if evaluable."
+    },
+    "primary_reason_transition": {
+      "type": "string",
+      "enum": [
+        "unchanged_null",
+        "unchanged_reason",
+        "reason_changed",
+        "became_evaluable",
+        "became_non_evaluable"
+      ],
+      "description": "Categorical transition state between baseline and recomparison governing reasons."
+    },
+    "baseline_source_terms_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Baseline count of distinct source GO terms for this aspect, or null if indeterminate/unavailable."
+    },
+    "recomparison_source_terms_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Recomparison count of distinct source GO terms for this aspect, or null if indeterminate/unavailable."
+    },
+    "delta_source_terms_count": {
+      "type": ["integer", "null"],
+      "description": "Net change in distinct source terms (recomparison - baseline), or null if either side is null."
+    },
+    "baseline_quickgo_terms_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Baseline count of distinct QuickGO terms for this aspect, or null if unlinked/absent/unavailable."
+    },
+    "recomparison_quickgo_terms_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Recomparison count of distinct QuickGO terms for this aspect, or null if unlinked/absent/unavailable."
+    },
+    "delta_quickgo_terms_count": {
+      "type": ["integer", "null"],
+      "description": "Net change in distinct QuickGO terms (recomparison - baseline), or null if either side is null."
+    },
+    "baseline_exact_overlap_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Baseline exact set intersection count |S ∩ Q|, or null if either side is indeterminate/unavailable."
+    },
+    "recomparison_exact_overlap_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Recomparison exact set intersection count |S ∩ Q|, or null if either side is indeterminate/unavailable."
+    },
+    "delta_exact_overlap_count": {
+      "type": ["integer", "null"],
+      "description": "Net change in exact set intersection count (recomparison - baseline), or null if either side is null."
+    },
+    "baseline_union_terms_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Baseline exact set union count |S ∪ Q|, or null if either side is indeterminate/unavailable."
+    },
+    "recomparison_union_terms_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Recomparison exact set union count |S ∪ Q|, or null if either side is indeterminate/unavailable."
+    },
+    "delta_union_terms_count": {
+      "type": ["integer", "null"],
+      "description": "Net change in exact set union count (recomparison - baseline), or null if either side is null."
+    },
+    "source_set_content_changed": {
+      "type": "boolean",
+      "description": "True if the set of source GO IDs differs between baseline and recomparison, even if counts match."
+    },
+    "baseline_jaccard_similarity": {
+      "type": ["number", "null"],
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Baseline Jaccard similarity coefficient (rounded to 4 decimal places), or null if not evaluable."
+    },
+    "recomparison_jaccard_similarity": {
+      "type": ["number", "null"],
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Recomparison Jaccard similarity coefficient (rounded to 4 decimal places), or null if not evaluable."
+    },
+    "delta_jaccard_similarity": {
+      "type": ["number", "null"],
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "description": "Null-safe score difference rounded to 4 decimals (recomparison - baseline), or null if either is null."
+    },
+    "metric_transition": {
+      "type": "string",
+      "enum": [
+        "score_identical",
+        "score_increased",
+        "score_decreased",
+        "score_newly_defined",
+        "score_became_null",
+        "remains_null"
+      ],
+      "description": "Score-specific transition category reflecting Jaccard coefficient shifts."
+    },
+    "overall_transition_classification": {
+      "type": "string",
+      "enum": [
+        "newly_evaluable",
+        "becomes_non_evaluable",
+        "evaluable_score_increased",
+        "evaluable_score_decreased",
+        "evaluable_score_identical_inventory_changed",
+        "evaluable_fully_identical",
+        "non_evaluable_reason_changed",
+        "non_evaluable_diagnostics_or_inventory_changed",
+        "non_evaluable_fully_identical"
+      ],
+      "description": "Comprehensive summary transition state evaluated by strict deterministic precedence."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Curatorial or diagnostic transition notes, or null."
+    }
+  }
+}

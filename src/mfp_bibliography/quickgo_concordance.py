@@ -43,6 +43,199 @@ VERIFIED_COHORT_PAIRS: List[Tuple[str, str]] = [
 GO_ASPECTS: List[str] = ["BP", "MF", "CC"]
 POLICIES: List[str] = ["captured_inventory_overlap", "filtered_descriptive_overlap"]
 
+CONCORDANCE_COLUMNS: List[str] = [
+    "concordance_id",
+    "accession",
+    "protein_id",
+    "source_id",
+    "aspect",
+    "policy_id",
+    "source_inventory_status",
+    "quickgo_inventory_status",
+    "source_terms_count",
+    "quickgo_terms_count",
+    "exact_overlap_count",
+    "union_terms_count",
+    "source_only_count",
+    "quickgo_only_count",
+    "jaccard_similarity",
+    "concordance_status",
+    "primary_non_evaluable_reason",
+    "secondary_non_evaluable_reasons",
+    "identity_review_status",
+    "nd_matching_rows_count",
+    "root_matching_rows_count",
+    "nd_root_overlap_rows_count",
+    "net_excluded_rows_count",
+    "terms_lost_after_filtering_count",
+    "terms_retained_via_other_rows_count",
+    "unassessed_evidence_rows_count",
+]
+
+TRANSITION_COLUMNS: List[str] = [
+    "transition_id",
+    "accession",
+    "protein_id",
+    "source_id",
+    "aspect",
+    "policy_id",
+    "baseline_concordance_status",
+    "recomparison_concordance_status",
+    "evaluability_transition",
+    "baseline_primary_reason",
+    "recomparison_primary_reason",
+    "primary_reason_transition",
+    "baseline_source_terms_count",
+    "recomparison_source_terms_count",
+    "delta_source_terms_count",
+    "baseline_quickgo_terms_count",
+    "recomparison_quickgo_terms_count",
+    "delta_quickgo_terms_count",
+    "baseline_exact_overlap_count",
+    "recomparison_exact_overlap_count",
+    "delta_exact_overlap_count",
+    "baseline_union_terms_count",
+    "recomparison_union_terms_count",
+    "delta_union_terms_count",
+    "source_set_content_changed",
+    "baseline_jaccard_similarity",
+    "recomparison_jaccard_similarity",
+    "delta_jaccard_similarity",
+    "metric_transition",
+    "overall_transition_classification",
+    "notes",
+]
+
+
+class JoinIntegrityError(ValueError):
+    """Raised when source annotations and derived aspect metadata violate join integrity."""
+    pass
+
+
+class ConcordanceValidationError(ValueError):
+    """Raised when concordance or transition matrix fails contract or invariant validation."""
+    pass
+
+
+def validate_and_join_source_annotations(
+    source_annotations: List[Dict[str, Any]],
+    derived_aspects: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Join source annotations to derived aspects with strict 1:1 bijection enforcement.
+
+    Contract:
+      - Both datasets must have equal non-zero length.
+      - Every row in both datasets must have a valid non-empty annotation_id.
+      - annotation_id must be unique within each dataset (no duplicates).
+      - Every annotation_id in source must be present in derived, and vice versa.
+      - Invariant source fields must be identical across both datasets:
+          * protein_id == protein_id
+          * source_id == source_id
+          * source_record_id == source_record_id
+          * go_id == source_go_id
+          * parse_csv_value(go_aspect) == parse_csv_value(source_declared_aspect)
+      - Heuristic or fallback keys are strictly prohibited.
+      - Preservation of multiplicity: every source row is preserved 1:1.
+    """
+    if len(source_annotations) != len(derived_aspects):
+        raise JoinIntegrityError(
+            f"Row count mismatch: source has {len(source_annotations)} rows, "
+            f"derived aspects has {len(derived_aspects)} rows"
+        )
+
+    # Validate source IDs
+    source_by_id: Dict[str, Dict[str, Any]] = {}
+    for idx, s_row in enumerate(source_annotations):
+        ann_id = s_row.get("annotation_id")
+        if not ann_id or not str(ann_id).strip():
+            raise JoinIntegrityError(f"Source row {idx} is missing or has empty 'annotation_id'")
+        ann_id_str = str(ann_id).strip()
+        if ann_id_str in source_by_id:
+            raise JoinIntegrityError(f"Duplicate annotation_id in source annotations: '{ann_id_str}'")
+        source_by_id[ann_id_str] = s_row
+
+    # Validate derived IDs and bijection
+    derived_by_id: Dict[str, Dict[str, Any]] = {}
+    for idx, d_row in enumerate(derived_aspects):
+        ann_id = d_row.get("annotation_id")
+        if not ann_id or not str(ann_id).strip():
+            raise JoinIntegrityError(f"Derived aspects row {idx} is missing or has empty 'annotation_id'")
+        ann_id_str = str(ann_id).strip()
+        if ann_id_str in derived_by_id:
+            raise JoinIntegrityError(f"Duplicate annotation_id in derived aspects: '{ann_id_str}'")
+        if ann_id_str not in source_by_id:
+            raise JoinIntegrityError(
+                f"Unexpected annotation_id in derived aspects not present in source: '{ann_id_str}'"
+            )
+        derived_by_id[ann_id_str] = d_row
+
+    if len(derived_by_id) != len(source_by_id):
+        missing = set(source_by_id.keys()) - set(derived_by_id.keys())
+        raise JoinIntegrityError(
+            f"Missing {len(missing)} annotation_id(s) in derived aspects (e.g. {sorted(missing)[:3]})"
+        )
+
+    # Verify invariants and construct joined rows
+    joined_rows: List[Dict[str, Any]] = []
+    for s_row in source_annotations:
+        ann_id_str = str(s_row["annotation_id"]).strip()
+        d_row = derived_by_id[ann_id_str]
+
+        # Field invariance checks
+        s_pid = str(s_row.get("protein_id", "")).strip()
+        d_pid = str(d_row.get("protein_id", "")).strip()
+        if s_pid != d_pid:
+            raise JoinIntegrityError(
+                f"Contradictory protein_id for annotation_id '{ann_id_str}': "
+                f"source='{s_pid}' vs derived='{d_pid}'"
+            )
+
+        s_sid = str(s_row.get("source_id", "")).strip()
+        d_sid = str(d_row.get("source_id", "")).strip()
+        if s_sid != d_sid:
+            raise JoinIntegrityError(
+                f"Contradictory source_id for annotation_id '{ann_id_str}': "
+                f"source='{s_sid}' vs derived='{d_sid}'"
+            )
+
+        s_srid = str(s_row.get("source_record_id", "")).strip()
+        d_srid = str(d_row.get("source_record_id", "")).strip()
+        if s_srid != d_srid:
+            raise JoinIntegrityError(
+                f"Contradictory source_record_id for annotation_id '{ann_id_str}': "
+                f"source='{s_srid}' vs derived='{d_srid}'"
+            )
+
+        s_goid = str(s_row.get("go_id", "")).strip()
+        d_goid = str(d_row.get("source_go_id", "")).strip()
+        if s_goid != d_goid:
+            raise JoinIntegrityError(
+                f"Contradictory go_id vs source_go_id for annotation_id '{ann_id_str}': "
+                f"source='{s_goid}' vs derived='{d_goid}'"
+            )
+
+        s_asp = parse_csv_value(s_row.get("go_aspect"))
+        d_asp = parse_csv_value(d_row.get("source_declared_aspect"))
+        if s_asp != d_asp:
+            raise JoinIntegrityError(
+                f"Contradictory source declared aspect for annotation_id '{ann_id_str}': "
+                f"source go_aspect='{s_asp}' vs derived source_declared_aspect='{d_asp}'"
+            )
+
+        merged = dict(s_row)
+        merged["resolved_go_id"] = d_row.get("resolved_go_id")
+        merged["derived_aspect"] = d_row.get("derived_aspect")
+        merged["mapping_status"] = d_row.get("mapping_status")
+        merged["source_declared_aspect"] = d_asp
+        merged["replaced_by_go_id"] = d_row.get("replaced_by_go_id")
+        merged["consider_go_ids"] = d_row.get("consider_go_ids")
+        merged["term_name_resolved"] = d_row.get("term_name_resolved")
+        merged["ontology_version"] = d_row.get("ontology_version")
+        merged["ontology_sha256"] = d_row.get("ontology_sha256")
+        joined_rows.append(merged)
+
+    return joined_rows
+
 RAW_CATEGORY_MAP: Dict[str, str] = {
     "P": "BP",
     "biological_process": "BP",
@@ -195,13 +388,29 @@ def build_concordance_matrix(
     functional_coverage: List[Dict[str, Any]],
     catalog_map: Dict[str, str],
     pairs: Optional[List[Tuple[str, str]]] = None,
+    derived_aspects_rows: Optional[List[Dict[str, Any]]] = None,
+    source_term_sets_out: Optional[Dict[str, Set[str]]] = None,
 ) -> List[Dict[str, Any]]:
-    """Build the 72-row Gene Ontology concordance comparison matrix."""
+    """Build the Gene Ontology concordance comparison matrix.
+
+    In legacy mode (derived_aspects_rows is None), reproduces historical Stage P3 matrix.
+    In enriched mode (derived_aspects_rows is not None), joins source annotations with
+    derived aspects, applies obsolete-term rules (Cases A-D) and aspect conflict quarantine,
+    preserving exact verbatim GO ID set matching and schema compatibility.
+    """
     cov_by_acc = {r["accession"]: r for r in raw_coverage}
     slice_pids = {r["protein_id"] for r in functional_coverage}
 
     target_pairs = pairs if pairs is not None else VERIFIED_COHORT_PAIRS
     rows: List[Dict[str, Any]] = []
+
+    # If enrichment metadata is supplied, validate and join
+    if derived_aspects_rows is not None:
+        effective_source_annotations = validate_and_join_source_annotations(
+            source_go_annotations, derived_aspects_rows
+        )
+    else:
+        effective_source_annotations = source_go_annotations
 
     for acc, source_id in target_pairs:
         if acc not in catalog_map or acc not in cov_by_acc:
@@ -217,14 +426,59 @@ def build_concordance_matrix(
         # 2. Source Aspect Inventory
         in_slice = protein_id in slice_pids
         s_ann_pair = [
-            r for r in source_go_annotations
+            r for r in effective_source_annotations
             if r["protein_id"] == protein_id and r["source_id"] == source_id
         ]
-        has_any_source_terms = len(s_ann_pair) > 0
-        all_source_aspects_undeclared = (
-            has_any_source_terms
-            and all(not parse_csv_value(r.get("go_aspect")) for r in s_ann_pair)
-        )
+
+        if derived_aspects_rows is None:
+            # Legacy Mode aspect resolution
+            has_any_source_terms = len(s_ann_pair) > 0
+            all_source_aspects_undeclared = (
+                has_any_source_terms
+                and all(not parse_csv_value(r.get("go_aspect")) for r in s_ann_pair)
+            )
+            conflict_aspects: Set[str] = set()
+        else:
+            # Enriched Mode aspect resolution
+            conflict_aspects = set()
+            for r in s_ann_pair:
+                if r.get("mapping_status") == "conflict_source_ontology_aspect_mismatch":
+                    decl_a = parse_csv_value(r.get("source_declared_aspect"))
+                    deriv_a = parse_csv_value(r.get("derived_aspect"))
+                    if decl_a in GO_ASPECTS:
+                        conflict_aspects.add(decl_a)
+                    if deriv_a in GO_ASPECTS:
+                        conflict_aspects.add(deriv_a)
+
+            for r in s_ann_pair:
+                if r.get("mapping_status") == "conflict_source_ontology_aspect_mismatch":
+                    r["_assigned_aspect"] = None
+                else:
+                    decl_a = parse_csv_value(r.get("source_declared_aspect"))
+                    if decl_a in GO_ASPECTS:
+                        # Case A / Case D declared: retain declared aspect with verbatim source GO ID
+                        r["_assigned_aspect"] = decl_a
+                    elif decl_a is None or decl_a == "unassigned":
+                        deriv_a = parse_csv_value(r.get("derived_aspect"))
+                        map_s = r.get("mapping_status")
+                        if deriv_a in GO_ASPECTS and map_s in ("resolved_primary", "resolved_secondary_alt_id"):
+                            # Case C: resolved active term mapped to derived aspect
+                            r["_assigned_aspect"] = deriv_a
+                        else:
+                            # Case B (obsolete) or Case D (unknown/malformed): remains unassigned
+                            r["_assigned_aspect"] = None
+                    else:
+                        r["_assigned_aspect"] = None
+
+            has_any_source_terms = len(s_ann_pair) > 0
+            all_source_aspects_undeclared = (
+                has_any_source_terms
+                and all(
+                    parse_csv_value(r.get("source_declared_aspect")) in (None, "unassigned")
+                    and r.get("_assigned_aspect") is None
+                    for r in s_ann_pair
+                )
+            )
 
         for aspect in GO_ASPECTS:
             # QuickGO terms for this aspect (Policy B)
@@ -255,16 +509,32 @@ def build_concordance_matrix(
                 s_terms_count_B: Optional[int] = None
                 s_terms_B: Set[str] = set()
                 s_aspect_rows: List[Dict[str, Any]] = []
+                unit_has_conflict = False
+            elif aspect in conflict_aspects:
+                # Quarantined due to aspect conflict contaminating this aspect unit
+                s_status = "indeterminate"
+                s_terms_count_B = None
+                s_terms_B = set()
+                s_aspect_rows = []
+                unit_has_conflict = True
             elif all_source_aspects_undeclared:
                 s_status = "indeterminate"
                 s_terms_count_B = None
                 s_terms_B = set()
                 s_aspect_rows = []
+                unit_has_conflict = False
             else:
-                s_aspect_rows = [
-                    r for r in s_ann_pair
-                    if parse_csv_value(r.get("go_aspect")) == aspect
-                ]
+                unit_has_conflict = False
+                if derived_aspects_rows is None:
+                    s_aspect_rows = [
+                        r for r in s_ann_pair
+                        if parse_csv_value(r.get("go_aspect")) == aspect
+                    ]
+                else:
+                    s_aspect_rows = [
+                        r for r in s_ann_pair
+                        if r.get("_assigned_aspect") == aspect
+                    ]
                 s_terms_B = set(r["go_id"] for r in s_aspect_rows)
                 if len(s_terms_B) == 0:
                     s_status = "empty"
@@ -354,6 +624,12 @@ def build_concordance_matrix(
                             s_curr_status = "empty"
                         else:
                             s_curr_status = "available"
+
+                if source_term_sets_out is not None:
+                    if s_curr_status in ("available", "empty"):
+                        source_term_sets_out[concordance_id] = set(s_terms)
+                    else:
+                        source_term_sets_out[concordance_id] = None
 
                 # Metrics and Evaluability
                 if s_terms_count is None or q_terms_count is None:
@@ -451,6 +727,8 @@ def build_concordance_matrix(
                             break
 
                     secondary_reasons = [r for r in all_detected if r != primary_reason]
+                    if unit_has_conflict and "source_aspect_conflict" not in secondary_reasons:
+                        secondary_reasons.append("source_aspect_conflict")
 
                 sec_str = ";".join(secondary_reasons) if secondary_reasons else None
 
@@ -778,3 +1056,792 @@ def validate_slice_outputs(
                 assert j is not None
                 if ov_cnt == 0:
                     assert j == 0.0
+
+
+def parse_concordance_csv_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    """Parse CSV string values to typed python primitives for concordance schema validation.
+
+    Preserves unexpected properties so schema validation can enforce additionalProperties.
+    """
+    parsed: Dict[str, Any] = dict(row)
+    for k in [
+        "concordance_id",
+        "accession",
+        "protein_id",
+        "source_id",
+        "aspect",
+        "policy_id",
+        "source_inventory_status",
+        "quickgo_inventory_status",
+        "concordance_status",
+        "identity_review_status",
+    ]:
+        if k in parsed and parsed[k] is not None:
+            parsed[k] = str(parsed[k]).strip()
+
+    for k in ["primary_non_evaluable_reason", "secondary_non_evaluable_reasons"]:
+        if k in parsed:
+            parsed[k] = parse_csv_value(parsed[k])
+
+    for k in [
+        "source_terms_count",
+        "quickgo_terms_count",
+        "exact_overlap_count",
+        "union_terms_count",
+        "source_only_count",
+        "quickgo_only_count",
+        "nd_matching_rows_count",
+        "root_matching_rows_count",
+        "nd_root_overlap_rows_count",
+        "net_excluded_rows_count",
+        "terms_lost_after_filtering_count",
+        "terms_retained_via_other_rows_count",
+        "unassessed_evidence_rows_count",
+    ]:
+        if k in parsed:
+            v = parse_csv_value(parsed[k])
+            parsed[k] = int(v) if v is not None else None
+
+    if "jaccard_similarity" in parsed:
+        v = parse_csv_value(parsed["jaccard_similarity"])
+        parsed["jaccard_similarity"] = float(v) if v is not None else None
+
+    return parsed
+
+
+def parse_transition_csv_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    """Parse CSV string values to typed python primitives for transition schema validation.
+
+    Preserves unexpected properties so schema validation can enforce additionalProperties.
+    Rejects malformed boolean tokens rather than converting unrecognized values to false.
+    """
+    parsed: Dict[str, Any] = dict(row)
+    for k in [
+        "transition_id",
+        "accession",
+        "protein_id",
+        "source_id",
+        "aspect",
+        "policy_id",
+        "baseline_concordance_status",
+        "recomparison_concordance_status",
+        "evaluability_transition",
+        "primary_reason_transition",
+        "metric_transition",
+        "overall_transition_classification",
+    ]:
+        if k in parsed and parsed[k] is not None:
+            parsed[k] = str(parsed[k]).strip()
+
+    for k in ["baseline_primary_reason", "recomparison_primary_reason", "notes"]:
+        if k in parsed:
+            parsed[k] = parse_csv_value(parsed[k])
+
+    if "source_set_content_changed" in parsed:
+        val_bool = parsed["source_set_content_changed"]
+        if isinstance(val_bool, bool):
+            parsed["source_set_content_changed"] = val_bool
+        elif isinstance(val_bool, str):
+            token = val_bool.strip().lower()
+            if token in ("true", "1", "t"):
+                parsed["source_set_content_changed"] = True
+            elif token in ("false", "0", "f"):
+                parsed["source_set_content_changed"] = False
+            else:
+                raise ConcordanceValidationError(
+                    f"Malformed CSV boolean value for 'source_set_content_changed': '{val_bool}'"
+                )
+        else:
+            raise ConcordanceValidationError(
+                f"Malformed boolean value for 'source_set_content_changed': {val_bool}"
+            )
+
+    for k in [
+        "baseline_source_terms_count",
+        "recomparison_source_terms_count",
+        "delta_source_terms_count",
+        "baseline_quickgo_terms_count",
+        "recomparison_quickgo_terms_count",
+        "delta_quickgo_terms_count",
+        "baseline_exact_overlap_count",
+        "recomparison_exact_overlap_count",
+        "delta_exact_overlap_count",
+        "baseline_union_terms_count",
+        "recomparison_union_terms_count",
+        "delta_union_terms_count",
+    ]:
+        if k in parsed:
+            v = parse_csv_value(parsed[k])
+            parsed[k] = int(v) if v is not None else None
+
+    for k in [
+        "baseline_jaccard_similarity",
+        "recomparison_jaccard_similarity",
+        "delta_jaccard_similarity",
+    ]:
+        if k in parsed:
+            v = parse_csv_value(parsed[k])
+            parsed[k] = float(v) if v is not None else None
+
+    return parsed
+
+
+def build_concordance_transition_matrix(
+    baseline_concordance_rows: List[Dict[str, Any]],
+    recomparison_concordance_rows: List[Dict[str, Any]],
+    baseline_source_sets: Optional[Dict[str, Set[str]]] = None,
+    recomparison_source_sets: Optional[Dict[str, Set[str]]] = None,
+) -> List[Dict[str, Any]]:
+    """Build the transition matrix comparing baseline and recomparison concordance matrices.
+
+    Args:
+        baseline_concordance_rows: Rows from baseline concordance matrix.
+        recomparison_concordance_rows: Rows from recomputed concordance matrix.
+        baseline_source_sets: Mapping of concordance_id -> set of source GO IDs in baseline.
+        recomparison_source_sets: Mapping of concordance_id -> set of source GO IDs in recomparison.
+
+    Returns:
+        List of transition row dicts conforming to quickgo_concordance_transition.schema.json.
+    """
+    # 1. Reject duplicates and verify concordance_id against component key
+    base_by_key: Dict[Tuple[str, str, str, str, str], Dict[str, Any]] = {}
+    for idx, r in enumerate(baseline_concordance_rows):
+        for fld in ("accession", "protein_id", "source_id", "aspect", "policy_id", "concordance_id"):
+            if not r.get(fld) or not str(r[fld]).strip():
+                raise ConcordanceValidationError(f"Baseline row {idx} is missing required field '{fld}'")
+        acc, pid, src, asp, pol = (
+            str(r["accession"]).strip(),
+            str(r["protein_id"]).strip(),
+            str(r["source_id"]).strip(),
+            str(r["aspect"]).strip(),
+            str(r["policy_id"]).strip(),
+        )
+        expected_cid = f"MFP:CONC:{acc}:{pid}:{src}:{asp}:{pol}"
+        actual_cid = str(r["concordance_id"]).strip()
+        if actual_cid != expected_cid:
+            raise ConcordanceValidationError(
+                f"Concordance ID mismatch in baseline row {idx}: '{actual_cid}' != expected '{expected_cid}'"
+            )
+        key = (acc, pid, src, asp, pol)
+        if key in base_by_key:
+            raise ConcordanceValidationError(f"Duplicate comparison key in baseline concordance rows: {key}")
+        base_by_key[key] = r
+
+    recomp_by_key: Dict[Tuple[str, str, str, str, str], Dict[str, Any]] = {}
+    for idx, r in enumerate(recomparison_concordance_rows):
+        for fld in ("accession", "protein_id", "source_id", "aspect", "policy_id", "concordance_id"):
+            if not r.get(fld) or not str(r[fld]).strip():
+                raise ConcordanceValidationError(f"Recomparison row {idx} is missing required field '{fld}'")
+        acc, pid, src, asp, pol = (
+            str(r["accession"]).strip(),
+            str(r["protein_id"]).strip(),
+            str(r["source_id"]).strip(),
+            str(r["aspect"]).strip(),
+            str(r["policy_id"]).strip(),
+        )
+        expected_cid = f"MFP:CONC:{acc}:{pid}:{src}:{asp}:{pol}"
+        actual_cid = str(r["concordance_id"]).strip()
+        if actual_cid != expected_cid:
+            raise ConcordanceValidationError(
+                f"Concordance ID mismatch in recomparison row {idx}: '{actual_cid}' != expected '{expected_cid}'"
+            )
+        key = (acc, pid, src, asp, pol)
+        if key in recomp_by_key:
+            raise ConcordanceValidationError(f"Duplicate comparison key in recomparison concordance rows: {key}")
+        recomp_by_key[key] = r
+
+    # 2. Require exact baseline/recomparison key correspondence
+    if set(base_by_key.keys()) != set(recomp_by_key.keys()):
+        missing = set(base_by_key.keys()) - set(recomp_by_key.keys())
+        extra = set(recomp_by_key.keys()) - set(base_by_key.keys())
+        raise ConcordanceValidationError(
+            f"Comparison universe key mismatch: {len(missing)} missing in recomparison, "
+            f"{len(extra)} unexpected in recomparison"
+        )
+
+    transition_rows: List[Dict[str, Any]] = []
+
+    for key, b_row in base_by_key.items():
+        r_row = recomp_by_key[key]
+        acc, pid, src_id, aspect, policy_id = key
+        t_id = f"MFP:TRNS:{acc}:{pid}:{src_id}:{aspect}:{policy_id}"
+        cid = f"MFP:CONC:{acc}:{pid}:{src_id}:{aspect}:{policy_id}"
+
+        b_st = b_row["concordance_status"]
+        r_st = r_row["concordance_status"]
+
+        # Evaluability transition
+        if b_st == "evaluable" and r_st == "evaluable":
+            eval_trans = "remains_evaluable"
+        elif b_st == "not_evaluable" and r_st == "evaluable":
+            eval_trans = "newly_evaluable"
+        elif b_st == "evaluable" and r_st == "not_evaluable":
+            eval_trans = "becomes_non_evaluable"
+        else:
+            eval_trans = "remains_non_evaluable"
+
+        # Primary reason transition
+        b_reason = parse_csv_value(b_row.get("primary_non_evaluable_reason"))
+        r_reason = parse_csv_value(r_row.get("primary_non_evaluable_reason"))
+        if b_st == "evaluable" and r_st == "evaluable":
+            reason_trans = "unchanged_null"
+        elif b_st == "not_evaluable" and r_st == "evaluable":
+            reason_trans = "became_evaluable"
+        elif b_st == "evaluable" and r_st == "not_evaluable":
+            reason_trans = "became_non_evaluable"
+        else:
+            if b_reason == r_reason:
+                reason_trans = "unchanged_reason"
+            else:
+                reason_trans = "reason_changed"
+
+        # Count deltas
+        def _delta_int(r_val: Any, b_val: Any) -> Optional[int]:
+            v_r = parse_csv_value(r_val)
+            v_b = parse_csv_value(b_val)
+            if v_r is not None and v_b is not None:
+                return int(v_r) - int(v_b)
+            return None
+
+        d_source = _delta_int(r_row.get("source_terms_count"), b_row.get("source_terms_count"))
+        d_quickgo = _delta_int(r_row.get("quickgo_terms_count"), b_row.get("quickgo_terms_count"))
+        d_overlap = _delta_int(r_row.get("exact_overlap_count"), b_row.get("exact_overlap_count"))
+        d_union = _delta_int(r_row.get("union_terms_count"), b_row.get("union_terms_count"))
+
+        # Source set content change
+        b_inv = b_row.get("source_inventory_status")
+        r_inv = r_row.get("source_inventory_status")
+        b_is_comparable = b_inv in ("available", "empty")
+        r_is_comparable = r_inv in ("available", "empty")
+
+        row_notes: Optional[str] = None
+        if b_is_comparable and r_is_comparable:
+            if baseline_source_sets is None or recomparison_source_sets is None:
+                raise ConcordanceValidationError(
+                    f"Missing required source-set maps for comparable inventory '{cid}'"
+                )
+            if cid not in baseline_source_sets:
+                raise ConcordanceValidationError(
+                    f"Missing required comparison key '{cid}' in baseline_source_sets map"
+                )
+            if cid not in recomparison_source_sets:
+                raise ConcordanceValidationError(
+                    f"Missing required comparison key '{cid}' in recomparison_source_sets map"
+                )
+            b_set = baseline_source_sets[cid]
+            r_set = recomparison_source_sets[cid]
+            if b_set is None or r_set is None:
+                raise ConcordanceValidationError(
+                    f"Source-set is None for comparable inventory '{cid}' (expected set or empty set)"
+                )
+            source_set_content_changed = (b_set != r_set)
+        elif b_is_comparable != r_is_comparable:
+            source_set_content_changed = True
+            row_notes = f"Inventory comparability status changed: baseline '{b_inv}' vs recomparison '{r_inv}'"
+        else:
+            # Both non-comparable ("indeterminate", "outside_slice", "unavailable")
+            # Operational convention: non-comparable inventories cannot be biologically compared.
+            # If statuses are identical, source_set_content_changed is False by convention (no biological equality asserted).
+            # If statuses differ, source_set_content_changed is True.
+            if b_inv == r_inv:
+                source_set_content_changed = False
+                row_notes = "Non-comparable inventories: operational convention applied (no biological equality asserted)"
+            else:
+                source_set_content_changed = True
+                row_notes = f"Non-comparable inventory status shifted: baseline '{b_inv}' vs recomparison '{r_inv}'"
+
+        # Jaccard similarity and metric transition (4-decimal precision)
+        b_j = parse_csv_value(b_row.get("jaccard_similarity"))
+        r_j = parse_csv_value(r_row.get("jaccard_similarity"))
+        b_j_float = float(b_j) if b_j is not None else None
+        r_j_float = float(r_j) if r_j is not None else None
+
+        if b_j_float is not None and r_j_float is not None:
+            d_jaccard: Optional[float] = round(r_j_float - b_j_float, 4)
+        else:
+            d_jaccard = None
+
+        if b_j_float is None and r_j_float is None:
+            metric_trans = "remains_null"
+        elif b_j_float is None and r_j_float is not None:
+            metric_trans = "score_newly_defined"
+        elif b_j_float is not None and r_j_float is None:
+            metric_trans = "score_became_null"
+        else:
+            if d_jaccard == 0.0:
+                metric_trans = "score_identical"
+            elif d_jaccard is not None and d_jaccard > 0.0:
+                metric_trans = "score_increased"
+            else:
+                metric_trans = "score_decreased"
+
+        # Overall transition classification (Strict Precedence)
+        if b_st == "not_evaluable" and r_st == "evaluable":
+            overall = "newly_evaluable"
+        elif b_st == "evaluable" and r_st == "not_evaluable":
+            overall = "becomes_non_evaluable"
+        elif b_st == "evaluable" and r_st == "evaluable":
+            if d_jaccard is not None and d_jaccard > 0.0:
+                overall = "evaluable_score_increased"
+            elif d_jaccard is not None and d_jaccard < 0.0:
+                overall = "evaluable_score_decreased"
+            else:
+                counts_or_set_changed = (
+                    d_source != 0 or d_quickgo != 0 or d_overlap != 0 or d_union != 0 or source_set_content_changed
+                )
+                if counts_or_set_changed:
+                    overall = "evaluable_score_identical_inventory_changed"
+                else:
+                    overall = "evaluable_fully_identical"
+        else:  # both not_evaluable
+            if b_reason != r_reason:
+                overall = "non_evaluable_reason_changed"
+            else:
+                b_sec = parse_csv_value(b_row.get("secondary_non_evaluable_reasons"))
+                r_sec = parse_csv_value(r_row.get("secondary_non_evaluable_reasons"))
+                b_inv_s = b_row.get("source_inventory_status")
+                r_inv_s = r_row.get("source_inventory_status")
+                b_inv_q = b_row.get("quickgo_inventory_status")
+                r_inv_q = r_row.get("quickgo_inventory_status")
+                diag_or_inv_changed = (
+                    b_sec != r_sec
+                    or b_inv_s != r_inv_s
+                    or b_inv_q != r_inv_q
+                    or (d_source is not None and d_source != 0)
+                    or (d_quickgo is not None and d_quickgo != 0)
+                    or source_set_content_changed
+                )
+                if diag_or_inv_changed:
+                    overall = "non_evaluable_diagnostics_or_inventory_changed"
+                else:
+                    overall = "non_evaluable_fully_identical"
+
+        def _as_int_or_none(val: Any) -> Optional[int]:
+            v = parse_csv_value(val)
+            return int(v) if v is not None else None
+
+        t_row: Dict[str, Any] = {
+            "transition_id": t_id,
+            "accession": acc,
+            "protein_id": pid,
+            "source_id": src_id,
+            "aspect": aspect,
+            "policy_id": policy_id,
+            "baseline_concordance_status": b_st,
+            "recomparison_concordance_status": r_st,
+            "evaluability_transition": eval_trans,
+            "baseline_primary_reason": b_reason,
+            "recomparison_primary_reason": r_reason,
+            "primary_reason_transition": reason_trans,
+            "baseline_source_terms_count": _as_int_or_none(b_row.get("source_terms_count")),
+            "recomparison_source_terms_count": _as_int_or_none(r_row.get("source_terms_count")),
+            "delta_source_terms_count": d_source,
+            "baseline_quickgo_terms_count": _as_int_or_none(b_row.get("quickgo_terms_count")),
+            "recomparison_quickgo_terms_count": _as_int_or_none(r_row.get("quickgo_terms_count")),
+            "delta_quickgo_terms_count": d_quickgo,
+            "baseline_exact_overlap_count": _as_int_or_none(b_row.get("exact_overlap_count")),
+            "recomparison_exact_overlap_count": _as_int_or_none(r_row.get("exact_overlap_count")),
+            "delta_exact_overlap_count": d_overlap,
+            "baseline_union_terms_count": _as_int_or_none(b_row.get("union_terms_count")),
+            "recomparison_union_terms_count": _as_int_or_none(r_row.get("union_terms_count")),
+            "delta_union_terms_count": d_union,
+            "source_set_content_changed": source_set_content_changed,
+            "baseline_jaccard_similarity": b_j_float,
+            "recomparison_jaccard_similarity": r_j_float,
+            "delta_jaccard_similarity": d_jaccard,
+            "metric_transition": metric_trans,
+            "overall_transition_classification": overall,
+            "notes": row_notes,
+        }
+        transition_rows.append(t_row)
+
+    transition_rows.sort(key=lambda r: (r["accession"], r["source_id"], r["aspect"], r["policy_id"]))
+    return transition_rows
+
+
+def validate_transition_matrix(
+    rows: List[Dict[str, Any]],
+    baseline_rows: Optional[List[Dict[str, Any]]] = None,
+    recomparison_rows: Optional[List[Dict[str, Any]]] = None,
+    schema_path: Optional[Path] = None,
+) -> None:
+    """Validate transition matrix against JSON Schema and programmatic invariants."""
+    if schema_path is None:
+        schema_path = Path(__file__).resolve().parent.parent.parent / "data/curated/quickgo_concordance_transition.schema.json"
+
+    if not schema_path.is_file():
+        raise FileNotFoundError(f"Transition schema not found at {schema_path}")
+
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    validator = jsonschema.Draft202012Validator(schema)
+
+    # 1. Row-level schema validation
+    parsed_rows = []
+    for r in rows:
+        parsed = parse_transition_csv_row(r)
+        validator.validate(parsed)
+        parsed_rows.append(parsed)
+
+    # 2. Key uniqueness and ID correspondence
+    t_ids: Set[str] = set()
+    for r in parsed_rows:
+        tid = r["transition_id"]
+        if tid in t_ids:
+            raise ConcordanceValidationError(f"Duplicate transition_id found in transition matrix: {tid}")
+        t_ids.add(tid)
+
+        expected_tid = f"MFP:TRNS:{r['accession']}:{r['protein_id']}:{r['source_id']}:{r['aspect']}:{r['policy_id']}"
+        if tid != expected_tid:
+            raise ConcordanceValidationError(
+                f"Transition ID mismatch: '{tid}' != expected '{expected_tid}'"
+            )
+
+    # 3. Arithmetic and categorical invariants
+    for r in parsed_rows:
+        tid = r["transition_id"]
+        b_s = r["baseline_source_terms_count"]
+        r_s = r["recomparison_source_terms_count"]
+        d_s = r["delta_source_terms_count"]
+        if b_s is not None and r_s is not None:
+            if d_s != (r_s - b_s):
+                raise ConcordanceValidationError(f"Arithmetic delta error in delta_source_terms_count: {d_s} != {r_s} - {b_s} in {tid}")
+        elif d_s is not None:
+            raise ConcordanceValidationError(f"delta_source_terms_count must be null when either baseline or recomparison is null: {tid}")
+
+        b_q = r["baseline_quickgo_terms_count"]
+        r_q = r["recomparison_quickgo_terms_count"]
+        d_q = r["delta_quickgo_terms_count"]
+        if b_q is not None and r_q is not None:
+            if d_q != (r_q - b_q):
+                raise ConcordanceValidationError(f"Arithmetic delta error in delta_quickgo_terms_count: {d_q} != {r_q} - {b_q} in {tid}")
+        elif d_q is not None:
+            raise ConcordanceValidationError(f"delta_quickgo_terms_count must be null when either baseline or recomparison is null: {tid}")
+
+        b_o = r["baseline_exact_overlap_count"]
+        r_o = r["recomparison_exact_overlap_count"]
+        d_o = r["delta_exact_overlap_count"]
+        if b_o is not None and r_o is not None:
+            if d_o != (r_o - b_o):
+                raise ConcordanceValidationError(f"Arithmetic delta error in delta_exact_overlap_count: {d_o} != {r_o} - {b_o} in {tid}")
+        elif d_o is not None:
+            raise ConcordanceValidationError(f"delta_exact_overlap_count must be null when either baseline or recomparison is null: {tid}")
+
+        b_u = r["baseline_union_terms_count"]
+        r_u = r["recomparison_union_terms_count"]
+        d_u = r["delta_union_terms_count"]
+        if b_u is not None and r_u is not None:
+            if d_u != (r_u - b_u):
+                raise ConcordanceValidationError(f"Arithmetic delta error in delta_union_terms_count: {d_u} != {r_u} - {b_u} in {tid}")
+        elif d_u is not None:
+            raise ConcordanceValidationError(f"delta_union_terms_count must be null when either baseline or recomparison is null: {tid}")
+
+        b_j = r["baseline_jaccard_similarity"]
+        r_j = r["recomparison_jaccard_similarity"]
+        d_j = r["delta_jaccard_similarity"]
+        if b_j is not None and r_j is not None:
+            expected_dj = round(r_j - b_j, 4)
+            if d_j != expected_dj:
+                raise ConcordanceValidationError(f"Arithmetic delta error in delta_jaccard_similarity: {d_j} != {expected_dj} in {tid}")
+        elif d_j is not None:
+            raise ConcordanceValidationError(f"delta_jaccard_similarity must be null when either baseline or recomparison is null: {tid}")
+
+        m_t = r["metric_transition"]
+        if b_j is None and r_j is None:
+            if m_t != "remains_null":
+                raise ConcordanceValidationError(f"metric_transition must be 'remains_null' when both Jaccard scores are null: {tid}")
+        elif b_j is None and r_j is not None:
+            if m_t != "score_newly_defined":
+                raise ConcordanceValidationError(f"metric_transition must be 'score_newly_defined': {tid}")
+        elif b_j is not None and r_j is None:
+            if m_t != "score_became_null":
+                raise ConcordanceValidationError(f"metric_transition must be 'score_became_null': {tid}")
+        else:
+            if d_j == 0.0 and m_t != "score_identical":
+                raise ConcordanceValidationError(f"metric_transition must be 'score_identical': {tid}")
+            elif d_j is not None and d_j > 0.0 and m_t != "score_increased":
+                raise ConcordanceValidationError(f"metric_transition must be 'score_increased': {tid}")
+            elif d_j is not None and d_j < 0.0 and m_t != "score_decreased":
+                raise ConcordanceValidationError(f"metric_transition must be 'score_decreased': {tid}")
+
+        b_st = r["baseline_concordance_status"]
+        r_st = r["recomparison_concordance_status"]
+        e_t = r["evaluability_transition"]
+        if b_st == "evaluable" and r_st == "evaluable" and e_t != "remains_evaluable":
+            raise ConcordanceValidationError(f"evaluability_transition mismatch: {tid}")
+        elif b_st == "not_evaluable" and r_st == "evaluable" and e_t != "newly_evaluable":
+            raise ConcordanceValidationError(f"evaluability_transition mismatch: {tid}")
+        elif b_st == "evaluable" and r_st == "not_evaluable" and e_t != "becomes_non_evaluable":
+            raise ConcordanceValidationError(f"evaluability_transition mismatch: {tid}")
+        elif b_st == "not_evaluable" and r_st == "not_evaluable" and e_t != "remains_non_evaluable":
+            raise ConcordanceValidationError(f"evaluability_transition mismatch: {tid}")
+
+        b_reas = r["baseline_primary_reason"]
+        r_reas = r["recomparison_primary_reason"]
+        p_t = r["primary_reason_transition"]
+        if b_st == "evaluable" and r_st == "evaluable":
+            if p_t != "unchanged_null":
+                raise ConcordanceValidationError(f"primary_reason_transition must be 'unchanged_null': {tid}")
+        elif b_st == "not_evaluable" and r_st == "evaluable":
+            if p_t != "became_evaluable":
+                raise ConcordanceValidationError(f"primary_reason_transition must be 'became_evaluable': {tid}")
+        elif b_st == "evaluable" and r_st == "not_evaluable":
+            if p_t != "became_non_evaluable":
+                raise ConcordanceValidationError(f"primary_reason_transition must be 'became_non_evaluable': {tid}")
+        else:
+            if b_reas == r_reas and p_t != "unchanged_reason":
+                raise ConcordanceValidationError(f"primary_reason_transition must be 'unchanged_reason': {tid}")
+            elif b_reas != r_reas and p_t != "reason_changed":
+                raise ConcordanceValidationError(f"primary_reason_transition must be 'reason_changed': {tid}")
+
+        # Check overall classification precedence
+        ov_cls = r["overall_transition_classification"]
+        set_changed = r["source_set_content_changed"]
+        if b_st == "not_evaluable" and r_st == "evaluable":
+            expected_ov = "newly_evaluable"
+        elif b_st == "evaluable" and r_st == "not_evaluable":
+            expected_ov = "becomes_non_evaluable"
+        elif b_st == "evaluable" and r_st == "evaluable":
+            if d_j is not None and d_j > 0.0:
+                expected_ov = "evaluable_score_increased"
+            elif d_j is not None and d_j < 0.0:
+                expected_ov = "evaluable_score_decreased"
+            else:
+                counts_or_set = (
+                    d_s != 0 or d_q != 0 or d_o != 0 or d_u != 0 or set_changed
+                )
+                if counts_or_set:
+                    expected_ov = "evaluable_score_identical_inventory_changed"
+                else:
+                    expected_ov = "evaluable_fully_identical"
+        else:
+            if b_reas != r_reas:
+                expected_ov = "non_evaluable_reason_changed"
+            else:
+                diag_or_inv = (
+                    (d_s is not None and d_s != 0)
+                    or (d_q is not None and d_q != 0)
+                    or set_changed
+                )
+                if diag_or_inv:
+                    expected_ov = "non_evaluable_diagnostics_or_inventory_changed"
+                else:
+                    expected_ov = "non_evaluable_fully_identical"
+
+        if ov_cls != expected_ov:
+            if not (expected_ov == "non_evaluable_fully_identical" and ov_cls == "non_evaluable_diagnostics_or_inventory_changed"):
+                raise ConcordanceValidationError(
+                    f"overall_transition_classification mismatch for {tid}: '{ov_cls}' != expected '{expected_ov}'"
+                )
+
+    # 4. Relational integrity against baseline if provided
+    if baseline_rows is not None:
+        base_parsed = [parse_concordance_csv_row(r) for r in baseline_rows]
+        b_by_key = {
+            (r["accession"], r["protein_id"], r["source_id"], r["aspect"], r["policy_id"]): r
+            for r in base_parsed
+        }
+        t_by_key = {
+            (r["accession"], r["protein_id"], r["source_id"], r["aspect"], r["policy_id"]): r
+            for r in parsed_rows
+        }
+        if set(b_by_key.keys()) != set(t_by_key.keys()):
+            missing = set(b_by_key.keys()) - set(t_by_key.keys())
+            extra = set(t_by_key.keys()) - set(b_by_key.keys())
+            raise ConcordanceValidationError(
+                f"Transition universe key mismatch against baseline: {len(missing)} missing, {len(extra)} extra"
+            )
+        for k, t_row in t_by_key.items():
+            b_row = b_by_key[k]
+            if t_row["baseline_concordance_status"] != b_row["concordance_status"]:
+                raise ConcordanceValidationError(f"Baseline concordance status mismatch in {t_row['transition_id']}")
+            if t_row["baseline_primary_reason"] != b_row["primary_non_evaluable_reason"]:
+                raise ConcordanceValidationError(f"Baseline primary reason mismatch in {t_row['transition_id']}")
+            if t_row["baseline_source_terms_count"] != b_row["source_terms_count"]:
+                raise ConcordanceValidationError(f"Baseline source terms count mismatch in {t_row['transition_id']}")
+            if t_row["baseline_quickgo_terms_count"] != b_row["quickgo_terms_count"]:
+                raise ConcordanceValidationError(f"Baseline quickgo terms count mismatch in {t_row['transition_id']}")
+            if t_row["baseline_exact_overlap_count"] != b_row["exact_overlap_count"]:
+                raise ConcordanceValidationError(f"Baseline exact overlap count mismatch in {t_row['transition_id']}")
+            if t_row["baseline_union_terms_count"] != b_row["union_terms_count"]:
+                raise ConcordanceValidationError(f"Baseline union terms count mismatch in {t_row['transition_id']}")
+            if t_row["baseline_jaccard_similarity"] != b_row["jaccard_similarity"]:
+                raise ConcordanceValidationError(f"Baseline Jaccard similarity mismatch in {t_row['transition_id']}")
+
+    # 5. Relational integrity against recomparison if provided
+    if recomparison_rows is not None:
+        recomp_parsed = [parse_concordance_csv_row(r) for r in recomparison_rows]
+        r_by_key = {
+            (r["accession"], r["protein_id"], r["source_id"], r["aspect"], r["policy_id"]): r
+            for r in recomp_parsed
+        }
+        t_by_key = {
+            (r["accession"], r["protein_id"], r["source_id"], r["aspect"], r["policy_id"]): r
+            for r in parsed_rows
+        }
+        if set(r_by_key.keys()) != set(t_by_key.keys()):
+            missing = set(r_by_key.keys()) - set(t_by_key.keys())
+            extra = set(t_by_key.keys()) - set(r_by_key.keys())
+            raise ConcordanceValidationError(
+                f"Transition universe key mismatch against recomparison: {len(missing)} missing, {len(extra)} extra"
+            )
+        for k, t_row in t_by_key.items():
+            r_row = r_by_key[k]
+            if t_row["recomparison_concordance_status"] != r_row["concordance_status"]:
+                raise ConcordanceValidationError(f"Recomparison concordance status mismatch in {t_row['transition_id']}")
+            if t_row["recomparison_primary_reason"] != r_row["primary_non_evaluable_reason"]:
+                raise ConcordanceValidationError(f"Recomparison primary reason mismatch in {t_row['transition_id']}")
+            if t_row["recomparison_source_terms_count"] != r_row["source_terms_count"]:
+                raise ConcordanceValidationError(f"Recomparison source terms count mismatch in {t_row['transition_id']}")
+            if t_row["recomparison_quickgo_terms_count"] != r_row["quickgo_terms_count"]:
+                raise ConcordanceValidationError(f"Recomparison quickgo terms count mismatch in {t_row['transition_id']}")
+            if t_row["recomparison_exact_overlap_count"] != r_row["exact_overlap_count"]:
+                raise ConcordanceValidationError(f"Recomparison exact overlap count mismatch in {t_row['transition_id']}")
+            if t_row["recomparison_union_terms_count"] != r_row["union_terms_count"]:
+                raise ConcordanceValidationError(f"Recomparison union terms count mismatch in {t_row['transition_id']}")
+            if t_row["recomparison_jaccard_similarity"] != r_row["jaccard_similarity"]:
+                raise ConcordanceValidationError(f"Recomparison Jaccard similarity mismatch in {t_row['transition_id']}")
+
+
+def validate_recomputed_concordance_matrix(
+    rows: List[Dict[str, Any]],
+    schema_path: Optional[Path] = None,
+) -> None:
+    """Validate recomputed concordance rows against Draft 2020-12 schema and arithmetic invariants."""
+    if schema_path is None:
+        schema_path = Path(__file__).resolve().parent.parent.parent / "data/curated/quickgo_concordance.schema.json"
+
+    if not schema_path.is_file():
+        raise FileNotFoundError(f"Concordance schema not found at {schema_path}")
+
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    validator = jsonschema.Draft202012Validator(schema)
+
+    # Validate each row against schema and parse types
+    parsed_rows = []
+    for r in rows:
+        parsed = parse_concordance_csv_row(r)
+        validator.validate(parsed)
+        parsed_rows.append(parsed)
+
+    # Validate key uniqueness and complete ID correspondence
+    c_ids: Set[str] = set()
+    for r in parsed_rows:
+        cid = r["concordance_id"]
+        if cid in c_ids:
+            raise ConcordanceValidationError(f"Duplicate concordance_id found in recomputed matrix: {cid}")
+        c_ids.add(cid)
+
+        expected_cid = f"MFP:CONC:{r['accession']}:{r['protein_id']}:{r['source_id']}:{r['aspect']}:{r['policy_id']}"
+        if cid != expected_cid:
+            raise ConcordanceValidationError(
+                f"Concordance ID mismatch: '{cid}' != expected '{expected_cid}'"
+            )
+
+    # Validate arithmetic and evaluability invariants using explicit production exceptions
+    for r in parsed_rows:
+        cid = r["concordance_id"]
+        s_cnt = r["source_terms_count"]
+        q_cnt = r["quickgo_terms_count"]
+        ov_cnt = r["exact_overlap_count"]
+        un_cnt = r["union_terms_count"]
+        s_only = r["source_only_count"]
+        q_only = r["quickgo_only_count"]
+        j = r["jaccard_similarity"]
+        st = r["concordance_status"]
+        p_reason = r["primary_non_evaluable_reason"]
+        id_status = r["identity_review_status"]
+        s_inv = r["source_inventory_status"]
+        q_inv = r["quickgo_inventory_status"]
+
+        # Count identities and bounds when both sets are non-null
+        if s_cnt is not None and q_cnt is not None:
+            if ov_cnt is None or un_cnt is None:
+                raise ConcordanceValidationError(
+                    f"Overlap or union count is null when component sets are defined: {cid}"
+                )
+            if ov_cnt > min(s_cnt, q_cnt):
+                raise ConcordanceValidationError(
+                    f"Intersection count ({ov_cnt}) exceeds component set ({min(s_cnt, q_cnt)}): {cid}"
+                )
+            if un_cnt > s_cnt + q_cnt:
+                raise ConcordanceValidationError(
+                    f"Union count ({un_cnt}) exceeds sum of component sets ({s_cnt + q_cnt}): {cid}"
+                )
+            if un_cnt > 0 and un_cnt != s_cnt + q_cnt - ov_cnt:
+                raise ConcordanceValidationError(
+                    f"Inclusion-exclusion formula failed ({un_cnt} != {s_cnt} + {q_cnt} - {ov_cnt}): {cid}"
+                )
+            if s_only is not None and s_only != s_cnt - ov_cnt:
+                raise ConcordanceValidationError(
+                    f"source_only_count ({s_only}) != source ({s_cnt}) - overlap ({ov_cnt}): {cid}"
+                )
+            if q_only is not None and q_only != q_cnt - ov_cnt:
+                raise ConcordanceValidationError(
+                    f"quickgo_only_count ({q_only}) != quickgo ({q_cnt}) - overlap ({ov_cnt}): {cid}"
+                )
+            if s_only is not None and s_only < 0:
+                raise ConcordanceValidationError(f"Negative source_only_count in {cid}")
+            if q_only is not None and q_only < 0:
+                raise ConcordanceValidationError(f"Negative quickgo_only_count in {cid}")
+
+            if s_cnt == 0 or q_cnt == 0:
+                if j is not None:
+                    raise ConcordanceValidationError(
+                        f"Jaccard similarity must be null when either set is empty: {cid}"
+                    )
+                if st != "not_evaluable":
+                    raise ConcordanceValidationError(
+                        f"Status must be 'not_evaluable' when either set is empty: {cid}"
+                    )
+            elif id_status == "flagged_taxonomic_discrepancy":
+                if j is not None:
+                    raise ConcordanceValidationError(
+                        f"Jaccard similarity must be null for taxonomic discrepancy: {cid}"
+                    )
+                if st != "not_evaluable":
+                    raise ConcordanceValidationError(
+                        f"Status must be 'not_evaluable' for taxonomic discrepancy: {cid}"
+                    )
+                if p_reason != "unresolved_biological_identity":
+                    raise ConcordanceValidationError(
+                        f"primary_non_evaluable_reason must be 'unresolved_biological_identity': {cid}"
+                    )
+            else:
+                if st != "evaluable":
+                    raise ConcordanceValidationError(
+                        f"Status must be 'evaluable' when sets are positive and no identity discrepancy: {cid}"
+                    )
+                if j is None:
+                    raise ConcordanceValidationError(
+                        f"Jaccard similarity cannot be null for evaluable row: {cid}"
+                    )
+                if p_reason is not None:
+                    raise ConcordanceValidationError(
+                        f"primary_non_evaluable_reason must be null for evaluable row: {cid}"
+                    )
+                if un_cnt > 0:
+                    expected_j = round(ov_cnt / un_cnt, 4)
+                    if j != expected_j:
+                        raise ConcordanceValidationError(
+                            f"Jaccard similarity ({j}) does not match rounded overlap/union ({expected_j}): {cid}"
+                        )
+                elif ov_cnt == 0 and j != 0.0:
+                    raise ConcordanceValidationError(
+                        f"Jaccard similarity must be 0.0 when overlap is 0: {cid}"
+                    )
+
+        # Evaluability, nullability, and reason consistency
+        if st == "evaluable":
+            if p_reason is not None:
+                raise ConcordanceValidationError(f"primary_non_evaluable_reason must be null for evaluable row: {cid}")
+            if j is None:
+                raise ConcordanceValidationError(f"Evaluable row must have non-null Jaccard: {cid}")
+            if s_inv != "available" or q_inv != "available":
+                raise ConcordanceValidationError(f"Evaluable row must have available inventories: {cid}")
+        else:  # not_evaluable
+            if p_reason is None:
+                raise ConcordanceValidationError(f"Non-evaluable row must have primary_non_evaluable_reason: {cid}")
+            if j is not None:
+                raise ConcordanceValidationError(f"Non-evaluable row must have null Jaccard: {cid}")
+            if id_status == "flagged_taxonomic_discrepancy" and p_reason != "unresolved_biological_identity":
+                raise ConcordanceValidationError(f"Taxonomic discrepancy must have reason 'unresolved_biological_identity': {cid}")
