@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import json
 import os
 import shutil
@@ -25,6 +26,7 @@ from mfp_bibliography.quickgo_concordance import (
     JoinIntegrityError,
     build_concordance_matrix,
     build_concordance_transition_matrix,
+    load_candidate_proteins,
     parse_concordance_csv_row,
     parse_transition_csv_row,
     validate_and_join_source_annotations,
@@ -1782,29 +1784,48 @@ def test_tier_b_local_baseline_regression():
         for col in CONCORDANCE_COLUMNS:
             r_val = r.get(col)
             b_val = b_r.get(col)
-            # Normalize empty strings and None for string comparisons
-            r_norm = "" if r_val is None else (f"{r_val:.4f}" if isinstance(r_val, float) else str(r_val))
-            b_norm = "" if b_val is None else str(b_val)
-            assert r_norm == b_norm, f"Semantic mismatch in {cid} column '{col}': {r_norm} != {b_norm}"
+            if r_val is None:
+                assert b_val == "" or b_val is None, (
+                    f"Expected null for {cid} column '{col}', got '{b_val}'"
+                )
+            elif b_val == "" or b_val is None:
+                pytest.fail(
+                    f"Expected non-null value {r_val!r} for {cid} column '{col}', got empty string"
+                )
+            elif isinstance(r_val, float):
+                assert float(b_val) == r_val, (
+                    f"Numerical mismatch in {cid} column '{col}': {float(b_val)} != {r_val}"
+                )
+            elif isinstance(r_val, int) and not isinstance(r_val, bool):
+                assert int(b_val) == r_val, (
+                    f"Numerical mismatch in {cid} column '{col}': {int(b_val)} != {r_val}"
+                )
+            else:
+                assert str(r_val) == b_val, (
+                    f"Semantic mismatch in {cid} column '{col}': {r_val!r} != {b_val!r}"
+                )
 
-    # Serialized-byte comparison
-    import io
-    output_buf = io.StringIO()
-    writer = csv.DictWriter(output_buf, fieldnames=CONCORDANCE_COLUMNS, quoting=csv.QUOTE_MINIMAL, lineterminator="\n")
+    # Serialized-byte comparison using historical P3 serialization contract
+    output_buf = io.StringIO(newline="")
+    writer = csv.DictWriter(output_buf, fieldnames=CONCORDANCE_COLUMNS)
     writer.writeheader()
     for r in reconstructed_rows:
-        row_clean = {}
-        for col in CONCORDANCE_COLUMNS:
-            v = r.get(col)
-            if v is None:
-                row_clean[col] = ""
-            elif isinstance(v, float):
-                row_clean[col] = f"{v:.4f}"
-            else:
-                row_clean[col] = str(v)
-        writer.writerow(row_clean)
+        clean_row = {
+            col: ("" if r.get(col) is None else str(r.get(col)))
+            for col in CONCORDANCE_COLUMNS
+        }
+        writer.writerow(clean_row)
 
     computed_bytes = output_buf.getvalue().encode("utf-8")
     computed_digest = hashlib.sha256(computed_bytes).hexdigest()
-    expected_digest = "12ce77f2421ee07f2230466c5b0788a95908ac950dd6125ab37a8b88f64ef8a7"
-    assert computed_digest == expected_digest, f"Bitwise serialized digest mismatch: {computed_digest} != {expected_digest}"
+
+    with open(required_artifacts[0], "rb") as f:
+        original_bytes = f.read()
+    expected_digest = hashlib.sha256(original_bytes).hexdigest()
+
+    assert computed_digest == expected_digest, (
+        f"Bitwise serialized digest mismatch: {computed_digest} != {expected_digest}"
+    )
+    assert computed_bytes == original_bytes, (
+        f"Bitwise byte content mismatch against frozen baseline {required_artifacts[0]}"
+    )
