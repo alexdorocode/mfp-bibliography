@@ -3,14 +3,17 @@
 - **Document ID**: `VERIF-PIL-04.1B-CONCORDANCE-RECOMPARISON-001`
 - **Feature Directory**: `specs/quickgo-pilot-concordance-recomparison/`
 - **Target Repository**: `mfp-bibliography` (`feature/functional-normalization`)
-- **Authority Level**: Level 5 (Increment Verification Record; Gate 1 & Technical Commit Verified)
-- **Status**: **Gate 1 Completed & Verified; Technical Commit Landed (0789e4a); Documentary Commit Authorized; Gate 3 & Gate 4 Unauthorized**
+- **Authority Level**: Level 5 (Increment Verification Record; Gates 1–4 Completed & Approved for v0)
+- **Status**: **Gates 1–4 Completed & Verified; Gate 4 Human Approval Granted (v0 Execution); Increment Formally Closed**
 - **Baseline Git HEAD**: `421da7e81c450b4bbeca2c637bbbfe0c8db002b4` (Historical baseline)
 - **Technical Commit**: `0789e4a7ccb9a0fb37de258a82c03b851d619e95`
+- **Documentary Commit**: `cd1053dce16f1f843a773419faf3ca9e002d6ab3`
+- **Test Baseline Regression Commit**: `41521ba5d55636a3b74ed6f6616501542543a48d`
 - **Specification Reference**: [`specs/quickgo-pilot-concordance-recomparison/spec.md`](spec.md)
 - **Plan Reference**: [`specs/quickgo-pilot-concordance-recomparison/plan.md`](plan.md)
 - **Tasks Reference**: [`specs/quickgo-pilot-concordance-recomparison/tasks.md`](tasks.md)
-- **Verification Date**: 2026-11-17 (Initial Gate 1); 2026-11-18 (Corrective Pass Completed & Verified); 2026-11-19 (Technical Commit 0789e4a & Documentary Alignment)
+- **Synthesis Report Reference**: [`docs/reports/quickgo-pilot-pil-04.1b-descriptive-results.md`](../../docs/reports/quickgo-pilot-pil-04.1b-descriptive-results.md)
+- **Verification Date**: 2026-11-17 (Initial Gate 1); 2026-11-18 (Corrective Pass Completed & Verified); 2026-11-19 (Gate 2 Commits, Gate 3 Execution & Gate 4 Synthesis); 2026-11-20 (Gate 4 Human Approval & Closeout)
 - **Governing Invariants**: [ADR-001](../../docs/decisions/ADR-001-repository-scope.md) through [ADR-007](../../docs/decisions/ADR-007-v1-scope-descope-bibliographic-relations.md), proposed [ADR-008](../../docs/decisions/ADR-008-functional-normalization-pilot-scope.md), [`AGENTS.md`](../../AGENTS.md) §1, §4, §5
 
 ---
@@ -21,7 +24,7 @@ This verification record documents the documentary checks, read-only baseline ma
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│            PIL-04.1B GATE 1 & 2 VERIFICATION STATUS (2026-11-19)       │
+│            PIL-04.1B GATES 1–4 VERIFICATION STATUS (2026-11-19)        │
 ├────────────────────────────────────────────────────────────────────────┤
 │ 1. Git Repository HEAD & State Audit ────────────────► [VERIFIED / OK] │
 │ 2. Frozen Stage P3 Matrix Inspection (72 rows) ──────► [VERIFIED / OK] │
@@ -37,14 +40,16 @@ This verification record documents the documentary checks, read-only baseline ma
 │ 12. In-Memory Python AST & JSON Syntax Checks ───────► [4/4 PASSED/OK] │
 │ 13. Pre-Commit Test Execution (Tier A) ──────────────► [37 PASSED / OK]│
 │ 14. Full Repository Test Suite Regression (Hist.) ───► [686 PASSED/OK] │
-│ 15. Tier B Baseline Regression ──────────────────────► [GATED: GATE 3] │
-│ 16. Pilot Pipeline Recomparison Execution ───────────► [GATED: GATE 3] │
-│ 17. Historical Baseline Immutability ────────────────► [INTACT / OK]   │
+│ 15. Tier B Baseline Regression (Historical P3) ──────► [PASSED: 41521b]│
+│ 16. Pilot Pipeline Recomparison Execution (72 rows) ─► [COMPLETED / OK]│
+│ 17. Published Artifacts Cryptographic Verification ──► [VERIFIED / OK] │
+│ 18. Gate 4 Descriptive Results Synthesis Report ─────► [REPORT APPROVED]│
+│ 19. Historical Baseline Immutability ────────────────► [INTACT / OK]   │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
 > [!IMPORTANT]
-> **Honest Operational Status (Gate 1 & Technical Commit Completed; Documentary Commit Authorized)**:
+> **Honest Operational Status (Gates 1–4 Completed & Approved for v0)**:
 > In strict compliance with repository operational boundaries and human authorizations:
 > - **Provider Interruption & Recovery**: The initial corrective pass was interrupted on 2026-11-17 by a provider 503 capacity error. Recovery inspection and resumption occurred on 2026-11-18 from the exact files on disk without loss or restart.
 > - **Syntax & AST Verification**: In-memory compilation and AST parsing (`ast.parse`) for the 3 Python files and JSON schema parsing (`json.load`) were explicitly executed by the Python runtime and passed with 0 syntax errors.
@@ -53,19 +58,18 @@ This verification record documents the documentary checks, read-only baseline ma
 >   * Stale match pattern in `test_tier_a_concordance_validator_count_identities_and_reason_consistency` was updated to match normalized validator wording.
 >   * In `build_quickgo_concordance_recomparison.py`, protected path and ancestor collision checks were reordered before the destination existence check, resolving an issue where collision with an existing protected file raised `FileExistsError` instead of `ValueError`.
 > - **Upstream Manifest & Lineage Verification**: Reconciled and enforced explicit expected-versus-actual cryptographic digest checks for upstream manifests (Stage P3: `01c6b54ac54ea34f7f1ab9ce49c074da347b62f1b13e437cb485fb34aa7515a7`; PIL-04.1A: `5fe29c5fdefbbe0d14b755844dcecf9b6ca29afc460eb4aec7b3479b596b077f`). Verified structural artifact relationships (P3 baseline output digest, PIL-04.1A derived aspects output digest, source annotations input digest, and mandatory ontology lineage metadata).
-> - **Pre-Commit Tier A Synthetic Test Suite**:
->   Executed command:
->   ```bash
->   RUN_TIER_B_LOCAL_REGRESSION=0 pytest tests/test_quickgo_concordance_recomparison.py -v -k "tier_a"
->   ```
->   Reported result: **37 passed, 1 deselected in 0.13s** (100% offline, zero network access, isolated temporary directories).
-> - **Staged-CSV Corruption Coverage**: Parameterized test `test_tier_a_runner_staged_csv_corruption_rejected` verifies that contract corruption injected into either staged CSV before read-back validation causes immediate rejection, aborts publication, cleans up staging, and preserves unrelated files and directories.
-> - **Upstream Manifest Test Coverage**: Targeted synthetic tests verify valid synthetic lineage, wrong manifest digests, missing required lineage fields, and upstream output-to-consumed-input relationship mismatches.
-> - **Gate 2 Technical Commit Landed**: Commit `0789e4a7ccb9a0fb37de258a82c03b851d619e95` (parent `421da7e81c450b4bbeca2c637bbbfe0c8db002b4`) on branch `feature/functional-normalization` committed exactly the 4 technical files (`data/curated/quickgo_concordance_transition.schema.json`, `src/mfp_bibliography/quickgo_concordance.py`, `scripts/build_quickgo_concordance_recomparison.py`, `tests/test_quickgo_concordance_recomparison.py`).
-> - **Documentary Scope Authorized**: This turn authorizes updating and committing exactly the 4 specification files (`spec.md`, `plan.md`, `tasks.md`, `verification.md`).
-> - **Tier B Regression Test**: Authored with full semantic column-by-column check and serialized-byte SHA-256 baseline check (`12ce77f...`), gated behind explicit opt-in `RUN_TIER_B_LOCAL_REGRESSION=1`. Unexecuted per Gate 1 and Gate 2 scopes; historical bit-for-bit compatibility remains pending Tier B authorized execution.
-> - **Pipeline execution**: **Not performed**. In accordance with Gate 3 restrictions, no recomputations or data mutations occurred in `data/interim/pilot/quickgo_slice_recomparison/`. No empirical PIL-04.1B concordance outcomes exist yet.
-> - **Git state**: Technical commit landed; pending documentary commit in this turn. Gate 3 remains unauthorized.
+> - **Pre-Commit Tier A Synthetic Test Suite**: Executed `RUN_TIER_B_LOCAL_REGRESSION=0 pytest tests/test_quickgo_concordance_recomparison.py -v -k "tier_a"` with **37 passed, 1 deselected in 0.13s** (100% offline, zero network access, isolated temporary directories).
+> - **Gate 2 Technical & Documentary Commits**:
+>   * Technical commit `0789e4a7ccb9a0fb37de258a82c03b851d619e95` committed the 4 implementation files.
+>   * Documentary commit `cd1053dce16f1f843a773419faf3ca9e002d6ab3` committed the 4 specification package files.
+> - **Tier B Resolution & Verification**: Initial Tier B execution revealed a missing import and format mismatch against Stage P3's `str(float)` serialization. Corrective commit `41521ba5d55636a3b74ed6f6616501542543a48d` updated `tests/test_quickgo_concordance_recomparison.py` to compare numbers numerically and serialize bytes matching P3's exact `write_csv_table` contract. Tier B passed cleanly:
+>   `RUN_TIER_B_LOCAL_REGRESSION=1 pytest -v tests/test_quickgo_concordance_recomparison.py::test_tier_b_local_baseline_regression` (**1 passed in 0.09s**), confirming 100% bit-for-bit identity against Stage P3 baseline `quickgo_concordance_pilot.csv` (`12ce77f2421ee07f2230466c5b0788a95908ac950dd6125ab37a8b88f64ef8a7`).
+> - **Gate 3 Pipeline Execution**: Authorized and executed offline on 2026-11-19 via `python3 scripts/build_quickgo_concordance_recomparison.py ...` (exit code 0). Published:
+>   * `quickgo_concordance_pilot_recomputed.csv`: 72 rows, SHA-256 `1f7149dc995a89a49f23b30124526d02c05bb24ec79ab2cd0e7bf035132ecd88`
+>   * `quickgo_concordance_transition_pilot.csv`: 72 rows, SHA-256 `950fecac5dfc0e14e8ef627a6b1b770d41f0ce14ed314d2dff4d1f26b03659b5`
+>   * `manifest.json`: SHA-256 `c52b251ba72b2863639904fc4339a2a5ed35a307772a87b0e0fc0b110b89cade`
+>   Both CSVs passed 100% of Draft 2020-12 schema checks, delta arithmetic, and relational invariants, with biunique 1:1 key correspondence to Stage P3 baseline.
+> - **Gate 4 Descriptive Synthesis**: Completed and approved in `docs/reports/quickgo-pilot-pil-04.1b-descriptive-results.md`. Evaluability increased from 20/72 (27.78%) to 42/72 (58.33%), with 20 rows evaluable_fully_identical, 22 newly_evaluable, 22 non_evaluable_fully_identical, and 8 non_evaluable_reason_changed. Gate 4 human approval granted for v0 execution.
 
 ---
 
@@ -214,8 +218,14 @@ Pursuant to Gate 1 human authorization, implementation and portable synthetic ve
   - Staged-CSV corruption rejection: Parameterized test verifying that contract violations injected into either `quickgo_concordance_pilot_recomputed.csv` or `quickgo_concordance_transition_pilot.csv` before read-back validation cause immediate pipeline rejection, abort publication, remove staging, and preserve unrelated files.
   - Upstream manifest verification: Targeted synthetic test suite verifying valid synthetic lineage recording, rejection of wrong P3 and PIL-04.1A manifest digests, rejection of missing required sections or lineage fields (`output_inventory`, `summary`, `ontology_version`), and rejection of upstream output-to-consumed-input relationship mismatches.
   - Deterministic serialization: bit-for-bit identical SHA-256 digests across repeated serializations.
-- **Tier B Local Baseline Regression Test**: Fully authored test body performing semantic column-by-column comparison and serialized-byte SHA-256 check against Stage P3 baseline. Gated behind explicit `RUN_TIER_B_LOCAL_REGRESSION=1` opt-in; skipped per Gate 1 scope.
-- **Execution Command & Output**:
+- **Tier B Local Baseline Regression Test**: Authored to perform semantic column-by-column comparison and serialized-byte SHA-256 check against Stage P3 baseline. Gated behind explicit `RUN_TIER_B_LOCAL_REGRESSION=1` opt-in.
+  - Initial execution revealed missing import and format string divergence. Corrective commit `41521ba5d55636a3b74ed6f6616501542543a48d` resolved both issues.
+  - Executed command:
+    ```bash
+    RUN_TIER_B_LOCAL_REGRESSION=1 pytest -v tests/test_quickgo_concordance_recomparison.py::test_tier_b_local_baseline_regression
+    ```
+  - Result: **1 passed in 0.09s** (asserting 100% bitwise identity against Stage P3 baseline `12ce77f...`).
+- **Pre-Commit Tier A Synthetic Test Execution**:
   ```bash
   RUN_TIER_B_LOCAL_REGRESSION=0 pytest tests/test_quickgo_concordance_recomparison.py -v -k "tier_a"
   # Result: 37 passed, 1 deselected in 0.13s (100% pass rate)
@@ -223,10 +233,16 @@ Pursuant to Gate 1 human authorization, implementation and portable synthetic ve
 - **Historical Intermediate Results & Regression Note**:
   During the initial corrective pass, an intermediate test execution returned 28 passed, 3 failed, 1 skipped due to stale test error message regexes and overly strict reason invariants. Following resolution of error wording, removal of contradictory invariants, runner path check reordering, and the addition of targeted manifest/staging corruption tests, all 37 Tier A tests pass cleanly. The full 686-test repository regression suite was executed and passed (686 passed, 1 skipped in 52.37s) during Gate 1 baseline verification and was preserved without regression.
 
-### 3.5 Components Deferred to Subsequent Gates
-1. **Gate 2 Technical Review & Commit**: Technical commit `0789e4a7ccb9a0fb37de258a82c03b851d619e95` completed on 2026-11-19; documentary commit authorized in this turn.
-2. **Gate 3 Pilot Execution**: Running the real pipeline to generate `data/interim/pilot/quickgo_slice_recomparison/` (recomputed matrix, transition matrix, manifest.json) and executing Tier B regression remains strictly unauthorized and unexecuted; no empirical PIL-04.1B concordance outcomes exist yet.
-3. **Gate 4 Synthesis**: Descriptive synthesis report remains pending observed recomparison results.
+### 3.5 Gate 3 Execution and Gate 4 Synthesis Status
+1. **Gate 2 & 2B Commits**:
+   - Technical commit `0789e4a7ccb9a0fb37de258a82c03b851d619e95` (code, runner, tests, transition schema).
+   - Documentary commit `cd1053dce16f1f843a773419faf3ca9e002d6ab3` (specifications package).
+   - Test regression fix commit `41521ba5d55636a3b74ed6f6616501542543a48d` (Tier B import & historical serialization).
+2. **Gate 3 Pilot Execution**: Completed on 2026-11-19 via offline runner. Emitted:
+   - `data/interim/pilot/quickgo_slice_recomparison/quickgo_concordance_pilot_recomputed.csv` (72 rows, SHA-256 `1f7149dc995a89a49f23b30124526d02c05bb24ec79ab2cd0e7bf035132ecd88`)
+   - `data/interim/pilot/quickgo_slice_recomparison/quickgo_concordance_transition_pilot.csv` (72 rows, SHA-256 `950fecac5dfc0e14e8ef627a6b1b770d41f0ce14ed314d2dff4d1f26b03659b5`)
+   - `data/interim/pilot/quickgo_slice_recomparison/manifest.json` (SHA-256 `c52b251ba72b2863639904fc4339a2a5ed35a307772a87b0e0fc0b110b89cade`)
+3. **Gate 4 Synthesis & Reporting**: Completed and approved in `docs/reports/quickgo-pilot-pil-04.1b-descriptive-results.md`. Formal Gate 4 human approval granted for v0 execution.
 
 ---
 
