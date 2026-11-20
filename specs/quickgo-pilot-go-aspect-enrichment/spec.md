@@ -281,7 +281,9 @@ To isolate experimental variables and avoid confounding metadata validation with
   1. **Separation of Concerns**: Verifying ontology lookup accuracy must precede using those lookups in concordance pipelines.
   2. **Preventing Metric Gaming**: Acceptance of metadata enrichment must be based on curatorial and ontological correctness, **NOT on whether Jaccard scores increase or whether more rows become evaluable**.
   3. **Preserving Presentation Timeline**: Route A communication and slide decks describe the baseline pilot (with its 72.2% non-evaluability). Re-running concordance prematurely risks confusing baseline reporting with experimental extensions.
-- **Authorization**: Neither Stage 1 nor Stage 2 is authorized for implementation at this time.
+- **Authorization & Execution Status**:
+  - **Stage 1 (`PIL-04.1A`)**: Recorded human sign-off was granted on 2026-11-16. Local implementation was executed offline and committed in technical commit `98530b32cd13d0b8ff5b4ea7a626e691d9426d25`, with documentary verification recorded in `verification.md` (commit `421da7e81c450b4bbeca2c637bbbfe0c8db002b4`). This local state resides on branch `feature/functional-normalization` and has not been pushed to the remote repository.
+  - **Stage 2 (`PIL-04.1B`)**: Remains a separate increment subject to independent human authorization gates. Refer strictly to `specs/quickgo-pilot-concordance-recomparison/verification.md` for B's current status; this specification grants no authorization for Gate 2 (commit) or Gate 3 (pilot execution).
 
 ---
 
@@ -298,7 +300,7 @@ In accordance with user authorization for Task PIL-04.1A:
 ## 9. Acceptance Criteria & Implementation Prerequisites
 
 ### 9.1 Acceptance Criteria for Task PIL-04.1A (Stage 1)
-When authorized for execution, `PIL-04.1A` must satisfy all criteria:
+All criteria below were required for execution and were fully satisfied during offline verification on 2026-11-16 (see `verification.md`):
 1. **Complete Inventory Traceability**: Exactly 353 rows processed; 100% of rows match an existing `annotation_id` in `source_go_annotations_pilot.csv`.
 2. **Immutable Source Preservation**: `source_go_id` and `source_declared_aspect` match raw inputs byte-for-byte.
 3. **Structured Mapping Status**: 100% of rows assigned an explicit `mapping_status` enum value. Zero unhandled exceptions.
@@ -309,8 +311,14 @@ When authorized for execution, `PIL-04.1A` must satisfy all criteria:
 8. **Schema Validation**: Output CSV passes Draft 2020-12 JSON Schema validation.
 
 ### 9.2 Execution Prerequisites
-Implementation must not commence until:
+Implementation must not commence until the following prerequisites are met:
 1. Human sign-off is granted on this specification (`SPEC-PIL-04.1-GO-ASPECT-ENRICHMENT`).
 2. Human maintainers approve the pinned ontology snapshot (Candidate 1: `releases/2026-01-23` or an authorized external archive download).
 3. A formal implementation task package (`plan.md`, `tasks.md`, `verification.md`) is approved under repository SDD rules.
 4. Working tree baseline is verified and clean of conflicting uncommitted changes.
+
+> [!NOTE]
+> **Retrospective Verification Status (2026-11-16 Execution)**:
+> The prerequisites above remain permanent requirements. For the historical offline execution of Task PIL-04.1A on 2026-11-16:
+> - Verification of the pinned ontology snapshot (`releases/2026-01-23`, SHA-256 `eee63704...`), task package (`TASKS-PIL-04.1-GO-ASPECT-ENRICHMENT-001`), and working-tree parent baseline (commit `21a3c8e`) is documented in `verification.md`.
+> - Human sign-off for Task PIL-04.1A was recorded in the specification (§1.3) and task inventory (`tasks.md`) on 2026-11-16. Local Git commits (`98530b3` and `421da7e`) document code and documentation creation on branch `feature/functional-normalization`, but do not themselves constitute proof of authorization.
